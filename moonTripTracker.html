@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=480, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#F7F3A1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="moonTripTracker">
+  <meta name="description" content="moonTripTracker · tester GPS de líneas (tracks) con filtro Q2 y velocidades · sub-proyecto Moon Trip in pocket">
+  <title>moonTripTracker · GPS tracks</title>
+  <!-- Leaflet 1.9.4 · idéntico al padre v00 (SRI heredado) — única dep externa permitida (RD-01) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    /* ============================================================
+       PALETA · paletaBrandingMoon v1.1 (sources/050_moon/paletaBrandingMoon.json)
+       7 hex: 6 Moon + blancoNeutro · ningún hex extra fuera de este bloque.
+       Restricción WCAG: naranjaClaro PROHIBIDO como texto sobre amarilloLuna.
+       ============================================================ */
+    :root {
+      --amarilloLuna:    #F7F3A1;
+      --naranjaClaro:    #E39F43;
+      --naranjaProfundo: #A1602A;
+      --rojoOtonal:      #9B1B18;
+      --vinotinto:       #551E1B;
+      --grisCarbon:      #272B2E;
+      --blancoNeutro:    #F0F0F0;
+
+      /* Roles semánticos (RD-12) */
+      --colorBase:                var(--amarilloLuna);
+      --colorAcentoCalido:        var(--naranjaClaro);
+      --colorDetalle:             var(--naranjaProfundo);
+      --colorAcentoDramatico:     var(--rojoOtonal);
+      --colorTextoSobreAmarillo:  var(--vinotinto);
+      --colorContorno:            var(--grisCarbon);
+      --colorFondoBody:           var(--blancoNeutro);
+
+      /* Marker calidad gradiente cálido (RD-10) */
+      --colorAccuracyGood:    var(--amarilloLuna);     /* Excelente/Bueno */
+      --colorAccuracyWarn:    var(--naranjaClaro);     /* Aceptable */
+      --colorAccuracyBad:     var(--rojoOtonal);       /* Pobre */
+      --colorAccuracyVoid:    var(--vinotinto);        /* Sin señal */
+      --colorPinFill:         var(--naranjaProfundo);
+      --colorMarkerStroke:    var(--blancoNeutro);
+
+      /* Glifo colors (mutables por context) */
+      --glifoColorPrimario:   var(--grisCarbon);
+      --glifoColorAcento:     var(--rojoOtonal);
+      --glifoColorStroke:     var(--blancoNeutro);
+    }
+
+    /* ============================================================
+       RESET MINIMAL · tipografia pixel art (RD-12)
+       ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 18px;
+      line-height: 1.4;
+      background: var(--colorFondoBody);
+      color: var(--colorContorno);
+      overscroll-behavior-y: contain;
+    }
+    button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+    /* ============================================================
+       SHELL · viewport fijo 480px mobile-first (RD-15)
+       Desktop: contenedor centrado con fondo blancoNeutro.
+       ============================================================ */
+    .shell {
+      max-width: 480px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background: var(--colorBase);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border-left: 2px solid var(--colorContorno);
+      border-right: 2px solid var(--colorContorno);
+    }
+
+    /* ============================================================
+       TOPBAR · header con moonV3_12 noBackground + QR placeholder + retorno landing
+       ============================================================ */
+    .topbar {
+      background: var(--colorBase);
+      color: var(--colorTextoSobreAmarillo);
+      padding: env(safe-area-inset-top, 0px) 14px 10px;
+      padding-top: max(env(safe-area-inset-top, 0px), 10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 2px solid var(--colorContorno);
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .topbar-logo {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .topbar-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--colorTextoSobreAmarillo);
+    }
+    .topbar-title small {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      opacity: 0.75;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .topbar-extras {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qr-placeholder {
+      width: 56px;
+      height: 56px;
+      background: var(--colorFondoBody);
+      border: 2px solid var(--colorContorno);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--colorTextoSobreAmarillo);
+      text-align: center;
+      line-height: 1.1;
+      flex-shrink: 0;
+    }
+    .lang-toggle {
+      background: var(--colorContorno);
+      color: var(--colorBase);
+      border: 2px solid var(--colorContorno);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .back-link {
+      display: block;
+      font-size: 12px;
+      padding: 6px 14px;
+      background: var(--colorBase);
+      color: var(--colorTextoSobreAmarillo);
+      border-bottom: 2px solid var(--colorContorno);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .back-link:hover { background: var(--naranjaClaro); }
+
+    /* ============================================================
+       VIEW + ACTIONBAR
+       ============================================================ */
+    .view {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+      background: var(--colorBase);
+    }
+    .view.no-pad { padding: 0; }
+    .actionbar {
+      position: sticky;
+      bottom: 0;
+      background: var(--colorFondoBody);
+      border-top: 2px solid var(--colorContorno);
+      padding: 12px 14px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      gap: 8px;
+      z-index: 30;
+    }
+    .actionbar:empty { display: none; }
+    .actionbar .btn { flex: 1; }
+    .actionbar .btn.flex-0 { flex: 0 0 auto; }
+
+    /* ============================================================
+       HEADINGS + TYPOGRAPHY
+       ============================================================ */
+    .h-kicker {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 400;
+      color: var(--colorAcentoDramatico);
+      margin: 0 0 4px;
+    }
+    .h-title {
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--colorTextoSobreAmarillo);
+      margin: 0 0 6px;
+    }
+    .h-sub {
+      font-size: 16px;
+      color: var(--colorTextoSobreAmarillo);
+      margin: 0 0 18px;
+      line-height: 1.35;
+    }
+
+    /* ============================================================
+       BUTTONS · pixel art rectangular, sin border-radius redondeado
+       ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 0 16px;
+      border: 2px solid var(--colorContorno);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      background: var(--colorFondoBody);
+      color: var(--colorContorno);
+    }
+    .btn:active { transform: translate(1px, 1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--colorAcentoDramatico); color: var(--blancoNeutro); }
+    .btn-primary:hover:not(:disabled) { background: var(--vinotinto); }
+    .btn-success { background: var(--colorAcentoCalido); color: var(--vinotinto); }
+    .btn-success:hover:not(:disabled) { background: var(--naranjaProfundo); color: var(--blancoNeutro); }
+    .btn-secondary { background: var(--colorFondoBody); color: var(--colorContorno); }
+    .btn-secondary:hover:not(:disabled) { background: var(--amarilloLuna); }
+    .btn-danger { background: var(--colorAcentoDramatico); color: var(--blancoNeutro); }
+    .btn-block { width: 100%; }
+    .btn-lg { min-height: 56px; font-size: 18px; }
+    .btn-icon { width: 44px; height: 44px; min-height: 44px; padding: 0; flex-shrink: 0; }
+    .btn svg { width: 22px; height: 22px; vertical-align: middle; }
+
+    /* ============================================================
+       TRACK ROW (BANDEJA) · pixel art card
+       ============================================================ */
+    .track-row {
+      background: var(--colorFondoBody);
+      border: 2px solid var(--colorContorno);
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .track-icon {
+      width: 40px; height: 40px;
+      background: var(--colorAcentoCalido);
+      color: var(--vinotinto);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 700;
+      font-size: 18px;
+      border: 2px solid var(--colorContorno);
+    }
+    .track-info { flex: 1; min-width: 0; }
+    .track-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--colorContorno);
+      margin: 0 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .track-meta {
+      font-size: 13px;
+      color: var(--colorTextoSobreAmarillo);
+      letter-spacing: 0.02em;
+    }
+    .track-actions { display: flex; gap: 4px; }
+    .track-action-btn {
+      background: transparent;
+      border: 2px solid var(--colorContorno);
+      width: 36px; height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--colorContorno);
+      padding: 0;
+    }
+    .track-action-btn:active { transform: translate(1px, 1px); }
+    .track-action-btn.danger { color: var(--colorAcentoDramatico); border-color: var(--colorAcentoDramatico); }
+    .track-action-btn svg { width: 20px; height: 20px; }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--colorContorno);
+      text-transform: uppercase;
+    }
+    .chip-walk { background: var(--amarilloLuna); color: var(--vinotinto); }
+    .chip-trace { background: var(--naranjaClaro); color: var(--vinotinto); }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    .empty-icon {
+      width: 72px; height: 72px;
+      background: var(--colorAcentoCalido);
+      border: 2px solid var(--colorContorno);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .empty-icon svg { width: 40px; height: 40px; }
+    .empty-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--colorTextoSobreAmarillo);
+    }
+    .empty-sub {
+      font-size: 15px;
+      color: var(--colorTextoSobreAmarillo);
+      margin: 0 0 18px;
+      line-height: 1.4;
+    }
+
+    /* ============================================================
+       MAP SHELL · poly-shell renombrado a track-shell
+       ============================================================ */
+    .track-shell {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+      height: calc(100dvh - 60px);
+      position: relative;
+    }
+    .map-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--colorBase);
+      isolation: isolate;
+    }
+    .leaflet-container { background: transparent; font-family: 'VT323', monospace; }
+    .leaflet-control-attribution { font-size: 11px; opacity: 0.85; }
+
+    /* ============================================================
+       OWNERSHIP ZONE · CSS Estética · Mapa controls (RD-13)
+       INTERCAMBIO STACKS · barra mapa hover en la DERECHA (padre v00 era izquierda)
+       ============================================================ */
+    .track-mapBar {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 11;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: auto;
+    }
+    .track-mapBar-btn {
+      width: 36px;
+      height: 36px;
+      background: var(--colorFondoBody);
+      border: 2px solid var(--colorContorno);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--colorContorno);
+      padding: 0;
+    }
+    .track-mapBar-btn:active { transform: translate(1px, 1px); }
+    .track-mapBar-btn:hover { background: var(--amarilloLuna); }
+    .track-mapBar-btn.toggle { background: var(--colorContorno); color: var(--colorBase); }
+    .track-mapBar-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .track-mapBar.collapsed .track-mapBar-controls { display: none; }
+    .track-mapBar-btn svg { width: 22px; height: 22px; }
+
+    /* ============================================================
+       OWNERSHIP ZONE · CSS Estética · Overlay panel (RD-13)
+       INTERCAMBIO STACKS · overlay con chips KPI + panel-section en la IZQUIERDA
+       (padre v00 era derecha)
+       ============================================================ */
+    .track-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+      pointer-events: none;
+      align-items: flex-start;
+    }
+    .track-stats-line {
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      font-weight: 400;
+      padding: 3px 10px;
+      background: var(--colorFondoBody);
+      color: var(--colorContorno);
+      border: 2px solid var(--colorContorno);
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+    .track-stats-line.good { background: var(--amarilloLuna); color: var(--vinotinto); }
+    .track-stats-line.warn { background: var(--naranjaClaro); color: var(--vinotinto); }
+    .track-stats-line.bad  { background: var(--rojoOtonal);   color: var(--blancoNeutro); }
+    .track-stats-line .lbl { opacity: 0.7; font-weight: 400; margin-right: 4px; }
+
+    .track-live-icon { background: transparent; border: none; }
+    .track-live-icon svg { display: block; pointer-events: none; }
+    .track-fixed-marker { background: transparent; border: none; }
+    .track-tracePin-icon { background: transparent; border: none; }
+    .track-tracePin-icon svg { display: block; pointer-events: none; }
+
+    /* Burger (moonV3_12 inline) · ancla bajo el último chip · pointer-events:auto */
+    .track-hamburger {
+      width: 44px;
+      height: 44px;
+      background: var(--colorFondoBody);
+      border: 2px solid var(--colorContorno);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      padding: 4px;
+      margin-top: 6px;
+      pointer-events: auto;
+    }
+    .track-hamburger.open { background: var(--colorContorno); }
+    .track-hamburger img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: none;
+    }
+    .track-hamburger.open img { filter: invert(1) brightness(1.4); }
+
+    .track-panel-section {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+      margin-top: 6px;
+      pointer-events: auto;
+    }
+    .track-overlay.panel-open .track-panel-section { display: flex; }
+    .track-panel-info {
+      width: 36px; height: 36px;
+      background: var(--colorFondoBody);
+      color: var(--colorContorno);
+      border: 2px solid var(--colorContorno);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .track-overlay.info-expanded .track-panel-info { background: var(--colorContorno); color: var(--colorBase); }
+    .track-panel-info svg { width: 22px; height: 22px; }
+
+    .track-panel-btn {
+      min-width: 44px;
+      height: 44px;
+      min-height: 44px;
+      border: 2px solid var(--colorContorno);
+      cursor: pointer;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: width 200ms ease;
+    }
+    .track-overlay.info-expanded .track-panel-btn {
+      min-width: 150px;
+      justify-content: flex-start;
+      padding: 0 12px;
+    }
+    .track-panel-btn:active { transform: translate(1px, 1px); }
+    .track-panel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .track-panel-btn.atras   { background: var(--colorFondoBody); color: var(--colorContorno); }
+    .track-panel-btn.add     { background: var(--colorAcentoCalido); color: var(--vinotinto); }
+    .track-panel-btn.cerrar  { background: var(--colorContorno); color: var(--colorBase); }
+    .track-panel-btn.quitar  { background: var(--colorAcentoDramatico); color: var(--blancoNeutro); }
+    .track-panel-btn.pausa   { background: var(--naranjaProfundo); color: var(--blancoNeutro); }
+    .track-panel-btn svg { width: 22px; height: 22px; }
+    .track-panel-label {
+      display: none;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .track-overlay.info-expanded .track-panel-label { display: inline; }
+
+    /* ============================================================
+       DIALOG · pixel art modal (mode selector + confirmDialog)
+       ============================================================ */
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(39, 43, 46, 0.6);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .dialog {
+      background: var(--colorBase);
+      width: 100%;
+      max-width: 480px;
+      border: 2px solid var(--colorContorno);
+      padding: 20px 18px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+    .dialog h3 { margin: 0 0 8px; font-size: 22px; font-weight: 700; color: var(--colorTextoSobreAmarillo); }
+    .dialog p { margin: 0 0 16px; color: var(--colorTextoSobreAmarillo); font-size: 16px; line-height: 1.4; }
+    .dialog-actions { display: flex; gap: 8px; }
+
+    /* Mode selector */
+    .modeSelector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .modeSelector-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 18px 10px 14px;
+      background: var(--colorFondoBody);
+      border: 2px solid var(--colorContorno);
+      cursor: pointer;
+      min-height: 120px;
+      color: var(--colorContorno);
+      text-align: center;
+    }
+    .modeSelector-btn:active { transform: translate(1px, 1px); }
+    .modeSelector-btn:hover:not(:disabled) { background: var(--amarilloLuna); }
+    .modeSelector-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .modeSelector-btn-icon {
+      width: 56px; height: 56px;
+      background: var(--colorAcentoCalido);
+      border: 2px solid var(--colorContorno);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--vinotinto);
+    }
+    .modeSelector-btn-icon svg { width: 44px; height: 44px; }
+    .modeSelector-btn-label {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--colorTextoSobreAmarillo);
+    }
+    .modeSelector-info {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 24px; height: 24px;
+      background: var(--colorFondoBody);
+      color: var(--colorContorno);
+      border: 1px solid var(--colorContorno);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modeSelector-info svg { width: 16px; height: 16px; }
+    .modeSelector-info-text {
+      display: none;
+      grid-column: 1 / -1;
+      font-size: 14px;
+      color: var(--colorTextoSobreAmarillo);
+      line-height: 1.4;
+      padding: 8px 10px;
+      background: var(--blancoNeutro);
+      border: 2px solid var(--colorContorno);
+      margin-top: -4px;
+    }
+    .modeSelector-info-text.expanded { display: block; }
+
+    /* ============================================================
+       TOAST + BANNER
+       ============================================================ */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%);
+      background: var(--colorContorno);
+      color: var(--colorBase);
+      padding: 10px 16px;
+      border: 2px solid var(--colorContorno);
+      font-size: 15px;
+      font-weight: 400;
+      z-index: 100;
+      max-width: calc(100% - 32px);
+      letter-spacing: 0.02em;
+    }
+    .banner {
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      border: 2px solid var(--colorContorno);
+      background: var(--colorFondoBody);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .banner-info    { background: var(--blancoNeutro); }
+    .banner-warn    { background: var(--naranjaClaro); color: var(--vinotinto); }
+    .banner-success { background: var(--amarilloLuna); color: var(--vinotinto); }
+    .banner-danger  { background: var(--rojoOtonal); color: var(--blancoNeutro); border-color: var(--vinotinto); }
+    .banner b { font-weight: 700; }
+
+    .geo-denied-banner { margin: 12px; }
+    .geo-retry-btn { margin-top: 4px; align-self: flex-start; }
+
+    /* ============================================================
+       UTILITIES
+       ============================================================ */
+    .hidden { display: none !important; }
+    .text-sm { font-size: 14px; }
+    .text-center { text-align: center; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .mt-12 { margin-top: 12px; }
+
+    /* SVG inline rendering pixel-perfect */
+    svg[shape-rendering="crispEdges"] {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+  </style>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <!-- moonV3_12 noBackground 56px inline base64 (RD-12) -->
+        <img class="topbar-logo" id="topbar-logo" alt="moonTripTracker" src="" data-key="moon56">
+        <div class="topbar-title" id="topbar-title">moonTripTracker<small id="topbar-subtitle">GPS tracks · linea Moon Trip</small></div>
+      </div>
+      <div class="topbar-extras">
+        <div class="qr-placeholder" id="qr-placeholder" aria-label="QR pendiente">QR<br>pend</div>
+        <button class="lang-toggle" id="lang-toggle" aria-label="Cambiar idioma">ES</button>
+      </div>
+    </header>
+    <a class="back-link" id="back-link" href="#TBD-moonTripLanding">&larr; <span id="back-link-label">Volver al landing Moon Trip</span></a>
+
+    <main class="view" id="view"></main>
+    <div class="actionbar" id="actionbar"></div>
+  </div>
+
+  <div id="overlay"></div>
+  <div id="toast-host"></div>
+
+<script>
+/* ============================================================
+ * moonTripTracker · F-04 · fork de workshop/geoPlacer_v00.html
+ * ------------------------------------------------------------
+ * APIs Web demostradas:
+ *   - Geolocation API (getCurrentPosition + watchPosition) — captura GPS continua + filtro Q2
+ *   - IndexedDB — persistencia de tracks + cache offline de tiles del mapa
+ *   - SVG inline pixel-art tinteable + Canvas (vía Leaflet) — render de tracks, pins, markers, panel UI
+ *   - navigator.onLine + window online/offline events — no usados aquí; tester offline-first
+ *   - CustomEvent — emisión de progreso de descarga de tiles (tracker:tilesDownloadProgress)
+ *
+ * Diferencias vs padre v00 (geoPlacer):
+ *   - Geometría LineString (no Polygon). NO cierra el ring; NO detecta auto-intersecciones;
+ *     NO snap visual al primer punto. Función segmentsIntersect / polygonHasSelfIntersection
+ *     y CSS recorder-first-pulse eliminadas (RD-07 + restricciones §5).
+ *   - Shape interno de vértice AMPLIADO a 4 componentes: [lon, lat, accuracyMeters, timestampMs].
+ *     En walk timestamp = pos.timestamp; en trace timestamp = Date.now() (RD-04). Esto permite
+ *     calcular velocidades agregadas (§3.3) que el padre no soportaba.
+ *   - Store IDB `poligonos` → `tracks` (RD-05). Migración no destructiva desde DB legacy
+ *     `geoplacer-recorder.poligonos` aditiva (records mode==='walk' copiados con
+ *     pointTimestamps=null).
+ *   - Walk mode con filtro Q2 (RD-03 + §3.2): captura solo si desplazamientoMetros > max(accAct,accPrev)*1.2
+ *     O velocidadInstantaneaMps >= 0.5. Primer fix incondicional. Pausa/reanuda preserva draft (RD-06).
+ *   - GeoJSON export con velocidades agregadas, pointAccuracies, pointQualities, pointTimestamps (RD-08/09).
+ *   - Estética pixel-art branded · paleta Moon completa · VT323 + fallback monospace · íconos pixel SVG inline.
+ *   - Stacks intercambiados der↔izq respecto al padre (RD-13). Hero+burger = moonV3_12 noBackground (RD-12).
+ *   - Toggle ES/EN heredado + link retorno landing + QR 96×96 placeholder (RD-14).
+ *
+ * Permisos requeridos:
+ *   - Geolocation (modo walk) — disclaimer obligatorio antes del primer uso (RD-11)
+ *
+ * Hash dev shortcuts (RD-17):
+ *   #walk      → entra directo a modo walk con draft fresco
+ *   #trace     → entra directo a modo trace con draft fresco
+ *   #mapTest   → monta viewMapTest standalone
+ *
+ * Validación local:
+ *   python3 -m http.server 8000  →  http://localhost:8000/workshop/portafolio00/moonTripTracker.html
+ * ============================================================ */
+(function () {
+  'use strict';
+
+  // ============================================================
+  // OWNERSHIP ZONE · Estética & I18N (Ag. D)
+  // Bloque base64 de moonV3_12 noBackground (56px + 96px). Tamaños inline minimizados
+  // por redimensionamiento previo (LANCZOS) — peso conjunto ~8KB. RD-12.
+  // ============================================================
+  var MOON_INLINE = {
+    moon56: 'data:image/png;base64,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',
+    moon96: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAA0CAYAAAB1hz3ZAAAPl0lEQVR42u1ceXCU53n/Pe/7HbvaXa20K6ETSVggIU4rxtgBgUkwHpK0vmIyTZxp4nY6k7qxjafTJp26xWRiZ+pM3XGbcX2SxnVMbIpx3FB8kmATH1wGG2R0IEAISejYZbWrvb7vfZ/+scthGx+d6WgVrGdnR6Pdbz+9+xy/53h/r4ApmZIpmZIp+bwKXYRr5imz/j8rfN26dQJYJ4iAz/IEIHKfmfwONtkXKAGoD70mPuX7KCKA+RPvMWWATxEBQBLBEUJCqap5paVhnl6XfsBx0/Vas4ZmASIISbBMASmFJmKRToljnZ281kGGpB44qLUCM8y8EfSUAT7bmtg0JRyn5MszZ4aXzZ1fcncm5eCuf1iNpuZSpNIupCAABK0ZA/3jiMYyCARMCNK458cvQxoGDh2K3d3dGdlpmpFXHcc9e+8pA3yC4gGgsXH2F/r6Tn39mzdf9v1Fi6qLb7mllZWrSGmtFRiCCcwMyxQ40TuORx7uAokiCKmxtK0El19WLsJlNj/+2B7au29wbONT+35WURF6trf3yN7JiLGTBXK4t7fXu2XLq5fV1li/uvXWK6+786+XWCtW1OvIaFJoaGQdTa7SJIhIKyatQQqaQqVechxQcSBMB/ZHKZEYQ3NzgK68crpadlWDJxwKLO/vT6zy++ve2rTpX2K7dx/C8PAwT4ZooMni+ZtffGLat669dcvKq5vmPfjQTcX1tcVOPJk0xhMuSVPAcYDNm47h5IkkrrqqHEvaKpDKKAiTYApCNJJGIqHx8gsDWLp0GmbPCSCZlDAthwN+r3viRNK8c+2W+IsvHHyDKLvacdRUBOSVL6//6tXN99zz0JNL2hqW/seGP7EjkXG9751BIxpxqTRkI+A3sfGXh3HoPQd1tSUIlGjUNwahlAIY0C6jqMhEqLQM8xf4ECozoRTD76+DVimKRuIyFDbVl1fO9BzuGLJ6jqQHrr22TR8+3DNaaCcstAEsIjh9A+N/3vbF6j975ulbnB07BsTW3wyII92MPXv6sPiKcgR8FpysQmkp8KWryzBvQRiZjAsiOqs9zQzXCSCdTsEyFTQTThwfhdfLiEY1pGBRUhrgr311RfHePYfW7NrVfyKdju0EYBWyTC2YAdatg3jtNXIXL17atqSt6kcPPbym+PnnO41tL/ZTc9MMXNJQg3Q6gS8sCsKyBKpr/Zg/PwTTEsg6CpTvuFgDTIAwAKXiOB0hFPkB25bo62VYHgHLIgSKCX3HkxQuM/iGG1vc7u5Io8eu2jM42HecOZeDPk85gJifEZXh2y6rqi/57xde/Itp27f38ksvnaL5LQ3w+bwYHU2guUVh2YoKCAFoxWDmnNdTrqAXBpCIMYYHNWrqBIr8ArFRBVcxUuk0MlmC3ycRKrVxpMNBQ6MFV6eRTjObhkk33vDE0ED/2B8NDPzrPqJv6EIYQRTIAGya31SxVPLRtrbaadk0uXt2RWh2Ux3CoSDi8TSSmVOYO88Hy5DQKucpIq98ABAEaAUUBwiBAKG3R2PoJFDkl9j5+hA2PHoCT2w4hp9v6EBXRwYV1RbSGQcD/Q42bRyiYn/IXb68ftrISGyDZd2sChUBhTCAYGaqrb3kO9dfu7j2vp9ep3p6opK1Da9tYSSSQFZF8e0/bURlVTHSGQU6oxv64MhNaA2tGJXVEi3zbaTSDp7+VTeOdjNammZiXsssuFkftr1wBKcGHYydlrBtE67rxbPPdsnbvr9c3fytq6pnzZ79XWamQuijEAYgKQWfPHnq+utumBXy2tDDozGCkDBME4nUIG64sQJVlT6k0wpC5DVPH0VLy6pHJOrF3l1Z7N+ThKeIcaLXRWVFGRwnC1cpzGysQSJh48SJJOoabJSUEGrrUjhwYIyk5ecb1zSFug4fv15KwYWAZKMQNf8dd6yt2b3n9ZLaWr/WWotg0AshT2NWUxp/3DITPr+BVMqFEHRuvswfDAECw3FHEAg4aJ4jkU4KaCgEg3b+AgJrhmkaKPJ44fNncKQzCRImVl1Th3i8B64Tp6pqLy+6fIbt9YQrtm/fPjzR44qJroIMKYV65539373j9uV/uWbNHDU4NGZMr6nBsrZaVFQxTEvCdfms8j85k2Rg24zkOGFkSCMUFjANoLMriWCxH1ppEASUm8GMRoHqmiCYGD6fxqULg5BSiFmzKlTWcZse37BzjHVqBzOMiRzaFQCCGKlUKpV1sjw4KMAwEBkZQTIZBQkBrTkPO58SSkRwXYmj3YxYVKG6jlDklygtDaCy2kE0GgeIkHFSWPzFIsxfWI5AELBNB9lUGIY5DSAGoJHNZJFOJrPME5+HJxqC4Lq7zerqr4VJEAEZnI648PmLwFDo6UqhulbAMitgGDmIITI+FhFIAMFSIFRmIJ3V6DiURVWNiaVLKjCWSCMYNCENC7apEBnVKCsnhMpsAFk4WoMpd2eP14PKymklr7xynzVv3jf0RGPyhMGdEKR8Pv+Sr9+06Ld33rHakKYSQjLGE+Pw+21IsuAoDcsyUVJKUFqBPgGSiQAhNJhtJMZ8MKw40mkHsaiLxiYbg/0uplULsCYc7XRhewmVVQBDgIlzAKABj23ptbdvVZs371oxPp54Q2uesE2cCYegeDxuaOVYCxb6kUkT9uwewAMPvI/f74xACEZZmUSozIVSWdCn+AczQbkKgvwoCUl4izJgTahtsJBMKqSSDMcBHEejvlHCyRrQqgwCDKEFwIBSGn6fAZKuGY/HjYsagvIQy9GI4ncPpFDkd/HOvlEsmNuEoUEXiZRC9LQDjyeM2ukGMtnRPAR9fD4RwoDSI3A1gyARLAFAGkICFRW1EBgCSAHMaLhEgCDhKgIIEAyQFFD6bNq9uDvhM6W87REUCgkolYRhGAiHgygNFcM0BTweIBjMgDmdL9L4k2vafDIgkjmlynzXLAHbN5YbFuWvdl0HjjuY+9r5+VEikS7oUEYUIgIioxmdSRswRBChsBf9/REQuyjymvAWmYjFUkgkkpDy/0ZsoPMqJDDBccfy5ss1uUQCRCYYgBSE7q4Efv3cCQAarPlzMwsyTcMUYzEgldT4yleqUVPLWHyFB7HRNIIlDCmB5DhAxDg3IaALQtDHIBOIAQFxNgL4/EaOGdAav37uGAL+KlhGESzbFACsiY6EiW7ExJw59SlmUZ/NqrlLl1VyKmlSS0spysoV4uMMrYKoqGLYXoLW9KEJBH3E58/jAuXepdzegBAEErk6kyj3+zkjEKQhMDiYgeM6eiwRpS2bO7d5PMUbbr11JLljx8RFwkQmYQYgDx/uHdSaf9PSUn0T2KeLS2LCsGxoMhGa5qDI4wGzH1r1g8j8dI/n3H7AmZ9aMaQBuC7jmad7MDLswlUuli+rwOLFFXBdne9HCCtXVsDjMfUTv9gjf/e7Ay9J6QysXw8DgHvRQpBSmoRA2GNb1N1xGh6vi0AgCDdj4+mnjuP99i4wj+SSKs6UJx+/f84MQOfe11rDsASUAn7+WDve259CuHg6/HYVNj1zDMeOxmCaAoYUsG2C1yNQVVGMsvIASdNX7rqaLvYcoAGgoeGSA30DY8f6B+M0ckqyck6hp2sIBiqwb28WWqnP3jsS5UdzgDAEEvEsnvxFD04NetA6vxG2LVAeDqBxRgOEMOGxJY73xrBn1zAsy9JHekbFrrf7e2qqKt48f40X6yhCE5GUUm4fHI68uWDu9Pryshluda00G2b6cPR4GqZl5TIof2j4n69sLhQJnI8E25Lo6jyNjsPjaF3YnK+GGAxgPJGEbQdxaiiDl7ZFMHgqifoZXtV1JGo88vDrb0mZ3kq5sFMXcwTk8fcuESjyJF77/UFKJiG6O1z4/Iy25RKLrzCgFUMrBa3Oc0amC8YCgcHinBEIQEmJH7ZlQmsFrYGTAyNYsqwIIAePP9YB2wrDMC2cGtZi/bptVFtblnVdVRBdFOKPKqL1+nvf+8nt/QOR/9y376jqOjyuDx1IIhy2UFIiICUhEDDh95kQlGPBnfN8/oDv5ycK+fzCCARNeL0Kw8Pj0K5ENDqG+Qs1mluCeG7LMMpD9YgnxgFO6MOHhtVwJPvkD3/4t7cRkUYB2BEF25QHwNWB6nCw1jPykx9/h8cTaa6pk2JBqx99feM4sD8C2xJobQ0jVOaF6360EqK8Ac7cUGuGx2ugu+s0jnZnEQ4F4fMRLr3Mi0ce6kAsEkR1dRBvvv0+3/zter333q2is8OqOn58d749nnjybsFoKWvWrJHlNS4z+ZFKJpc3zqxELJbBtEovvbhtEPv2JhGPW+jri6Gs3EYwKHHBcT2dQydBBNfRCJd5MGu2HxU1AqWlBChGV1caibiJriPHMLPJ5oHBmOjqHLuvuDj+yuLFK1R7e3tBmNMFM0B7ezs6Owfc+/+5b8eDD91lGAba5jRP55O9aTp+bIy8Xg9mN9Uhelrjrbf6YRpAQ0MA6kxeIMopns4LYwaEyEFRNquhVI41Z1sSB98bRv/gMN+2doE6ePAkNv7y4P01b/zN3/3P8Qez7e3tBeOIFpyauGnTesROR18dGEhyNqtWzp9b5zJYtHf0UyKRwfTqaSgtCeHdAyMo8mtU1xRBaeS6XMJZrtD5rXCOMZermKQQcB2N5tnFvOqa6e7Gp/ab//bArrs7Otrvmrtmk2hvR0FJupOGHR2Pj+1IpgUr7axcMG86fEUmZ50sjSezCJUUo//UCGwPo7E5CEkCdN7jbJHEZ6CI85GRe9geoWOnmTY8vl8++vD+9ceOdf9o3bp/FA8+uKPgDOnJYgAAME5Ho78dHlWGUuqqBfPqqLoyqJOpJB/q6KOKCh+0BhobAzAMhtKANHJTTSFy+C9ELjFnnRxfyOsxdTyu+f1302LDhj208anDP+3t7fx7rZXcsWPHFD39AmuRANw58+f8gLS79pqrL62cPbsKJcGA4/FYFI0mpMdLZBi5mn9Wi43iYgOc32ABaSQSmgdPSiUF4eTJEePQ+wPY/F+7+6Qhf9bV1f1PedaDwiQ5KTPZjigRMyAEcUfHcPHKVYvuD5V6F66+unVRMpXG4stnIRwOqDPcfiHOTEJzvFHTlBgajsu33+6Gx2Pj5VcP7B8dHd+3devzt7e2to7n2W/AJDqmNKlPSQoh0NraWrZ374G/Alx39eqlPwgErIByFc4wdPnsmIIhDYnx8Wxy27Y37wWEsWrVl/59+/ZXh9S5jnrqjNhnnl0zE+XKGy0E5XezvG2umygF5IVohAwoMozSKDC2U2sNrflMt8+YpAe4/xBOytN5xYIriD5Wk4TcZsx5Q0aFSX5y/g/tXxV81qpNYUqmZEqmZEqmZJLL/wI5Dh4gwc5CKQAAAABJRU5ErkJggg=='
+  };
+
+  // ============================================================
+  // OWNERSHIP ZONE · Estética & I18N (Ag. D)
+  // Catálogo de glifos pixel-art SVG inline (RD-12). Extraídos del playground
+  // workshop/iconosPixelArt.html § matrices ASCII 24x24. Cada glifo se renderea
+  // por matriz idle pintada a rects 1x1 con var(--glifoColorPrimario).
+  // iconLiveArrow + iconCircleMarker + iconPin son markers paramétricos.
+  // ============================================================
+  var ICON_MATRICES = {
+    iconZoomIn: ['........................','........................','.......ppp..............','.....pp...pp............','....p.......p...........','...p.........p..........','..p...........p.........','..p.....p.....p.........','..p...ppppp...p.........','..p.....p.....p.........','..p...........p.........','...p.........p..........','....p.......p...........','.....pp...pp..p.........','.......ppp.....p........','................p.......','.................p......','..................p.....','...................p....','....................p...','.....................p..','........................','........................','........................'],
+    iconZoomOut: ['........................','........................','.......ppp..............','.....pp...pp............','....p.......p...........','...p.........p..........','..p...........p.........','..p...........p.........','..p...ppppp...p.........','..p...........p.........','..p...........p.........','...p.........p..........','....p.......p...........','.....pp...pp..p.........','.......ppp.....p........','................p.......','.................p......','..................p.....','...................p....','....................p...','.....................p..','........................','........................','........................'],
+    iconCancel: ['........................','........................','........................','...p................p...','....p..............p....','.....p............p.....','......p..........p......','.......p........p.......','........p......p........','.........p....p.........','..........p..p..........','...........pp...........','...........pp...........','..........p..p..........','.........p....p.........','........p......p........','.......p........p.......','......p..........p......','.....p............p.....','....p..............p....','...p................p...','........................','........................','........................'],
+    iconCollapse: ['........................','........................','........................','..pp................pp..','...pp..............pp...','....pp............pp....','.....pp..........pp.....','......pp........pp......','.......pp......pp.......','........pp....pp........','.........pp..pp.........','..........pppp..........','........................','........................','..pp................pp..','...pp..............pp...','....pp............pp....','.....pp..........pp.....','......pp........pp......','.......pp......pp.......','........pp....pp........','.........pp..pp.........','..........pppp..........','........................'],
+    iconProviderOsm: ['........................','........................','........................','..pppppppppppppppppppp..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..p.....p........p...p..','..pppppppppppppppppppp..','........................','........................','........................'],
+    iconProviderSat: ['........................','........................','........................','...........pp...........','...........pp...........','..........pppp..........','..........pppp..........','.........pppppp.........','pppp.....pppppp.....pppp','pppp.....p....p.....pppp','pppp.....p....p.....pppp','pppp.....p....p.....pppp','pppp.....p....p.....pppp','pppp.....p....p.....pppp','pppp.....p....p.....pppp','pppp.....pppppp.....pppp','.........pppppp.........','..........pppp..........','..........pppp..........','...........pp...........','...........pp...........','........................','........................','........................'],
+    iconExport: ['........................','........................','........................','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','..........ppp...........','.......ppppppppp........','........ppppppp.........','.........ppppp..........','..........ppp...........','...........p............','........................','..pp................pp..','..pp................pp..','..pppppppppppppppppppp..','..pppppppppppppppppppp..','........................','........................'],
+    iconBurger: ['........................','........................','........................','........................','..pppppppppppppppppppp..','..pppppppppppppppppppp..','........................','........................','........................','........................','........................','..pppppppppppppppppppp..','..pppppppppppppppppppp..','........................','........................','........................','........................','........................','..pppppppppppppppppppp..','..pppppppppppppppppppp..','........................','........................','........................','........................'],
+    iconUndo: ['........................','........................','.....p..................','....pp..................','...pppppppppppppp.......','....pppppppppppppp......','.....p.............p....','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','....................p...','........................','........................','........................','........................','........................'],
+    iconDone: ['........................','........................','........................','........................','...................pp...','..................pp....','.................pp.....','................pp......','...............pp.......','..............pp........','.............pp.........','............pp..........','...........pp...........','..........pp............','.pp......pp.............','..pp....pp..............','...pp..pp...............','....pppp................','.....pp.................','........................','........................','........................','........................','........................'],
+    iconInfo: ['........................','........................','...........pp...........','.........pp..pp.........','........p......p........','......pp........pp......','.....p............p.....','....p......pp......p....','....p......pp......p....','...p................p...','..p..................p..','..p........pp........p..','..p........pp........p..','..p........pp........p..','..p........pp........p..','...p.......pp.......p...','...p.......pp.......p...','....p......pp......p....','.....p............p.....','......pp........pp......','........p......p........','.........pp..pp.........','...........pp...........','........................'],
+    iconWalkMode: ['........................','..........pppp..........','.........p....p.........','.........p....p.........','.........p....p.........','..........pppp..........','...........pp...........','..........pppp..........','.........pppppp.........','.....pppppp..pp.........','......pp.....pp.........','.............pp.........','.............pp.........','.............pp.........','.............pp.........','.............pp.........','............pp.p........','...........pp..pp.......','..........pp....pp......','.........pp......pp.....','........pp........pp....','.......pp..........pp...','......pppp........pppp..','........................'],
+    iconTraceMode: ['........................','........................','....................pp..','...................ppp..','..................pppp..','.................pppp...','................pppp....','...............pppp.....','..............pppp......','.............pppp.......','............pppp........','...........pppp.........','..........pppp..........','.........pppp...........','........pppp............','.......pppp.............','......pppp..............','.....pppp...............','....pppp................','...ppp..................','..pp....................','.p......................','........................','........................'],
+    iconDelete: ['........................','........................','..........pppp..........','..........pppp..........','........pppppppp........','.......pppppppppp.......','........................','........ppppppppp.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........p.p.p.p.p.......','........ppppppppp.......','........................','........................','........................','........................'],
+    iconPin: ['........................','........................','.........pppppp.........','.......pp......pp.......','......p..........p......','.....p............p.....','.....p....wwww....p.....','....p....wwwwww....p....','....p...wwwwwwww...p....','....p...wwwwwwww...p....','....p...wwwwwwww...p....','....p....wwwwww....p....','.....p....wwww....p.....','.....p............p.....','......p..........p......','......pp........pp......','.......p........p.......','........pp....pp........','.........pp..pp.........','..........pppp..........','...........pp...........','............p...........','........................','........................']
+  };
+
+  // Render motor: matriz ASCII 24x24 -> SVG rects pixel-perfect
+  function pintaMatriz(filas, opts) {
+    opts = opts || {};
+    var primary = opts.primary || 'var(--glifoColorPrimario)';
+    var stroke = opts.stroke || 'var(--glifoColorStroke)';
+    var rects = [];
+    for (var y = 0; y < 24; y++) {
+      var fila = filas[y] || '';
+      for (var x = 0; x < 24; x++) {
+        var c = fila.charAt(x);
+        if (c === '.') continue;
+        var fill = primary;
+        if (c === 'w') fill = stroke;
+        if (c === 'a') fill = 'var(--glifoColorAcento)';
+        rects.push('<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + fill + '"/>');
+      }
+    }
+    var size = opts.size || 24;
+    return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" shape-rendering="crispEdges">' + rects.join('') + '</svg>';
+  }
+  function svgIcon(nombre, opts) {
+    var m = ICON_MATRICES[nombre];
+    if (!m) return '';
+    return pintaMatriz(m, opts);
+  }
+  // iconLiveArrow: paramétrico, shape-rendering="auto" para rotación libre (RD-16)
+  function svgLiveArrow(opts) {
+    opts = opts || {};
+    var color = opts.color || 'var(--colorAccuracyGood)';
+    var rot = opts.heading != null && isFinite(opts.heading) ? opts.heading : 0;
+    var size = opts.size || 28;
+    return '<svg viewBox="-12 -12 24 24" width="' + size + '" height="' + size + '" shape-rendering="auto" style="transform: rotate(' + rot + 'deg);">' +
+             '<polygon points="0,-10 7,8 0,4 -7,8" fill="' + color + '" stroke="var(--colorMarkerStroke)" stroke-width="1.5" stroke-linejoin="round"/>' +
+           '</svg>';
+  }
+  // iconCircleMarker: paramétrico, color por calidad
+  function svgCircleMarker(opts) {
+    opts = opts || {};
+    var color = opts.color || 'var(--colorAccuracyGood)';
+    var r = opts.first ? 9 : 7;
+    var size = (r * 2) + 6;
+    return '<svg viewBox="-12 -12 24 24" width="' + size + '" height="' + size + '" shape-rendering="auto">' +
+             '<circle cx="0" cy="0" r="' + r + '" fill="' + color + '" stroke="var(--colorMarkerStroke)" stroke-width="2"/>' +
+           '</svg>';
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Estética & I18N (Ag. D) · I18N tabla
+  // Toggle ES/EN heredado del padre + traducciones específicas del fork (RD-14)
+  // ============================================================
+  var I18N = {
+    es: {
+      appTitle: 'moonTripTracker',
+      appSubtitle: 'GPS tracks · linea Moon Trip',
+      backLink: 'Volver al landing Moon Trip',
+      bandejaKicker: 'Bandeja',
+      bandejaTitle: 'Tracks capturados',
+      bandejaEmpty: 'Aun no hay tracks. Toca « + Nuevo track » para empezar.',
+      bandejaPlural: function (n) { return 'Hay ' + n + ' track' + (n > 1 ? 's' : '') + ' guardado' + (n > 1 ? 's' : '') + '.'; },
+      newTrack: '+ Nuevo track',
+      exportAll: 'Exportar todos',
+      emptyTitle: 'Sin tracks todavia',
+      emptySub: 'Cada track capturado se guarda automaticamente aqui. Puedes exportarlos uno por uno cuando lo necesites.',
+      bannerExport: 'Descarga el GeoJSON de cada track para guardarlo en el celular. Si se borra el cache del navegador, los tracks no descargados se pierden.',
+      modeSelTitle: 'Como capturar el track?',
+      modeSelSub: 'Elige el modo segun tu situacion.',
+      modeWalk: 'Caminar',
+      modeTrace: 'Trazar',
+      modeWalkInfo: 'Captura puntos del recorrido caminando con GPS · filtro Q2 + velocidades en tiempo real.',
+      modeTraceInfo: 'Marca puntos arrastrando un pin sobre el mapa · ideal sin GPS o desde oficina.',
+      modeWalkDisabled: 'Geolocation no disponible',
+      cancel: 'Cancelar',
+      kpiQuality: 'Calidad',
+      kpiHeading: 'Rumbo',
+      kpiSpeed: 'Velocidad',
+      kpiDistLast: 'Dist ult',
+      kpiBearLast: 'Rumbo ult',
+      btnUndo: 'Deshacer ultimo',
+      btnPause: 'Pausar',
+      btnResume: 'Reanudar',
+      btnSaveTrack: 'Guardar trayecto',
+      btnAddHere: 'Fijar punto',
+      btnBack: 'Atras',
+      tooltipDelete: 'Eliminar',
+      tooltipExport: 'Descargar GeoJSON',
+      toastPointSaved: function (n) { return 'Punto ' + n + ' guardado'; },
+      toastPointFixed: function (n) { return 'Punto ' + n + ' fijado'; },
+      toastUndo: 'Ultimo punto quitado',
+      toastTrackSaved: function (n) { return 'Track guardado · ' + n + ' pts'; },
+      toastNoGps: 'GPS no disponible',
+      toastNoLocate: 'No pudimos ubicarte',
+      toastTrackDeleted: 'Track eliminado',
+      toastGeoJsonOk: 'GeoJSON descargado',
+      toastExportAllOk: function (n) { return n + ' GeoJSON descargado' + (n !== 1 ? 's' : ''); },
+      confirmDiscardTitle: 'Descartar track?',
+      confirmDiscardMsg: function (n) { return 'Vas a perder los ' + n + ' puntos capturados. Esta accion no se puede deshacer.'; },
+      confirmDiscardYes: 'Descartar',
+      confirmDiscardNo: 'Seguir capturando',
+      confirmDeleteTitle: 'Eliminar track?',
+      confirmDeleteMsg: function (name) { return 'Se eliminara ' + name + ' de la bandeja. Asegurate de haberlo descargado antes. Esta accion no se puede deshacer.'; },
+      confirmDelYes: 'Eliminar',
+      confirmDelNo: 'Cancelar',
+      geoDisclaimerTitle: 'Permiso de ubicacion',
+      geoDisclaimerMsg: 'Esta herramienta necesita acceder a tu ubicacion (GPS) para capturar puntos del track. Tu posicion se procesa localmente en este navegador y no se envia a ningun servidor.',
+      geoEnable: 'Activar GPS',
+      geoDeniedTitle: 'Permiso de ubicacion denegado',
+      geoDeniedMsg: 'Sin GPS no se pueden capturar puntos. Habilita el permiso en la configuracion del navegador y reintenta.',
+      geoRetry: 'Reintentar',
+      qrPending: 'QR pend',
+      loading: 'Cargando...',
+      mapTestBack: 'Volver a bandeja',
+      walkLabel: 'caminar',
+      traceLabel: 'trazar',
+      pointsOutsideBbox: 'Punto fuera de Peru'
+    },
+    en: {
+      appTitle: 'moonTripTracker',
+      appSubtitle: 'GPS tracks · Moon Trip line',
+      backLink: 'Back to Moon Trip landing',
+      bandejaKicker: 'Inbox',
+      bandejaTitle: 'Captured tracks',
+      bandejaEmpty: 'No tracks yet. Tap « + New track » to start.',
+      bandejaPlural: function (n) { return 'You have ' + n + ' saved track' + (n > 1 ? 's' : '') + '.'; },
+      newTrack: '+ New track',
+      exportAll: 'Export all',
+      emptyTitle: 'No tracks yet',
+      emptySub: 'Each captured track is saved here automatically. Export them one by one whenever you need.',
+      bannerExport: 'Download each track GeoJSON to your phone. If the browser cache is cleared, undownloaded tracks are lost.',
+      modeSelTitle: 'How to capture the track?',
+      modeSelSub: 'Choose the mode that fits your situation.',
+      modeWalk: 'Walk',
+      modeTrace: 'Trace',
+      modeWalkInfo: 'Capture points by walking with GPS · Q2 filter + real-time speeds.',
+      modeTraceInfo: 'Mark points by dragging a pin on the map · ideal without GPS or from office.',
+      modeWalkDisabled: 'Geolocation not available',
+      cancel: 'Cancel',
+      kpiQuality: 'Quality',
+      kpiHeading: 'Heading',
+      kpiSpeed: 'Speed',
+      kpiDistLast: 'Last dist',
+      kpiBearLast: 'Last bear',
+      btnUndo: 'Undo last',
+      btnPause: 'Pause',
+      btnResume: 'Resume',
+      btnSaveTrack: 'Save track',
+      btnAddHere: 'Fix point',
+      btnBack: 'Back',
+      tooltipDelete: 'Delete',
+      tooltipExport: 'Download GeoJSON',
+      toastPointSaved: function (n) { return 'Point ' + n + ' saved'; },
+      toastPointFixed: function (n) { return 'Point ' + n + ' fixed'; },
+      toastUndo: 'Last point removed',
+      toastTrackSaved: function (n) { return 'Track saved · ' + n + ' pts'; },
+      toastNoGps: 'GPS not available',
+      toastNoLocate: 'Could not locate you',
+      toastTrackDeleted: 'Track deleted',
+      toastGeoJsonOk: 'GeoJSON downloaded',
+      toastExportAllOk: function (n) { return n + ' GeoJSON downloaded'; },
+      confirmDiscardTitle: 'Discard track?',
+      confirmDiscardMsg: function (n) { return 'You will lose the ' + n + ' captured points. This cannot be undone.'; },
+      confirmDiscardYes: 'Discard',
+      confirmDiscardNo: 'Keep capturing',
+      confirmDeleteTitle: 'Delete track?',
+      confirmDeleteMsg: function (name) { return name + ' will be removed from the inbox. Make sure you downloaded it first. This cannot be undone.'; },
+      confirmDelYes: 'Delete',
+      confirmDelNo: 'Cancel',
+      geoDisclaimerTitle: 'Location permission',
+      geoDisclaimerMsg: 'This tool needs access to your location (GPS) to capture track points. Your position is processed locally in this browser and is not sent to any server.',
+      geoEnable: 'Enable GPS',
+      geoDeniedTitle: 'Location permission denied',
+      geoDeniedMsg: 'Without GPS, points cannot be captured. Enable the permission in your browser settings and retry.',
+      geoRetry: 'Retry',
+      qrPending: 'QR tbd',
+      loading: 'Loading...',
+      mapTestBack: 'Back to inbox',
+      walkLabel: 'walk',
+      traceLabel: 'trace',
+      pointsOutsideBbox: 'Point outside Peru'
+    }
+  };
+  var currentLang = 'es';
+  function t(key) { var lang = I18N[currentLang] || I18N.es; return lang[key]; }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · CONFIG
+  // ============================================================
+  var CONFIG = {
+    PAIS: 'Perú',
+    BBOX_MODE: 'peruColombia',
+    PERU_BBOX:          { latMin: -18.5, latMax: 0.05, lonMin: -82.0, lonMax: -68.0 },
+    PERU_COLOMBIA_BBOX: { latMin: -18.5, latMax: 12.5, lonMin: -82.0, lonMax: -66.8 }
+  };
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · GENERATORS / VALIDATORS
+  // ============================================================
+  function uuid4() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (char) {
+      var rand = Math.random() * 16 | 0;
+      var value = char === 'x' ? rand : (rand & 0x3 | 0x8);
+      return value.toString(16);
+    });
+  }
+  function isInsidePeru(lat, lon) {
+    var b = CONFIG.BBOX_MODE === 'peruSolo' ? CONFIG.PERU_BBOX : CONFIG.PERU_COLOMBIA_BBOX;
+    return lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · GEOMETRY HELPERS
+  // Heredados literalmente del padre v00; segmentsIntersect + polygonHasSelfIntersection
+  // ELIMINADAS (restricción §5 spec). polygonAreaHa + polygonPerimeterMeters también
+  // eliminadas (track no tiene área).
+  // ============================================================
+  function haversineMeters(p1, p2) {
+    var R = 6371000;
+    var toRad = function (d) { return d * Math.PI / 180; };
+    var dLat = toRad(p2[1] - p1[1]);
+    var dLon = toRad(p2[0] - p1[0]);
+    var a = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(toRad(p1[1])) * Math.cos(toRad(p2[1])) * Math.pow(Math.sin(dLon / 2), 2);
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function bearingDegrees(p1, p2) {
+    var toRad = function (d) { return d * Math.PI / 180; };
+    var toDeg = function (r) { return r * 180 / Math.PI; };
+    var lat1 = toRad(p1[1]), lat2 = toRad(p2[1]);
+    var dLon = toRad(p2[0] - p1[0]);
+    var y = Math.sin(dLon) * Math.cos(lat2);
+    var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+  // Mapeo accuracy → nivel UI con etiqueta y clase de color (heredado del padre).
+  function accuracyToLevel(acc) {
+    if (acc == null || !isFinite(acc) || acc <= 0) return { level: 0, label: 'Sin señal', cls: 'bad' };
+    if (acc < 5)   return { level: 4, label: 'Excelente', cls: 'good' };
+    if (acc < 15)  return { level: 3, label: 'Bueno',     cls: 'good' };
+    if (acc < 50)  return { level: 2, label: 'Aceptable', cls: 'warn' };
+    if (acc < 200) return { level: 1, label: 'Pobre',     cls: 'bad'  };
+    return { level: 0, label: 'Sin señal', cls: 'bad' };
+  }
+  // Helper auxiliar para CA-07 (RD-10): retorna solo el label canonico
+  function accuracyToQualityLabel(acc) { return accuracyToLevel(acc).label; }
+  // Helper auxiliar para colorear marker fijo segun calidad (T-07 + paleta Moon).
+  function qualityToMarkerColor(label) {
+    if (label === 'Excelente' || label === 'Bueno') return 'var(--colorAccuracyGood)';
+    if (label === 'Aceptable') return 'var(--colorAccuracyWarn)';
+    if (label === 'Pobre') return 'var(--colorAccuracyBad)';
+    return 'var(--colorAccuracyVoid)';
+  }
+  function formatHeading(deg) {
+    if (deg == null || !isFinite(deg)) return '—';
+    return Math.round(deg) + '°';
+  }
+  function formatSpeed(mps) {
+    if (mps == null || !isFinite(mps)) return '—';
+    return mps.toFixed(1) + ' m/s';
+  }
+  function formatAccuracy(m) {
+    if (m == null || !isFinite(m)) return '—';
+    if (m < 1) return m.toFixed(1) + ' m';
+    return Math.round(m) + ' m';
+  }
+  function speedClass(mps) {
+    if (mps == null || !isFinite(mps)) return 'good';
+    if (mps > 5) return 'bad';
+    if (mps > 3) return 'warn';
+    return 'good';
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · STATE
+  // tracks[] reemplaza poligonos[] del padre (RD-05). draft.points reemplaza
+  // draft.poligono. Shape interno de point: [lon, lat, accMeters, tsMs] (4 comp, RD-04).
+  // ============================================================
+  var state = {
+    view: 'loading',
+    mode: null,
+    tracks: [],
+    draft: null,
+    online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    walkRecording: null,                                                            // { liveFix, watchId, lastCapturedFix, captureRunning }
+    tracePin: null,
+    map: null,
+    mapProvider: 'osm',
+    mapZoom: null
+  };
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · INDEXEDDB
+  // DB renombrada: 'moontrip-tracker-v1'. Store 'tracks' (no 'poligonos').
+  // Migración no destructiva desde DB legacy del padre 'geoplacer-recorder.poligonos'
+  // (RD-05 + T-04). Records con mode==='walk' && points.length>=2 se copian con
+  // pointTimestamps array de null por vértice. Marker de migración persistido para
+  // no repetir.
+  // ============================================================
+  var DB_NAME = 'moontrip-tracker-v1';
+  var DB_VERSION = 1;
+  var DB_LEGACY_NAME = 'geoplacer-recorder';
+  var MIGRATION_MARKER_UUID = '__migration_legacy_marker__';
+  var _db = null;
+
+  function openDB() {
+    return new Promise(function (resolve, reject) {
+      if (_db) return resolve(_db);
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return; settled = true;
+        reject(new Error('IndexedDB no respondió en 6 segundos. Esto suele pasar cuando se abre el archivo HTML directamente desde el celular (URL file://). Se necesita servir el archivo desde https:// para funcionar.'));
+      }, 6000);
+      var req;
+      try { req = indexedDB.open(DB_NAME, DB_VERSION); }
+      catch (e) {
+        settled = true; clearTimeout(timer);
+        return reject(new Error('IndexedDB no disponible en este navegador: ' + (e.message || e)));
+      }
+      req.onupgradeneeded = function (e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains('tracks')) db.createObjectStore('tracks', { keyPath: 'uuid' });
+        if (!db.objectStoreNames.contains('tiles')) db.createObjectStore('tiles');
+      };
+      req.onsuccess = function () {
+        if (settled) return;
+        _db = req.result;
+        migrateFromLegacyIfNeeded(_db).then(function () {
+          settled = true; clearTimeout(timer);
+          resolve(_db);
+        }).catch(function () {
+          settled = true; clearTimeout(timer);
+          resolve(_db);
+        });
+      };
+      req.onerror = function () {
+        if (settled) return; settled = true; clearTimeout(timer);
+        reject(req.error || new Error('Error abriendo IndexedDB'));
+      };
+      req.onblocked = function () {
+        if (settled) return; settled = true; clearTimeout(timer);
+        reject(new Error('IndexedDB bloqueada por otra pestaña abierta.'));
+      };
+    });
+  }
+
+  // Migración no destructiva: lee 'poligonos' del padre legacy, copia walks con
+  // pointTimestamps=null. NO elimina ni modifica el padre. Persiste marker para
+  // no repetir entre sesiones (RD-05).
+  function migrateFromLegacyIfNeeded(targetDb) {
+    return new Promise(function (resolve) {
+      try {
+        var checkTx = targetDb.transaction('tracks', 'readonly').objectStore('tracks').get(MIGRATION_MARKER_UUID);
+        checkTx.onsuccess = function () {
+          if (checkTx.result) return resolve(false);
+          // Marker ausente: contar tracks. Si ya hay datos, marcar y salir.
+          var countTx = targetDb.transaction('tracks', 'readonly').objectStore('tracks').count();
+          countTx.onsuccess = function () {
+            if (countTx.result > 0) {
+              var wTx = targetDb.transaction('tracks', 'readwrite');
+              wTx.objectStore('tracks').put({ uuid: MIGRATION_MARKER_UUID, _marker: true, ts: Date.now() });
+              wTx.oncomplete = function () { resolve(false); };
+              wTx.onerror = function () { resolve(false); };
+              return;
+            }
+            // Sin tracks → intentar copia desde legacy
+            var legacyReq = indexedDB.open(DB_LEGACY_NAME);
+            legacyReq.onerror = function () { resolve(false); };
+            legacyReq.onsuccess = function () {
+              var legacyDb = legacyReq.result;
+              if (!legacyDb.objectStoreNames.contains('poligonos')) { legacyDb.close(); return resolve(false); }
+              var ltx = legacyDb.transaction('poligonos', 'readonly').objectStore('poligonos').getAll();
+              ltx.onsuccess = function () {
+                var rows = ltx.result || [];
+                var walks = rows.filter(function (r) { return r && r.mode === 'walk' && r.points && r.points.length >= 2; });
+                var wtx = targetDb.transaction('tracks', 'readwrite');
+                var store = wtx.objectStore('tracks');
+                walks.forEach(function (r) {
+                  try {
+                    var migrated = {
+                      uuid: r.uuid,
+                      name: r.name,
+                      mode: 'walk',
+                      points: r.points.map(function (p) {
+                        return [p[0], p[1], (p.length >= 3 ? p[2] : null), null];
+                      }),
+                      createdAt: r.createdAt,
+                      migrated: true,
+                      legacyTimestampsNull: true
+                    };
+                    store.put(migrated);
+                  } catch (_) {}
+                });
+                store.put({ uuid: MIGRATION_MARKER_UUID, _marker: true, ts: Date.now(), migratedCount: walks.length });
+                wtx.oncomplete = function () { legacyDb.close(); console.info('moonTripTracker · migrados ' + walks.length + ' tracks desde DB legacy.'); resolve(true); };
+                wtx.onerror = function () { legacyDb.close(); resolve(false); };
+              };
+              ltx.onerror = function () { legacyDb.close(); resolve(false); };
+            };
+          };
+          countTx.onerror = function () { resolve(false); };
+        };
+        checkTx.onerror = function () { resolve(false); };
+      } catch (_) { resolve(false); }
+    });
+  }
+
+  function dbGet(store, key) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readonly').objectStore(store).get(key);
+        tx.onsuccess = function () { res(tx.result || null); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbAll(store) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readonly').objectStore(store).getAll();
+        tx.onsuccess = function () { res(tx.result || []); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbPut(store, val) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readwrite').objectStore(store).put(val);
+        tx.onsuccess = function () { res(true); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbDel(store, key) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readwrite').objectStore(store).delete(key);
+        tx.onsuccess = function () { res(true); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbPutKeyed(store, val, key) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readwrite').objectStore(store).put(val, key);
+        tx.onsuccess = function () { res(true); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbCount(store) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readonly').objectStore(store).count();
+        tx.onsuccess = function () { res(tx.result || 0); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+
+  // Filtra el marker de migración al cargar la bandeja.
+  function loadTracksOnInit() {
+    return dbAll('tracks').then(function (all) {
+      var filtered = all.filter(function (r) { return r && !r._marker; });
+      filtered.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+      state.tracks = filtered;
+    });
+  }
+
+  // ============================================================
+  // DOM HELPERS · UI HELPERS · alineados al padre
+  // ============================================================
+  function $(sel) { return document.querySelector(sel); }
+  function $view() { return $('#view'); }
+  function $action() { return $('#actionbar'); }
+  function $overlay() { return $('#overlay'); }
+
+  function toast(msg, ms) {
+    ms = ms || 2200;
+    var toastEl = document.createElement('div');
+    toastEl.className = 'toast';
+    toastEl.textContent = msg;
+    $('#toast-host').appendChild(toastEl);
+    setTimeout(function () { toastEl.remove(); }, ms);
+  }
+  function confirmDialog(opts) {
+    return new Promise(function (resolve) {
+      var html =
+        '<div class="dialog-backdrop" id="dialog-bd">' +
+          '<div class="dialog" onclick="event.stopPropagation()">' +
+            '<h3>' + (opts.title || '?') + '</h3>' +
+            '<p>' + (opts.message || '') + '</p>' +
+            '<div class="dialog-actions">' +
+              '<button class="btn btn-secondary" id="dlg-cancel">' + (opts.cancel || t('cancel')) + '</button>' +
+              '<button class="btn ' + (opts.danger ? 'btn-danger' : 'btn-success') + '" id="dlg-ok">' + (opts.confirm || 'OK') + '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      $overlay().innerHTML = html;
+      $('#dialog-bd').addEventListener('click', function () { $overlay().innerHTML = ''; resolve(false); });
+      $('#dlg-cancel').addEventListener('click', function (e) { e.stopPropagation(); $overlay().innerHTML = ''; resolve(false); });
+      $('#dlg-ok').addEventListener('click', function (e) { e.stopPropagation(); $overlay().innerHTML = ''; resolve(true); });
+    });
+  }
+  function setActionBar(html) { $action().innerHTML = html || ''; }
+  function clearActionBar() { $action().innerHTML = ''; }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Estética & I18N (Ag. D) · GEOLOCATION CONSENT + UX DENIAL
+  // Heredado del padre v00 (RD-11). localStorage key específica del fork:
+  // 'geolocationConsent.v1'.
+  // ============================================================
+  var GEO_CONSENT_KEY = 'geolocationConsent.v1';
+  function hasGeolocationConsent() {
+    try { return localStorage.getItem(GEO_CONSENT_KEY) === 'granted'; } catch (_) { return false; }
+  }
+  function ensureGeolocationConsent() {
+    if (hasGeolocationConsent()) return Promise.resolve(true);
+    return confirmDialog({
+      title: 'Permiso de ubicacion · Location permission',
+      message:
+        '<b>ES:</b> ' + I18N.es.geoDisclaimerMsg + '<br><br>' +
+        '<b>EN:</b> ' + I18N.en.geoDisclaimerMsg,
+      confirm: 'Activar GPS · Enable GPS',
+      cancel: 'Cancelar · Cancel'
+    }).then(function (ok) {
+      if (ok) { try { localStorage.setItem(GEO_CONSENT_KEY, 'granted'); } catch (_) {} }
+      return ok;
+    });
+  }
+  function showGeolocationDeniedBanner(parentEl, onRetry) {
+    if (!parentEl) parentEl = $view();
+    if (!parentEl) return;
+    var existing = parentEl.querySelector('.geo-denied-banner');
+    if (existing) existing.remove();
+    var bannerEl = document.createElement('div');
+    bannerEl.className = 'geo-denied-banner banner banner-danger';
+    bannerEl.innerHTML =
+      '<div><b>' + I18N.es.geoDeniedTitle + ' · ' + I18N.en.geoDeniedTitle + '.</b><br>' +
+      'ES: ' + I18N.es.geoDeniedMsg + '<br>' +
+      'EN: ' + I18N.en.geoDeniedMsg + '<br>' +
+      '<button class="btn btn-secondary geo-retry-btn" type="button">' + I18N.es.geoRetry + ' · ' + I18N.en.geoRetry + '</button></div>';
+    parentEl.appendChild(bannerEl);
+    bannerEl.querySelector('.geo-retry-btn').addEventListener('click', function () {
+      bannerEl.remove();
+      if (typeof onRetry === 'function') onRetry();
+    });
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · EXPORT HELPERS
+  // buildGeoJson reescrita: produce Feature LineString (no Polygon). NO cierra el
+  // ring. Properties: name, mode, createdAt, velocidadPromedioMps, velocidadMaxMps,
+  // velocidadMinMps, pointAccuracies, pointQualities, pointTimestamps (RD-08 + RD-09).
+  // En modo trace los 3 campos de velocidad se fuerzan a null (RD-09).
+  // ============================================================
+  function buildGeoJson(record) {
+    if (!record.points || record.points.length < 2) return null;
+    var src = record.points;
+    var coords = src.map(function (p) { return [p[0], p[1]]; });
+    var accs = src.map(function (p) { return (p.length >= 3 && p[2] != null) ? +(+p[2]).toFixed(1) : null; });
+    var qualities = src.map(function (p) {
+      var acc = (p.length >= 3) ? p[2] : null;
+      return accuracyToQualityLabel(acc);
+    });
+    var timestamps = src.map(function (p) { return (p.length >= 4 && p[3] != null) ? p[3] : null; });
+
+    var velocities = { promedio: null, max: null, min: null };
+    if ((record.mode || 'walk') === 'walk') {
+      velocities = calcularVelocidadesAgregadas(src);
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {
+          name: record.name,
+          mode: record.mode || 'walk',
+          createdAt: new Date(record.createdAt).toISOString(),
+          velocidadPromedioMps: velocities.promedio,
+          velocidadMaxMps: velocities.max,
+          velocidadMinMps: velocities.min,
+          pointAccuracies: accs,
+          pointQualities: qualities,
+          pointTimestamps: timestamps
+        },
+        geometry: { type: 'LineString', coordinates: coords }
+      }]
+    };
+  }
+
+  // §3.3 spec · cálculo de velocidades agregadas en m/s sobre array de vértices
+  // [lon, lat, acc, ts]. Omite dt<=0 silenciosamente. Si array de instantáneas
+  // queda vacío, retorna {promedio:null, max:null, min:null}.
+  function calcularVelocidadesAgregadas(points) {
+    if (!points || points.length < 2) return { promedio: null, max: null, min: null };
+    var instantaneas = [];
+    var haversineTotal = 0;
+    for (var i = 1; i < points.length; i++) {
+      var d_i = haversineMeters([points[i - 1][0], points[i - 1][1]], [points[i][0], points[i][1]]);
+      haversineTotal += d_i;
+      var ts1 = points[i - 1][3], ts2 = points[i][3];
+      if (ts1 == null || ts2 == null) continue;
+      var dt_i = (ts2 - ts1) / 1000;
+      if (dt_i <= 0) continue;
+      instantaneas.push(d_i / dt_i);
+    }
+    if (instantaneas.length === 0) {
+      console.warn('moonTripTracker · sin timestamps válidos, velocidades = null');
+      return { promedio: null, max: null, min: null };
+    }
+    var ts0 = points[0][3], tsN = points[points.length - 1][3];
+    var promedio = null;
+    if (ts0 != null && tsN != null && (tsN - ts0) > 0) {
+      promedio = haversineTotal / ((tsN - ts0) / 1000);
+    }
+    var max = instantaneas[0], min = instantaneas[0];
+    for (var k = 1; k < instantaneas.length; k++) {
+      if (instantaneas[k] > max) max = instantaneas[k];
+      if (instantaneas[k] < min) min = instantaneas[k];
+    }
+    return { promedio: promedio, max: max, min: min };
+  }
+
+  function downloadBlob(filename, content, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function slugify(s) {
+    return (s || '')
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'track';
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Estética & I18N (Ag. D) · VIEW INBOX
+  // Renombrado de viewInbox del padre; usa state.tracks en lugar de state.poligonos.
+  // ============================================================
+  function viewInbox() {
+    var items = state.tracks.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    var empty = items.length === 0;
+    var html =
+      '<p class="h-kicker">' + t('bandejaKicker') + '</p>' +
+      '<h1 class="h-title">' + t('bandejaTitle') + '</h1>' +
+      '<p class="h-sub">' + (empty ? t('bandejaEmpty') : t('bandejaPlural')(items.length)) + '</p>';
+
+    if (!empty) {
+      html +=
+        '<div class="banner banner-warn">' +
+          svgIcon('iconExport', { size: 24 }) +
+          '<div><b>' + t('tooltipExport') + '.</b> ' + t('bannerExport') + '</div>' +
+        '</div>';
+    }
+    if (empty) {
+      html +=
+        '<div class="empty">' +
+          '<div class="empty-icon">' + svgIcon('iconTraceMode', { size: 40 }) + '</div>' +
+          '<h2 class="empty-title">' + t('emptyTitle') + '</h2>' +
+          '<p class="empty-sub">' + t('emptySub') + '</p>' +
+        '</div>';
+    } else {
+      html += '<div>';
+      for (var idx = 0; idx < items.length; idx++) {
+        var r = items[idx];
+        var initial = (r.name || 'T')[0].toUpperCase();
+        var fecha = new Date(r.createdAt || 0);
+        var fechaStr = fecha.toLocaleDateString(currentLang === 'es' ? 'es-PE' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        var numPts = r.points ? r.points.length : 0;
+        var mode = r.mode || 'walk';
+        var chipCls = mode === 'trace' ? 'chip-trace' : 'chip-walk';
+        var chipLabel = mode === 'trace' ? t('traceLabel') : t('walkLabel');
+        html +=
+          '<div class="track-row" data-uuid="' + r.uuid + '">' +
+            '<div class="track-icon">' + initial + '</div>' +
+            '<div class="track-info">' +
+              '<p class="track-name">' + (r.name || 'Sin nombre') + '</p>' +
+              '<p class="track-meta">' + fechaStr + ' · ' + numPts + ' pts <span class="chip ' + chipCls + '">' + chipLabel + '</span></p>' +
+            '</div>' +
+            '<div class="track-actions">' +
+              '<button class="track-action-btn" data-action="export" data-uuid="' + r.uuid + '" title="' + t('tooltipExport') + '">' +
+                svgIcon('iconExport', { size: 22 }) +
+              '</button>' +
+              '<button class="track-action-btn danger" data-action="delete" data-uuid="' + r.uuid + '" title="' + t('tooltipDelete') + '">' +
+                svgIcon('iconDelete', { size: 22 }) +
+              '</button>' +
+            '</div>' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+    $view().innerHTML = html;
+
+    var bar = '<button class="btn btn-success btn-lg btn-block" id="new-track">' + t('newTrack') + '</button>';
+    if (!empty) {
+      bar = '<button class="btn btn-secondary flex-0" id="export-all" title="' + t('exportAll') + '">' +
+              svgIcon('iconExport', { size: 22 }) +
+            '</button>' + bar;
+    }
+    setActionBar(bar);
+
+    $('#new-track').addEventListener('click', startNewTrack);
+    if ($('#export-all')) { $('#export-all').addEventListener('click', exportAll); }
+    var rows = $view().querySelectorAll('.track-row');
+    for (var k = 0; k < rows.length; k++) {
+      rows[k].addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        var action = btn.dataset.action;
+        var uuid = btn.dataset.uuid;
+        if (action === 'export') exportTrack(uuid);
+        if (action === 'delete') deleteTrack(uuid);
+      });
+    }
+  }
+
+  function startNewTrack() {
+    showModeSelector(function (mode) {
+      state.draft = { points: [], mode: mode };
+      setView(mode);
+    });
+  }
+
+  function exportTrack(uuid) {
+    var r = state.tracks.find(function (x) { return x.uuid === uuid; });
+    if (!r) return;
+    var geo = buildGeoJson(r);
+    if (!geo) { toast(t('toastNoLocate')); return; }
+    var fname = slugify(r.name) + '.geojson';
+    downloadBlob(fname, JSON.stringify(geo, null, 2), 'application/geo+json');
+    toast(t('toastGeoJsonOk'));
+  }
+  function exportAll() {
+    if (!state.tracks.length) return;
+    var n = 0, i = 0;
+    function next() {
+      if (i >= state.tracks.length) { toast(t('toastExportAllOk')(n)); return; }
+      var r = state.tracks[i++];
+      var geo = buildGeoJson(r);
+      if (geo) {
+        downloadBlob(slugify(r.name) + '.geojson', JSON.stringify(geo, null, 2), 'application/geo+json');
+        n++;
+      }
+      setTimeout(next, 200);
+    }
+    next();
+  }
+  function deleteTrack(uuid) {
+    var r = state.tracks.find(function (x) { return x.uuid === uuid; });
+    if (!r) return;
+    confirmDialog({
+      title: t('confirmDeleteTitle'),
+      message: t('confirmDeleteMsg')('<b>' + (r.name || '?') + '</b>'),
+      confirm: t('confirmDelYes'),
+      cancel: t('confirmDelNo'),
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      dbDel('tracks', uuid).then(function () {
+        state.tracks = state.tracks.filter(function (x) { return x.uuid !== uuid; });
+        render();
+        toast(t('toastTrackDeleted'));
+      });
+    });
+  }
+
+  // ============================================================
+  // SET VIEW + ROUTER
+  // ============================================================
+  function setView(name) {
+    state.view = name;
+    render();
+    window.scrollTo(0, 0);
+    var v = $view(); if (v) v.scrollTop = 0;
+  }
+  function render() {
+    var v = $view();
+    if (!v) return;
+    v.className = 'view';
+    if (state.view === 'loading') { v.innerHTML = '<div class="empty"><p>' + t('loading') + '</p></div>'; clearActionBar(); return; }
+    if (state.view === 'walk')    return viewWalkMode();
+    if (state.view === 'trace')   return viewTraceMode();
+    if (state.view === 'inbox')   return viewInbox();
+    if (state.view === 'mapTest') return viewMapTest();
+    v.innerHTML = '<p style="padding:20px;color:var(--vinotinto);font-size:15px">Vista <code>' + state.view + '</code> desconocida.</p>';
+    clearActionBar();
+  }
+
+  // ============================================================
+  // BOOT + HASH DEV SHORTCUTS (RD-17)
+  // ============================================================
+  function boot() {
+    applyI18nStatic();
+    bindLangToggle();
+    bindMoonImages();
+    loadTracksOnInit().then(function () {
+      var initialView = 'inbox';
+      if (location.hash === '#mapTest') initialView = 'mapTest';
+      else if (location.hash === '#walk')  { state.draft = { points: [], mode: 'walk' };  initialView = 'walk'; }
+      else if (location.hash === '#trace') { state.draft = { points: [], mode: 'trace' }; initialView = 'trace'; }
+      setView(initialView);
+    }).catch(function (e) {
+      console.error('boot · IndexedDB error:', e);
+      var v = $view();
+      if (v) v.innerHTML = '<div class="banner banner-danger"><b>No se pudo abrir la base local.</b><br>' + (e.message || e) + '</div>';
+    });
+  }
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#mapTest' && state.view !== 'mapTest') setView('mapTest');
+  });
+  document.addEventListener('DOMContentLoaded', boot);
+
+  // Aplica textos i18n a los elementos estáticos del shell.
+  function applyI18nStatic() {
+    var title = $('#topbar-title');
+    var subtitle = $('#topbar-subtitle');
+    var backLabel = $('#back-link-label');
+    var qrEl = $('#qr-placeholder');
+    var langBtn = $('#lang-toggle');
+    if (title && subtitle) {
+      // title contiene small como child; reescribir literal
+      title.innerHTML = t('appTitle') + '<small id="topbar-subtitle">' + t('appSubtitle') + '</small>';
+    }
+    if (backLabel) backLabel.textContent = t('backLink');
+    if (qrEl) qrEl.innerHTML = t('qrPending');
+    if (langBtn) langBtn.textContent = currentLang === 'es' ? 'EN' : 'ES';
+  }
+  function bindLangToggle() {
+    var btn = $('#lang-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      currentLang = (currentLang === 'es') ? 'en' : 'es';
+      applyI18nStatic();
+      render();
+    });
+  }
+  function bindMoonImages() {
+    var logo = $('#topbar-logo');
+    if (logo) logo.src = MOON_INLINE.moon56;
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Mapa & Persistencia (Ag. A) · MAP INIT
+  // Heredado del padre v00 con paleta Moon. Tile providers + cache IDB + política
+  // OSM 80ms (RD-18). showMapBar reubicado a la DERECHA (RD-13).
+  // ============================================================
+  var MAP_PROVIDERS = {
+    osm: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',                                           attribution: '&copy; OpenStreetMap contributors',          maxZoom: 19, label: 'Callejero', iconName: 'iconProviderOsm' },
+    sat: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics', maxZoom: 19, label: 'Satelital', iconName: 'iconProviderSat' }
+  };
+
+  var TileLayerIDB = null;
+  function ensureTileLayerIDBClass() {
+    if (TileLayerIDB || !window.L) return;
+    TileLayerIDB = L.TileLayer.extend({
+      createTile: function (coords, done) {
+        var tile = document.createElement('img');
+        tile.setAttribute('role', 'presentation');
+        tile.alt = '';
+        var provider = this.options.providerName || state.mapProvider;
+        var url = this.getTileUrl(coords);
+        var key = provider + '/' + coords.z + '/' + coords.x + '/' + coords.y;
+        dbGet('tiles', key).then(function (blob) {
+          if (blob instanceof Blob) {
+            tile.src = URL.createObjectURL(blob);
+            tile.onload = function () { URL.revokeObjectURL(tile.src); done(null, tile); };
+            return;
+          }
+          fetch(url, { mode: 'cors' }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.blob();
+          }).then(function (b) {
+            dbPutKeyed('tiles', b, key).catch(function () { /* cuota llena: silencioso */ });
+            var u = URL.createObjectURL(b);
+            tile.src = u;
+            tile.onload = function () { URL.revokeObjectURL(u); done(null, tile); };
+          }).catch(function (err) {
+            tile.classList.add('leaflet-tile-error');
+            done(err, tile);
+          });
+        }).catch(function (err) { done(err, tile); });
+        return tile;
+      }
+    });
+  }
+  function getTileLayer(name) {
+    ensureTileLayerIDBClass();
+    var p = MAP_PROVIDERS[name];
+    if (!p) throw new Error('Provider desconocido: ' + name);
+    return new TileLayerIDB(p.url, { attribution: p.attribution, maxZoom: p.maxZoom, providerName: name });
+  }
+  function initMap(containerId, opts) {
+    if (!window.L) { console.error('Leaflet no disponible · CDN no cargó'); return null; }
+    opts = opts || {};
+    var initialProvider = opts.provider || state.mapProvider || 'osm';
+    state.mapProvider = initialProvider;
+    var map = L.map(containerId, { zoomControl: false, attributionControl: true });
+    var layer = getTileLayer(initialProvider);
+    layer.addTo(map);
+    map._currentTileLayer = layer;
+    if (!opts.skipInitialView) {
+      var b1 = CONFIG.PERU_COLOMBIA_BBOX;
+      map.fitBounds([[b1.latMin, b1.lonMin], [b1.latMax, b1.lonMax]]);
+    } else {
+      var b2 = CONFIG.PERU_COLOMBIA_BBOX;
+      map.setView([(b2.latMin + b2.latMax) / 2, (b2.lonMin + b2.lonMax) / 2], 5);
+    }
+    state.map = map;
+    state.mapZoom = map.getZoom();
+    map.on('zoomend', function () { state.mapZoom = map.getZoom(); });
+    return map;
+  }
+  function zoomIniFromGeolocation(zoomLevel, fallbackBbox, onReady) {
+    if (!state.map) { if (onReady) onReady(); return; }
+    var fallback = function () {
+      if (state.map && fallbackBbox) {
+        state.map.fitBounds([[fallbackBbox.latMin, fallbackBbox.lonMin], [fallbackBbox.latMax, fallbackBbox.lonMax]]);
+      }
+      if (onReady) onReady();
+    };
+    if (!navigator.geolocation) { fallback(); return; }
+    ensureGeolocationConsent().then(function (consent) {
+      if (!consent) { fallback(); return; }
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          if (state.map) state.map.setView([pos.coords.latitude, pos.coords.longitude], zoomLevel);
+          if (onReady) onReady();
+        },
+        function (err) {
+          if (err && err.code === 1) {
+            var parent = state.map && state.map.getContainer && state.map.getContainer().parentElement;
+            showGeolocationDeniedBanner(parent, function () { zoomIniFromGeolocation(zoomLevel, fallbackBbox, onReady); });
+          }
+          fallback();
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    });
+  }
+  function setProvider(name) {
+    if (!state.map || !MAP_PROVIDERS[name]) return;
+    var map = state.map;
+    if (map._currentTileLayer) map.removeLayer(map._currentTileLayer);
+    var layer = getTileLayer(name);
+    layer.addTo(map);
+    map._currentTileLayer = layer;
+    state.mapProvider = name;
+  }
+  function latLngToTile(lat, lon, z) {
+    var n = Math.pow(2, z);
+    var x = Math.floor((lon + 180) / 360 * n);
+    var latRad = lat * Math.PI / 180;
+    var y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+    return { x: x, y: y };
+  }
+  function countTilesInBbox(bbox, zMin, zMax) {
+    var total = 0;
+    for (var z = zMin; z <= zMax; z++) {
+      var tl = latLngToTile(bbox.latMax, bbox.lonMin, z);
+      var br = latLngToTile(bbox.latMin, bbox.lonMax, z);
+      total += (Math.abs(br.x - tl.x) + 1) * (Math.abs(br.y - tl.y) + 1);
+    }
+    return total;
+  }
+  // P-07 política OSM 80ms preservada (RD-18)
+  function cacheTilesForBbox(bbox, zoomRange) {
+    if (!state.map) return Promise.resolve({ done: 0, total: 0 });
+    var zMin = zoomRange.zMin, zMax = zoomRange.zMax;
+    var provider = state.mapProvider;
+    var urlTemplate = MAP_PROVIDERS[provider].url;
+    var tileList = [];
+    for (var z = zMin; z <= zMax; z++) {
+      var tl = latLngToTile(bbox.latMax, bbox.lonMin, z);
+      var br = latLngToTile(bbox.latMin, bbox.lonMax, z);
+      for (var x = Math.min(tl.x, br.x); x <= Math.max(tl.x, br.x); x++) {
+        for (var y = Math.min(tl.y, br.y); y <= Math.max(tl.y, br.y); y++) {
+          tileList.push({ z: z, x: x, y: y });
+        }
+      }
+    }
+    var total = tileList.length;
+    var done = 0, errors = 0;
+    return new Promise(function (resolve) {
+      var i = 0;
+      function nextTile() {
+        if (i >= tileList.length) return resolve({ done: done, total: total, errors: errors });
+        var tile = tileList[i++];
+        var key = provider + '/' + tile.z + '/' + tile.x + '/' + tile.y;
+        dbGet('tiles', key).then(function (existing) {
+          if (existing instanceof Blob) { done++; window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); return; }
+          var url = urlTemplate.replace('{z}', tile.z).replace('{x}', tile.x).replace('{y}', tile.y);
+          fetch(url, { mode: 'cors' }).then(function (r) {
+            if (!r.ok) { errors++; window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); return; }
+            return r.blob().then(function (b) {
+              dbPutKeyed('tiles', b, key).then(function () { done++; window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); }).catch(function () { errors++; scheduleNext(); });
+            });
+          }).catch(function () { errors++; scheduleNext(); });
+        }).catch(function () { errors++; scheduleNext(); });
+      }
+      function scheduleNext() {
+        if (provider === 'osm') setTimeout(nextTile, 80);
+        else nextTile();
+      }
+      nextTile();
+    });
+  }
+  function fitBoundsToPoints(points) {
+    if (!state.map || !points || !points.length) return;
+    var bnds = points.map(function (p) { return [p[1], p[0]]; });
+    state.map.fitBounds(bnds, { padding: [40, 40] });
+  }
+  function getCurrentLatLng() {
+    if (!state.map) return null;
+    var c = state.map.getCenter();
+    return [c.lat, c.lng];
+  }
+
+  // showMapBar · RD-13: ubicada en la DERECHA (intercambio respecto al padre)
+  function showMapBar(parentEl) {
+    if (!parentEl) return;
+    var bar = document.createElement('div');
+    bar.className = 'track-mapBar';
+    bar.id = 'r-mapBar';
+    var altProvider = state.mapProvider === 'osm' ? 'sat' : 'osm';
+    bar.innerHTML =
+      '<button class="track-mapBar-btn toggle" id="mb-toggle" aria-label="Colapsar/expandir">' + svgIcon('iconCollapse', { size: 22 }) + '</button>' +
+      '<div class="track-mapBar-controls" id="mb-controls">' +
+        '<button class="track-mapBar-btn" id="mb-zoomIn"  aria-label="Acercar">' + svgIcon('iconZoomIn',  { size: 22 }) + '</button>' +
+        '<button class="track-mapBar-btn" id="mb-zoomOut" aria-label="Alejar">'  + svgIcon('iconZoomOut', { size: 22 }) + '</button>' +
+        '<button class="track-mapBar-btn" id="mb-provider" aria-label="Cambiar mapa">' + svgIcon(MAP_PROVIDERS[altProvider].iconName, { size: 22 }) + '</button>' +
+        '<button class="track-mapBar-btn" id="mb-download" aria-label="Descargar mapa offline">' + svgIcon('iconExport', { size: 22 }) + '</button>' +
+      '</div>';
+    parentEl.appendChild(bar);
+    bar.querySelector('#mb-toggle').addEventListener('click', toggleMapBarCollapsed);
+    bar.querySelector('#mb-zoomIn').addEventListener('click', function () { if (state.map) state.map.zoomIn(); });
+    bar.querySelector('#mb-zoomOut').addEventListener('click', function () { if (state.map) state.map.zoomOut(); });
+    bar.querySelector('#mb-provider').addEventListener('click', function () {
+      var next = state.mapProvider === 'osm' ? 'sat' : 'osm';
+      setProvider(next);
+      var btn = bar.querySelector('#mb-provider');
+      if (btn) btn.innerHTML = svgIcon(MAP_PROVIDERS[next === 'osm' ? 'sat' : 'osm'].iconName, { size: 22 });
+    });
+    bar.querySelector('#mb-download').addEventListener('click', handleDownloadTilesClick);
+    return bar;
+  }
+  function toggleMapBarCollapsed() {
+    var bar = $('#r-mapBar');
+    if (!bar) return;
+    bar.classList.toggle('collapsed');
+  }
+  function handleDownloadTilesClick() {
+    if (!state.map) return;
+    var bnds = state.map.getBounds();
+    var bbox = { latMin: bnds.getSouth(), latMax: bnds.getNorth(), lonMin: bnds.getWest(), lonMax: bnds.getEast() };
+    var zCurrent = state.map.getZoom();
+    var zMin = zCurrent;
+    var zMax = Math.min(zCurrent + 2, MAP_PROVIDERS[state.mapProvider].maxZoom);
+    var totalTiles = countTilesInBbox(bbox, zMin, zMax);
+    var estMB = (totalTiles * 20 / 1024).toFixed(1);
+    confirmDialog({
+      title: 'Descargar tiles del mapa?',
+      message: 'Se descargaran <b>~' + totalTiles + '</b> tiles (zoom ' + zMin + '-' + zMax + ', provider <b>' + MAP_PROVIDERS[state.mapProvider].label + '</b>) · estimado <b>~' + estMB + ' MB</b>.',
+      confirm: 'Descargar',
+      cancel: t('cancel')
+    }).then(function (ok) {
+      if (!ok) return;
+      toast('Descargando ' + totalTiles + ' tiles...');
+      cacheTilesForBbox(bbox, { zMin: zMin, zMax: zMax }).then(function (result) {
+        toast('Listo · ' + result.done + ' tiles' + (result.errors ? ' · ' + result.errors + ' errores' : ''));
+      });
+    });
+  }
+  function showOfflineMapBanner(parentEl) {
+    if (!parentEl) return;
+    var bannerEl = document.createElement('div');
+    bannerEl.className = 'track-mapBanner';
+    bannerEl.innerHTML = '<div class="banner banner-warn"><b>Mapa no disponible offline</b> · descarga tiles con red para usar en campo.</div>';
+    parentEl.appendChild(bannerEl);
+    return bannerEl;
+  }
+  function shouldShowOfflineBanner() {
+    if (state.online) return Promise.resolve(false);
+    return dbCount('tiles').then(function (n) { return n === 0; }).catch(function () { return true; });
+  }
+
+  // viewMapTest (#mapTest dev shortcut, RD-17)
+  function viewMapTest() {
+    $view().className = 'view no-pad';
+    $view().innerHTML = '<div class="track-shell"><div class="map-container" id="map-test"></div></div>';
+    clearActionBar();
+    setActionBar('<button class="btn btn-secondary btn-block" id="map-test-back">&larr; ' + t('mapTestBack') + '</button>');
+    $('#map-test-back').addEventListener('click', function () {
+      if (state.map) { state.map.remove(); state.map = null; }
+      $view().className = 'view';
+      setView('inbox');
+    });
+    initMap('map-test');
+    var shell = $view().querySelector('.track-shell');
+    showMapBar(shell);
+    shouldShowOfflineBanner().then(function (need) { if (need) showOfflineMapBanner(shell); });
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Walk Tracking (Ag. B)
+  // Loop watchPosition con filtro Q2 (§3.2 spec). Pausa/reanuda preserva draft.
+  // Marker en vivo = iconLiveArrow rotado por heading. Vértices fijos = iconCircleMarker
+  // coloreados por accuracyToQualityLabel. 5 chips KPI VT323. RD-03/06/07/10/16.
+  // ============================================================
+  function viewWalkMode() {
+    if (!state.draft) state.draft = { points: [], mode: 'walk' };
+    if (!state.draft.points) state.draft.points = [];
+    state.draft.mode = 'walk';
+    state.mode = 'walk';
+    state.walkRecording = state.walkRecording || { liveFix: null, watchId: null, lastCapturedFix: null, captureRunning: true };
+
+    $view().className = 'view no-pad';
+    $view().innerHTML =
+      '<div class="track-shell">' +
+        '<div class="map-container" id="map-walk"></div>' +
+        '<div class="track-overlay" id="r-overlay">' +
+          '<div class="track-stats-line good" id="r-quality"><span class="lbl">' + t('kpiQuality') + ':</span><span id="r-quality-val">—</span></div>' +
+          '<div class="track-stats-line good" id="r-heading"><span class="lbl">' + t('kpiHeading') + ':</span><span id="r-heading-val">—</span></div>' +
+          '<div class="track-stats-line good" id="r-speed"><span class="lbl">' + t('kpiSpeed') + ':</span><span id="r-speed-val">—</span></div>' +
+          '<div class="track-stats-line good" id="r-distLast"><span class="lbl">' + t('kpiDistLast') + ':</span><span id="r-distLast-val">—</span></div>' +
+          '<div class="track-stats-line good" id="r-bearLast"><span class="lbl">' + t('kpiBearLast') + ':</span><span id="r-bearLast-val">—</span></div>' +
+          '<button class="track-hamburger" id="r-burger" aria-label="Abrir panel"><img alt="" src="" data-key="moon56"></button>' +
+          '<div class="track-panel-section" id="r-panel">' +
+            '<button class="track-panel-info" id="r-panel-info" aria-label="Mostrar/ocultar texto">' + svgIcon('iconInfo', { size: 22 }) + '</button>' +
+            '<button class="track-panel-btn quitar" id="r-undo">' + svgIcon('iconUndo', { size: 22 }) + '<span class="track-panel-label">' + t('btnUndo') + '</span></button>' +
+            '<button class="track-panel-btn pausa"  id="r-pause">' + svgIcon('iconCancel', { size: 22 }) + '<span class="track-panel-label" id="r-pause-label">' + t('btnPause') + '</span></button>' +
+            '<button class="track-panel-btn cerrar" id="r-done">' + svgIcon('iconDone', { size: 22 }) + '<span class="track-panel-label">' + t('btnSaveTrack') + '</span></button>' +
+            '<button class="track-panel-btn atras"  id="r-cancel">' + svgIcon('iconCancel', { size: 22 }) + '<span class="track-panel-label">' + t('btnBack') + '</span></button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    clearActionBar();
+
+    // Asigna moon56 al burger
+    var burgerImg = $view().querySelector('#r-burger img');
+    if (burgerImg) burgerImg.src = MOON_INLINE.moon56;
+
+    initMap('map-walk', { skipInitialView: true });
+    var shell = $view().querySelector('.track-shell');
+    showMapBar(shell);
+
+    var trackLayer = L.layerGroup().addTo(state.map);
+    var liveMarker = null;
+    var firstFixCentered = false;
+
+    function buildLiveDivIcon(fix) {
+      var ql = accuracyToLevel(fix && fix.accuracy);
+      var color = qualityToMarkerColor(ql.label);
+      var speed = fix && fix.speed;
+      var heading = fix && fix.heading;
+      var isMoving = speed != null && isFinite(speed) && speed > 0.3;
+      var svgInner;
+      if (isMoving) {
+        svgInner = svgLiveArrow({ color: color, heading: heading, size: 28 });
+      } else {
+        svgInner = svgCircleMarker({ color: color, first: true });
+      }
+      return L.divIcon({ html: svgInner, className: 'track-live-icon', iconSize: [28, 28], iconAnchor: [14, 14] });
+    }
+    function updateLiveMarker(fix) {
+      if (!fix) { if (liveMarker) { state.map.removeLayer(liveMarker); liveMarker = null; } return; }
+      var latlng = [fix.lat, fix.lon];
+      var icon = buildLiveDivIcon(fix);
+      if (liveMarker) { liveMarker.setLatLng(latlng); liveMarker.setIcon(icon); }
+      else liveMarker = L.marker(latlng, { icon: icon, interactive: false, keyboard: false }).addTo(state.map);
+    }
+
+    // Render del track: polilínea + vértices fijos coloreados por calidad.
+    // NO cierra el ring. NO snap visual al primer punto. NO detección auto-intersecciones.
+    function drawTrackLeaflet() {
+      trackLayer.clearLayers();
+      var pts = state.draft.points || [];
+      var liveFix = state.walkRecording && state.walkRecording.liveFix;
+      // halo de accuracy heredado del padre (radio en metros)
+      pts.forEach(function (p) {
+        var acc = p.length >= 3 ? p[2] : null;
+        if (acc != null && acc > 0) {
+          L.circle([p[1], p[0]], { radius: acc, color: 'var(--colorAcentoCalido)', fillColor: 'var(--colorAcentoCalido)', fillOpacity: 0.12, stroke: false }).addTo(trackLayer);
+        }
+      });
+      var latlngs = pts.map(function (p) { return [p[1], p[0]]; });
+      if (pts.length >= 2) {
+        L.polyline(latlngs, { color: '#9B1B18', weight: 2 }).addTo(trackLayer);
+      }
+      // Vértices fijos: iconCircleMarker tinteado por accuracy (T-07)
+      pts.forEach(function (p, i) {
+        var acc = p.length >= 3 ? p[2] : null;
+        var qLabel = accuracyToQualityLabel(acc);
+        var color = qualityToMarkerColor(qLabel);
+        var isLast = i === pts.length - 1;
+        var isFirst = i === 0;
+        var icon = L.divIcon({
+          html: svgCircleMarker({ color: color, first: isFirst || isLast }),
+          className: 'track-fixed-marker',
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
+        });
+        L.marker([p[1], p[0]], { icon: icon, interactive: false, keyboard: false }).addTo(trackLayer);
+      });
+      if (liveFix) updateLiveMarker(liveFix);
+    }
+
+    function updateActionButtons() {
+      var pts = state.draft.points || [];
+      var done = $('#r-done'); if (done) done.disabled = pts.length < 2;
+      var undo = $('#r-undo'); if (undo) undo.disabled = pts.length === 0;
+    }
+
+    // FILTRO Q2 · §3.2 spec. Llamada en cada callback de watchPosition cuando
+    // captureRunning === true. Primer fix incondicional. Decisión OR: capturar si
+    // desplazamientoMetros > max(accAct, accPrev) * 1.2 O velocidadInstantanea >= 0.5.
+    function applyQ2Filter(fixActual) {
+      var rec = state.walkRecording;
+      // 1) Primer vértice incondicional
+      if (state.draft.points.length === 0) {
+        pushVertice(fixActual);
+        rec.lastCapturedFix = fixActual;
+        return true;
+      }
+      // 2) Si captura está pausada: ignorar
+      if (rec.captureRunning === false) return false;
+      // 3) Si reanudando sin lastCapturedFix válido: tratar como inicio limpio
+      if (!rec.lastCapturedFix) {
+        rec.lastCapturedFix = fixActual;
+        return false;
+      }
+      // 4) Calcular desplazamiento y velocidad
+      var prev = rec.lastCapturedFix;
+      var desplazamientoMetros = haversineMeters([prev.lon, prev.lat], [fixActual.lon, fixActual.lat]);
+      var deltaT = (fixActual.timestamp - prev.timestamp) / 1000;
+      if (deltaT <= 0) {
+        console.warn('moonTripTracker · timestamp anómalo, fix descartado');
+        return false;
+      }
+      var velocidadInstantaneaMps = desplazamientoMetros / deltaT;
+      var accAct = (fixActual.accuracy != null && isFinite(fixActual.accuracy)) ? fixActual.accuracy : Infinity;
+      var accPrev = (prev.accuracy != null && isFinite(prev.accuracy)) ? prev.accuracy : Infinity;
+      var umbralAccuracy = Math.max(accAct, accPrev) * 1.2;
+      // 5) Decisión OR
+      var captura = (desplazamientoMetros > umbralAccuracy) || (velocidadInstantaneaMps >= 0.5);
+      if (captura) {
+        pushVertice(fixActual);
+        rec.lastCapturedFix = fixActual;
+        return true;
+      }
+      return false;
+    }
+
+    function pushVertice(fixActual) {
+      var lat = fixActual.lat, lon = fixActual.lon, acc = fixActual.accuracy, ts = fixActual.timestamp;
+      if (!isInsidePeru(lat, lon)) { toast(t('pointsOutsideBbox')); return false; }
+      // Shape interno 4 componentes: [lon, lat, acc, ts] (RD-04)
+      state.draft.points.push([+lon.toFixed(6), +lat.toFixed(6), acc != null ? +acc.toFixed(1) : null, ts]);
+      updateActionButtons();
+      drawTrackLeaflet();
+      toast(t('toastPointSaved')(state.draft.points.length));
+      return true;
+    }
+
+    // Actualiza los 5 KPI chips en cada fix (RD-16) · independiente del filtro Q2
+    function updateKpiChips(fix) {
+      // Calidad
+      var ql = accuracyToLevel(fix && fix.accuracy);
+      var qEl = $('#r-quality'); var qVal = $('#r-quality-val');
+      if (qEl && qVal) {
+        qEl.classList.remove('good', 'warn', 'bad'); qEl.classList.add(ql.cls);
+        qVal.textContent = ql.label + (fix && fix.accuracy != null ? ' · ±' + formatAccuracy(fix.accuracy) : '');
+      }
+      // Rumbo
+      var hVal = $('#r-heading-val');
+      if (hVal) hVal.textContent = formatHeading(fix && fix.heading);
+      // Velocidad
+      var sEl = $('#r-speed'); var sVal = $('#r-speed-val');
+      if (sEl && sVal) {
+        var cls = speedClass(fix && fix.speed);
+        sEl.classList.remove('good', 'warn', 'bad'); sEl.classList.add(cls);
+        sVal.textContent = formatSpeed(fix && fix.speed);
+      }
+      // Dist + Rumbo último (vs último vértice capturado)
+      var pts = state.draft.points || [];
+      var dlVal = $('#r-distLast-val'); var blVal = $('#r-bearLast-val');
+      if (fix && pts.length > 0) {
+        var last = pts[pts.length - 1];
+        var dM = haversineMeters([fix.lon, fix.lat], [last[0], last[1]]);
+        var bD = bearingDegrees([last[0], last[1]], [fix.lon, fix.lat]);
+        if (dlVal) dlVal.textContent = formatAccuracy(dM);
+        if (blVal) blVal.textContent = formatHeading(bD);
+      } else {
+        if (dlVal) dlVal.textContent = '—';
+        if (blVal) blVal.textContent = '—';
+      }
+    }
+
+    function applyLiveFix(fix) {
+      state.walkRecording.liveFix = fix;
+      // Centra en el primer fix válido (heredado del padre v00 fix-zoomIniGeolocalizado F-03)
+      if (!firstFixCentered && fix && fix.lat != null && fix.lon != null && state.map) {
+        state.map.setView([fix.lat, fix.lon], 17);
+        firstFixCentered = true;
+      }
+      updateKpiChips(fix);
+      applyQ2Filter(fix);
+      drawTrackLeaflet();
+    }
+
+    function startWatch() {
+      if (!navigator.geolocation || state.walkRecording.watchId != null) return;
+      try {
+        state.walkRecording.watchId = navigator.geolocation.watchPosition(
+          function (pos) {
+            applyLiveFix({
+              lat: pos.coords.latitude, lon: pos.coords.longitude,
+              accuracy: pos.coords.accuracy, heading: pos.coords.heading,
+              speed: pos.coords.speed, timestamp: pos.timestamp
+            });
+          },
+          function (err) {
+            applyLiveFix(null);
+            if (err && err.code === 1) showGeolocationDeniedBanner(shell, function () { startWatch(); });
+          },
+          { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 }
+        );
+      } catch (_) {}
+    }
+    ensureGeolocationConsent().then(function (ok) {
+      if (ok) startWatch();
+      else showGeolocationDeniedBanner(shell, function () { ensureGeolocationConsent().then(function (o) { if (o) startWatch(); }); });
+    });
+
+    function stopWatch() {
+      var w = state.walkRecording && state.walkRecording.watchId;
+      if (w != null && navigator.geolocation && navigator.geolocation.clearWatch) navigator.geolocation.clearWatch(w);
+      state.walkRecording = { liveFix: null, watchId: null, lastCapturedFix: null, captureRunning: true };
+    }
+    function teardownMap() {
+      if (state.map) { state.map.remove(); state.map = null; }
+    }
+
+    // Burger toggle
+    $('#r-burger').addEventListener('click', function () {
+      $('#r-overlay').classList.toggle('panel-open');
+      $('#r-burger').classList.toggle('open');
+    });
+    // Info expandible 15s
+    var panelInfoTimer = null;
+    $('#r-panel-info').addEventListener('click', function () {
+      var overlay = $('#r-overlay');
+      var wasExpanded = overlay.classList.contains('info-expanded');
+      if (panelInfoTimer) { clearTimeout(panelInfoTimer); panelInfoTimer = null; }
+      if (wasExpanded) overlay.classList.remove('info-expanded');
+      else {
+        overlay.classList.add('info-expanded');
+        panelInfoTimer = setTimeout(function () { overlay.classList.remove('info-expanded'); }, 15000);
+      }
+    });
+
+    // Pausa/Reanuda (RD-06): toggle captureRunning + reset lastCapturedFix al reanudar
+    // para tratar el siguiente fix como inicio limpio.
+    $('#r-pause').addEventListener('click', function () {
+      var rec = state.walkRecording;
+      rec.captureRunning = !rec.captureRunning;
+      var label = $('#r-pause-label');
+      if (rec.captureRunning) {
+        if (label) label.textContent = t('btnPause');
+        rec.lastCapturedFix = null;                                                 // reset → próximo fix inicio limpio
+        if (rec.watchId == null) startWatch();
+        toast(t('btnResume'));
+      } else {
+        if (label) label.textContent = t('btnResume');
+        toast(t('btnPause'));
+      }
+    });
+
+    $('#r-cancel').addEventListener('click', function () {
+      var pts = state.draft && state.draft.points;
+      var doDiscard = function () {
+        stopWatch(); teardownMap();
+        state.draft = null; state.mode = null;
+        $view().className = 'view';
+        setView('inbox');
+      };
+      if (pts && pts.length > 0) {
+        confirmDialog({
+          title: t('confirmDiscardTitle'),
+          message: t('confirmDiscardMsg')(pts.length),
+          confirm: t('confirmDiscardYes'),
+          cancel: t('confirmDiscardNo'),
+          danger: true
+        }).then(function (ok) { if (ok) doDiscard(); });
+      } else { doDiscard(); }
+    });
+
+    $('#r-undo').addEventListener('click', function () {
+      var pts = state.draft.points;
+      if (!pts || pts.length === 0) return;
+      pts.pop();
+      updateActionButtons();
+      drawTrackLeaflet();
+      toast(t('toastUndo'));
+    });
+
+    $('#r-done').addEventListener('click', function () {
+      var pts = state.draft.points;
+      if (!pts || pts.length < 2) return;
+      stopWatch();
+      var now = new Date();
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      var stamp = now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + pad(now.getHours()) + pad(now.getMinutes());
+      var record = {
+        uuid: uuid4(),
+        name: 'Trayecto ' + stamp,
+        mode: 'walk',
+        points: pts.slice(),
+        createdAt: now.getTime()
+      };
+      dbPut('tracks', record).then(function () {
+        state.tracks.unshift(record);
+        state.draft = null; state.mode = null;
+        teardownMap();
+        toast(t('toastTrackSaved')(record.points.length));
+        $view().className = 'view';
+        setView('inbox');
+      }).catch(function (e) {
+        console.error('guardar trayecto walk · dbPut error:', e);
+        toast('No se pudo guardar el trayecto');
+      });
+    });
+
+    drawTrackLeaflet();
+    updateActionButtons();
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Trace Tracking & Mode Selector (Ag. C) · TRACE MODE
+  // Drag manual del pin. Captura por tap con Date.now() como timestamp (RD-04).
+  // NO snap visual al primer punto. NO cierre forzado. mode: 'trace' en GeoJSON
+  // y velocidades null (RD-09).
+  // ============================================================
+  function buildTracePinIcon() {
+    return L.divIcon({
+      html: svgIcon('iconPin', { size: 32, primary: 'var(--colorPinFill)', stroke: 'var(--colorMarkerStroke)' }),
+      className: 'track-tracePin-icon',
+      iconSize: [32, 32],
+      iconAnchor: [16, 30]
+    });
+  }
+  function buildFixedTraceMarkerIcon(opts) {
+    opts = opts || {};
+    return L.divIcon({
+      html: svgCircleMarker({ color: 'var(--colorPinFill)', first: !!opts.first }),
+      className: 'track-fixed-marker',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+  }
+
+  function viewTraceMode() {
+    if (!state.draft) state.draft = { points: [], mode: 'trace' };
+    if (!state.draft.points) state.draft.points = [];
+    state.draft.mode = 'trace';
+    state.mode = 'trace';
+
+    $view().className = 'view no-pad';
+    $view().innerHTML =
+      '<div class="track-shell">' +
+        '<div class="map-container" id="map-trace"></div>' +
+        '<div class="track-overlay" id="t-overlay">' +
+          '<div class="track-stats-line good" id="t-distLast"><span class="lbl">' + t('kpiDistLast') + ':</span><span id="t-distLast-val">—</span></div>' +
+          '<div class="track-stats-line good" id="t-bearLast"><span class="lbl">' + t('kpiBearLast') + ':</span><span id="t-bearLast-val">—</span></div>' +
+          '<div class="track-stats-line good" id="t-zoom"><span class="lbl">Zoom:</span><span id="t-zoom-val">—</span></div>' +
+          '<button class="track-hamburger" id="t-burger" aria-label="Abrir panel"><img alt="" src="" data-key="moon56"></button>' +
+          '<div class="track-panel-section" id="t-panel">' +
+            '<button class="track-panel-info" id="t-panel-info" aria-label="Mostrar/ocultar texto">' + svgIcon('iconInfo', { size: 22 }) + '</button>' +
+            '<button class="track-panel-btn quitar" id="t-undo">' + svgIcon('iconUndo', { size: 22 }) + '<span class="track-panel-label">' + t('btnUndo') + '</span></button>' +
+            '<button class="track-panel-btn add"    id="t-fix">' + svgIcon('iconDone', { size: 22 }) + '<span class="track-panel-label">' + t('btnAddHere') + '</span></button>' +
+            '<button class="track-panel-btn cerrar" id="t-done">' + svgIcon('iconDone', { size: 22 }) + '<span class="track-panel-label">' + t('btnSaveTrack') + '</span></button>' +
+            '<button class="track-panel-btn atras"  id="t-cancel">' + svgIcon('iconCancel', { size: 22 }) + '<span class="track-panel-label">' + t('btnBack') + '</span></button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    clearActionBar();
+
+    var burgerImg = $view().querySelector('#t-burger img');
+    if (burgerImg) burgerImg.src = MOON_INLINE.moon56;
+
+    initMap('map-trace', { skipInitialView: true });
+    var shell = $view().querySelector('.track-shell');
+    showMapBar(shell);
+
+    var trackLayer = L.layerGroup().addTo(state.map);
+    var pinMarker = null;
+
+    function spawnPin() {
+      var center = state.map.getCenter();
+      pinMarker = L.marker(center, { icon: buildTracePinIcon(), draggable: true, autoPan: true, keyboard: false }).addTo(state.map);
+      state.tracePin = { lat: center.lat, lon: center.lng, dragging: false };
+      pinMarker.on('dragstart', function () { state.tracePin.dragging = true; });
+      pinMarker.on('drag', function () {
+        var ll = pinMarker.getLatLng();
+        state.tracePin.lat = ll.lat; state.tracePin.lon = ll.lng;
+        updatePinFeedback();
+      });
+      pinMarker.on('dragend', function () {
+        state.tracePin.dragging = false;
+        updatePinFeedback();
+      });
+      updatePinFeedback();
+    }
+    function updatePinFeedback() {
+      var pts = state.draft.points || [];
+      var dlVal = $('#t-distLast-val'); var blVal = $('#t-bearLast-val');
+      if (state.tracePin && pts.length > 0) {
+        var last = pts[pts.length - 1];
+        var dM = haversineMeters([state.tracePin.lon, state.tracePin.lat], [last[0], last[1]]);
+        var bD = bearingDegrees([last[0], last[1]], [state.tracePin.lon, state.tracePin.lat]);
+        if (dlVal) dlVal.textContent = formatAccuracy(dM);
+        if (blVal) blVal.textContent = formatHeading(bD);
+      } else {
+        if (dlVal) dlVal.textContent = pts.length === 0 ? 'Primer pto' : '—';
+        if (blVal) blVal.textContent = '—';
+      }
+      redrawFixedTrace();
+    }
+    function redrawFixedTrace() {
+      trackLayer.clearLayers();
+      var pts = state.draft.points || [];
+      var latlngs = pts.map(function (p) { return [p[1], p[0]]; });
+      if (pts.length >= 2) {
+        L.polyline(latlngs, { color: '#9B1B18', weight: 2 }).addTo(trackLayer);
+      }
+      pts.forEach(function (p, i) {
+        var isFirst = i === 0;
+        var m = L.marker([p[1], p[0]], {
+          icon: buildFixedTraceMarkerIcon({ first: isFirst }),
+          interactive: false,
+          keyboard: false
+        });
+        m.addTo(trackLayer);
+      });
+      var zVal = $('#t-zoom-val'); if (zVal && state.map) zVal.textContent = state.map.getZoom();
+    }
+    state.map.on('zoomend', function () { var z = $('#t-zoom-val'); if (z && state.map) z.textContent = state.map.getZoom(); });
+
+    function updateActionButtons() {
+      var pts = state.draft.points || [];
+      var done = $('#t-done'); if (done) done.disabled = pts.length < 2;
+      var undo = $('#t-undo'); if (undo) undo.disabled = pts.length === 0;
+    }
+    function teardownMap() {
+      if (state.map) { state.map.remove(); state.map = null; }
+      pinMarker = null; state.tracePin = null;
+    }
+
+    $('#t-burger').addEventListener('click', function () {
+      $('#t-overlay').classList.toggle('panel-open');
+      $('#t-burger').classList.toggle('open');
+    });
+    var panelInfoTimerT = null;
+    $('#t-panel-info').addEventListener('click', function () {
+      var overlay = $('#t-overlay');
+      var wasExpanded = overlay.classList.contains('info-expanded');
+      if (panelInfoTimerT) { clearTimeout(panelInfoTimerT); panelInfoTimerT = null; }
+      if (wasExpanded) overlay.classList.remove('info-expanded');
+      else {
+        overlay.classList.add('info-expanded');
+        panelInfoTimerT = setTimeout(function () { overlay.classList.remove('info-expanded'); }, 15000);
+      }
+    });
+
+    // Fijar punto · timestamp = Date.now() (RD-04). Shape interno 4 componentes
+    // con accuracy = null (no hay GPS en modo trace).
+    $('#t-fix').addEventListener('click', function () {
+      if (!state.tracePin) return;
+      var lat = state.tracePin.lat, lon = state.tracePin.lon;
+      if (!isInsidePeru(lat, lon)) { toast(t('pointsOutsideBbox')); return; }
+      state.draft.points.push([+lon.toFixed(6), +lat.toFixed(6), null, Date.now()]);
+      state.map.removeLayer(pinMarker); pinMarker = null;
+      updateActionButtons();
+      redrawFixedTrace();
+      toast(t('toastPointFixed')(state.draft.points.length));
+      spawnPin();
+    });
+
+    $('#t-undo').addEventListener('click', function () {
+      var pts = state.draft.points;
+      if (!pts || pts.length === 0) return;
+      pts.pop();
+      updateActionButtons();
+      redrawFixedTrace();
+      toast(t('toastUndo'));
+    });
+
+    $('#t-cancel').addEventListener('click', function () {
+      var pts = state.draft && state.draft.points;
+      var doDiscard = function () {
+        teardownMap();
+        state.draft = null; state.mode = null;
+        $view().className = 'view';
+        setView('inbox');
+      };
+      if (pts && pts.length > 0) {
+        confirmDialog({
+          title: t('confirmDiscardTitle'),
+          message: t('confirmDiscardMsg')(pts.length),
+          confirm: t('confirmDiscardYes'),
+          cancel: t('confirmDiscardNo'),
+          danger: true
+        }).then(function (ok) { if (ok) doDiscard(); });
+      } else { doDiscard(); }
+    });
+
+    // Guardar trayecto · persiste con mode='trace'; velocidades quedan null por buildGeoJson.
+    $('#t-done').addEventListener('click', function () {
+      var pts = state.draft.points;
+      if (!pts || pts.length < 2) return;
+      var now = new Date();
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      var stamp = now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + pad(now.getHours()) + pad(now.getMinutes());
+      var record = {
+        uuid: uuid4(),
+        name: 'Trayecto ' + stamp,
+        mode: 'trace',
+        points: pts.slice(),
+        createdAt: now.getTime()
+      };
+      dbPut('tracks', record).then(function () {
+        state.tracks.unshift(record);
+        state.draft = null; state.mode = null;
+        teardownMap();
+        toast(t('toastTrackSaved')(record.points.length));
+        $view().className = 'view';
+        setView('inbox');
+      }).catch(function (e) {
+        console.error('guardar trayecto trace · dbPut error:', e);
+        toast('No se pudo guardar el trayecto');
+      });
+    });
+
+    zoomIniFromGeolocation(17, CONFIG.PERU_COLOMBIA_BBOX, function () {
+      spawnPin();
+      updateActionButtons();
+      redrawFixedTrace();
+    });
+  }
+
+  // ============================================================
+  // OWNERSHIP ZONE · Trace Tracking & Mode Selector (Ag. C) · MODE SELECTOR
+  // Modal con iconWalkMode / iconTraceMode del set pixel art (RD-02). Deshabilita
+  // Caminar si navigator.geolocation no existe. Info expandible 15s heredado.
+  // ============================================================
+  function showModeSelector(callback) {
+    var geolocAvailable = !!(navigator && navigator.geolocation);
+    var html =
+      '<div class="dialog-backdrop" id="dialog-bd-mode">' +
+        '<div class="dialog" onclick="event.stopPropagation()">' +
+          '<h3>' + t('modeSelTitle') + '</h3>' +
+          '<p>' + t('modeSelSub') + '</p>' +
+          '<div class="modeSelector-grid" id="ms-grid">' +
+            '<button class="modeSelector-btn" data-mode="walk"' + (geolocAvailable ? '' : ' disabled title="' + t('modeWalkDisabled') + '"') + '>' +
+              '<div class="modeSelector-btn-icon">' + svgIcon('iconWalkMode', { size: 44 }) + '</div>' +
+              '<div class="modeSelector-btn-label">' + t('modeWalk') + '</div>' +
+              '<button class="modeSelector-info" data-info="walk" aria-label="Info">' + svgIcon('iconInfo', { size: 16 }) + '</button>' +
+            '</button>' +
+            '<button class="modeSelector-btn" data-mode="trace">' +
+              '<div class="modeSelector-btn-icon">' + svgIcon('iconTraceMode', { size: 44 }) + '</div>' +
+              '<div class="modeSelector-btn-label">' + t('modeTrace') + '</div>' +
+              '<button class="modeSelector-info" data-info="trace" aria-label="Info">' + svgIcon('iconInfo', { size: 16 }) + '</button>' +
+            '</button>' +
+            '<div class="modeSelector-info-text" id="info-walk">' + t('modeWalkInfo') + '</div>' +
+            '<div class="modeSelector-info-text" id="info-trace">' + t('modeTraceInfo') + '</div>' +
+          '</div>' +
+          '<div class="dialog-actions">' +
+            '<button class="btn btn-secondary btn-block" id="ms-cancel">' + t('cancel') + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    $overlay().innerHTML = html;
+    var infoTimer = null;
+    var cleanup = function () {
+      if (infoTimer) { clearTimeout(infoTimer); infoTimer = null; }
+      $overlay().innerHTML = '';
+    };
+    $('#dialog-bd-mode').addEventListener('click', cleanup);
+    $('#ms-cancel').addEventListener('click', function (e) { e.stopPropagation(); cleanup(); });
+    $overlay().querySelectorAll('.modeSelector-info').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var which = btn.dataset.info;
+        var target = $('#info-' + which);
+        if (!target) return;
+        var wasExpanded = target.classList.contains('expanded');
+        $overlay().querySelectorAll('.modeSelector-info-text').forEach(function (el) { el.classList.remove('expanded'); });
+        if (infoTimer) { clearTimeout(infoTimer); infoTimer = null; }
+        if (!wasExpanded) {
+          target.classList.add('expanded');
+          infoTimer = setTimeout(function () { target.classList.remove('expanded'); }, 15000);
+        }
+      });
+    });
+    $overlay().querySelectorAll('.modeSelector-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        if (e.target.closest('.modeSelector-info')) return;
+        if (btn.disabled) return;
+        var mode = btn.dataset.mode;
+        cleanup();
+        if (callback) callback(mode);
+      });
+    });
+  }
+
+  // Conexión status (heredado del padre v00; usado por shouldShowOfflineBanner)
+  function updateConnectionStatus() { state.online = navigator.onLine; }
+  window.addEventListener('online', updateConnectionStatus);
+  window.addEventListener('offline', updateConnectionStatus);
+  updateConnectionStatus();
+})();
+</script>
+</body>
+</html>

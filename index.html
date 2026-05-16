@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>David Forero Parra - Developer GIS</title>
+<meta name="description" content="CV pixel art autocontenido de David Forero Parra, Developer GIS. Single page HTML offline, sin frameworks. / Self-contained pixel art CV of David Forero Parra, GIS Developer.">
+<!--
+  ============================================================================
+  index.html (ex moonTripDeveloper.html) - portafolio Developer · landing principal
+  ============================================================================
+  Feature SdDd: F-02 moonTripDeveloper - micro 20260514microRemanufacturaDeveloperPageMenuLateral
+  Scope: MICRO - remanufactura arquitectonica con panel fijo izquierdo + slot dinamico
+  Renombrado a index.html en ronda 4f (20260515) porque pasa a ser el landing
+  principal del portafolio; moonTrip queda como proyecto anidado/subsidiado.
+  Fecha: 20260515
+  Autor: developer + agentes SdDd
+  ----------------------------------------------------------------------------
+  APIs Web utilizadas:
+    - window.localStorage (clave: moonTripDeveloper.lang.v1)
+    - navigator.language (deteccion idioma inicial)
+    - HTMLDetailsElement.open + evento 'toggle' (nativo)
+    - HTMLTemplateElement (templates ocultos para secciones)
+    - window.matchMedia (responsive breakpoint para cierre automatico en mobile)
+  Permisos requeridos del usuario: ninguno.
+  Tracking: ninguno. Cookies: ninguna. CDN: ninguno.
+  Fuentes: 'Press Start 2P' / 'Silkscreen' / 'VT323' declaradas en font-family
+           con fallback monospace - sin embed, sin link, sin import.
+  ----------------------------------------------------------------------------
+  Matriz cross-browser objetivo:
+    Chrome >= 90, Firefox >= 88, Safari >= 14, Edge >= 90.
+    Fallback grace: fuentes pixel -> monospace system; transitions -> none si
+    prefers-reduced-motion: reduce.
+  ----------------------------------------------------------------------------
+  Cambios ronda 4b (vs ronda 3 reenfoque archivada 20260514):
+    - Topbar nav muta a 3 atajos: PORTAFOLIO (link externo) + INICIO + CONTACTO
+      (estos dos ultimos son botones JS que recargan el slot dinamico).
+    - Topbar brand: "David Forero - GIS developer".
+    - Hero conserva nombre + rol + ilustracion + CTAs; el bloque Perfil pasa a
+      ser un slot dinamico (#slotDinamicoHero) que arranca con el Perfil y se
+      sustituye al click de seccion. Fondo del hero #F0F0F0 (--blancoNeutro).
+    - Se elimina el stack vertical de 7 tarjetas <details>. Su contenido se
+      mueve a 8 <template> ocultos (tplPerfil + 7 secciones).
+    - Panel lateral derecho fijo (.menuPanelFijo) inspirado en .recorder-panel
+      de moonTripMesure: SIN backdrop, fixed al viewport, dos niveles de toggle:
+        * body.menuAbierto -> muestra/oculta panel (toggle por btnToggleMenu).
+        * body.infoExpandido -> ensancha botones 44px->180px revelando labels
+          (toggle por btnInfoMenu redondo dentro del panel).
+    - Los 7 botones de seccion forman juntos un gradient vinotinto -> naranjaClaro
+      vistos en conjunto: cada boton es un color solido interpolado linealmente
+      entre #551E1B (Contacto) y #E39F43 (Referencias).
+    - btnToggleMenu del topbar carga el asset rocketV4_11 cuantizado a 48x48 +
+      32 colores (~1 KB base64 inline). Asset distinto al de la mascota Moon
+      del hero (que sigue siendo iconoRocket en su posicion original).
+  ----------------------------------------------------------------------------
+  Deuda residual diferida:
+    1. Link PORTAFOLIO y linkRetorno usan placeholder #TBD-moonTripLanding-portafolio
+       hasta que F-01 confirme el destino moonTripLanding.html#portafolio.
+    2. QR 96x96 es placeholder cuadrado claro con texto "QR".
+       Wave 3 lo sustituye con SVG inline via toolchain Python qrSvgBuilder.py.
+  ----------------------------------------------------------------------------
+  Disclaimer F-01: no aplica - este tester no accede a APIs sensibles del
+  dispositivo. Solo lectura/escritura en localStorage del propio origen.
+  ============================================================================
+-->
+<style>
+/* ============================================================================
+   Custom properties - paleta completa branding (heredado ronda 3)
+   ============================================================================ */
+:root {
+  --amarilloLuna: #F7F3A1;
+  --naranjaClaro: #E39F43;
+  --naranjaProfundo: #A1602A;
+  --rojoOtonal: #9B1B18;
+  --vinotinto: #551E1B;
+  --grisCarbon: #272B2E;
+  --blancoNeutro: #F0F0F0;
+  --blanco: #FFFFFF;
+
+  --fontPixelDisplay: 'Press Start 2P', 'Courier New', monospace;
+  --fontPixelLabel:   'Silkscreen', 'VT323', monospace;
+  --fontBody:         'VT323', ui-monospace, Consolas, 'Courier New', monospace;
+
+  --sizeBase: 18px;
+  --sizeSmall: 14px;
+  --sizeH3: 20px;
+  --sizeH2: 22px;
+  --sizeH1: 28px;
+
+  --spacingXS: 4px;
+  --spacingS: 8px;
+  --spacingM: 16px;
+  --spacingL: 32px;
+  --spacingXL: 48px;
+
+  --containerMax: 1100px;
+
+  --pixelStair6: polygon(
+    6px 0, calc(100% - 6px) 0,
+    calc(100% - 6px) 2px, calc(100% - 4px) 2px, calc(100% - 4px) 4px, calc(100% - 2px) 4px, calc(100% - 2px) 6px,
+    100% 6px, 100% calc(100% - 6px),
+    calc(100% - 2px) calc(100% - 6px), calc(100% - 2px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 2px), calc(100% - 6px) calc(100% - 2px),
+    calc(100% - 6px) 100%, 6px 100%,
+    6px calc(100% - 2px), 4px calc(100% - 2px), 4px calc(100% - 4px), 2px calc(100% - 4px), 2px calc(100% - 6px),
+    0 calc(100% - 6px), 0 6px,
+    2px 6px, 2px 4px, 4px 4px, 4px 2px, 6px 2px
+  );
+  --pixelStair2: polygon(
+    2px 0, calc(100% - 2px) 0,
+    100% 2px, 100% calc(100% - 2px),
+    calc(100% - 2px) 100%, 2px 100%,
+    0 calc(100% - 2px), 0 2px
+  );
+}
+
+/* ============================================================================
+   Reset minimo + pixel art global
+   ============================================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--blancoNeutro);
+}
+
+body {
+  background: var(--blancoNeutro);
+  color: var(--grisCarbon);
+  font-family: var(--fontBody);
+  font-size: var(--sizeBase);
+  line-height: 1.4;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+  text-rendering: geometricPrecision;
+}
+
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+a {
+  color: var(--vinotinto);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+a:hover, a:active, a:focus {
+  color: var(--rojoOtonal);
+  outline: none;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+ul li {
+  padding-left: var(--spacingM);
+  position: relative;
+  margin-bottom: var(--spacingXS);
+  text-align: left;
+}
+ul li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--vinotinto);
+}
+
+/* ============================================================================
+   Topbar sticky dark
+   ============================================================================ */
+.topbar {
+  background: var(--grisCarbon);
+  color: var(--amarilloLuna);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacingL);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: var(--fontPixelLabel);
+  border-bottom: 3px solid var(--vinotinto);
+  flex-wrap: wrap;
+}
+.topbarBrandRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.topbarBrand {
+  font-family: var(--fontPixelDisplay);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--amarilloLuna);
+}
+.topbarNav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.topbarNav a,
+.topbarNav button {
+  color: var(--amarilloLuna);
+  background: transparent;
+  text-decoration: none;
+  padding: 6px 12px;
+  clip-path: var(--pixelStair2);
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color .15s, background .15s, color .15s;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: var(--fontPixelLabel);
+  cursor: pointer;
+}
+.topbarNav a:hover,
+.topbarNav button:hover {
+  border-bottom-color: var(--rojoOtonal);
+  color: var(--amarilloLuna);
+}
+.topbarRight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacingM);
+}
+.langToggle {
+  display: inline-flex;
+  gap: var(--spacingXS);
+  align-items: center;
+}
+.langToggle button {
+  font-family: var(--fontPixelLabel);
+  background: transparent;
+  color: var(--amarilloLuna);
+  border: 2px solid var(--amarilloLuna);
+  padding: 4px 10px;
+  cursor: pointer;
+  clip-path: var(--pixelStair2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.langToggle button[aria-pressed="true"] {
+  background: var(--rojoOtonal);
+  border-color: var(--rojoOtonal);
+  color: var(--amarilloLuna);
+}
+.langToggle button:hover {
+  border-color: var(--rojoOtonal);
+}
+
+/* btnToggleMenu - boton de apertura del panel derecho (esquina superior derecha del topbar)
+   Estructura: <button> > <span class="btnToggleMenuWrap"> > <img class="btnToggleMenuIcon">
+   El wrap absorbe el scale (independiente de layout) y el img la animacion viaje. */
+.btnToggleMenu {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+.btnToggleMenu:hover,
+.btnToggleMenu:focus {
+  background: transparent;
+  border: none;
+  outline: 2px dashed var(--amarilloLuna);
+  outline-offset: 2px;
+}
+.btnToggleMenuWrap {
+  display: inline-flex;
+  transition: transform .18s ease-out;
+  transform: scale(1);
+  transform-origin: center;
+}
+.btnToggleMenu:hover .btnToggleMenuWrap {
+  transform: scale(1.10);
+}
+body.menuAbierto .btnToggleMenu .btnToggleMenuWrap,
+body.menuAbierto .btnToggleMenu:hover .btnToggleMenuWrap {
+  transform: scale(1.20);
+}
+.btnToggleMenuIcon {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+  display: block;
+  animation: rocketViaje 1.6s ease-in-out infinite;
+  transform-origin: center;
+  transition: filter .18s ease-out;
+}
+.btnToggleMenu:hover .btnToggleMenuIcon {
+  animation-duration: 0.8s;
+  filter: drop-shadow(0 0 3px var(--amarilloLuna));
+}
+body.menuAbierto .btnToggleMenuIcon,
+body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
+  animation: none;
+  transform: none;
+  filter: drop-shadow(0 0 3px var(--rojoOtonal));
+}
+
+/* Animacion viaje intensa - 8 keyframes asimetricos con tres capas de movimiento.
+   Translate vertical +-3px (flotacion amplia), horizontal +-2px (vibracion motor),
+   rotate +-4deg (tilt amplio), scale pulse 1.0->1.05 (motor pulsando).
+   El scale interno se multiplica con el scale del wrap (hover 1.10, menu 1.20). */
+@keyframes rocketViaje {
+  0%, 100% { transform: translate(0, 0)         rotate(0deg)  scale(1);    }
+  12%      { transform: translate(1px, -3px)    rotate(-4deg) scale(1.04); }
+  25%      { transform: translate(-1px, 0)      rotate(2deg)  scale(1);    }
+  38%      { transform: translate(2px, -2px)    rotate(-2deg) scale(1.05); }
+  50%      { transform: translate(-1px, -1px)   rotate(4deg)  scale(1.02); }
+  62%      { transform: translate(1.5px, -3px)  rotate(-3deg) scale(1);    }
+  75%      { transform: translate(0, 0)         rotate(1deg)  scale(1.03); }
+  88%      { transform: translate(-1px, -2px)   rotate(-2deg) scale(1);    }
+}
+
+/* Fade-in del label del boton de seccion al expandir info-expandido.
+   Retardo 100ms para que aparezca despues de que la animacion de ancho del
+   boton (220ms cubic-bezier) haya hecho lugar al texto. */
+@keyframes fadeInLabel {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================================================
+   Hero - amarilloLuna, grid 2-col desktop
+   ============================================================================ */
+.hero {
+  background: var(--blancoNeutro);
+  padding: 48px 32px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+  align-items: center;
+  border-bottom: 3px solid var(--vinotinto);
+}
+.heroTextos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.heroNombre {
+  font-family: var(--fontPixelDisplay);
+  font-size: 28px;
+  color: var(--vinotinto);
+  letter-spacing: 1px;
+  line-height: 1.4;
+  margin: 0;
+}
+.heroRol {
+  font-family: var(--fontPixelLabel);
+  font-size: 16px;
+  color: var(--grisCarbon);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0;
+}
+.slotDinamicoHero {
+  font-family: var(--fontBody);
+  font-size: 18px;
+  color: var(--grisCarbon);
+  min-height: 120px;
+}
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+.heroIlustracion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heroIcon {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* ============================================================================
+   Slot dinamico - estilos por seccion
+   ============================================================================ */
+.seccionDinamicaContenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacingM);
+  animation: fadeInSlot .18s ease-out;
+}
+@keyframes fadeInSlot {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.seccionTitulo {
+  font-family: var(--fontPixelLabel);
+  font-size: 18px;
+  color: var(--vinotinto);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0 0 var(--spacingS) 0;
+}
+.seccionPerfil p {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin-bottom: 12px;
+}
+.seccionPerfil p:last-child {
+  margin-bottom: 0;
+}
+.contactoInmediato p {
+  margin-bottom: var(--spacingS);
+}
+.formacionLista li,
+.competenciasLista li,
+.habilidadesLista li,
+.idiomasLista li {
+  margin-bottom: var(--spacingS);
+}
+
+/* ============================================================================
+   CTAs pixel - heredados del dummy landing
+   ============================================================================ */
+.ctaPixel {
+  font-family: var(--fontPixelLabel);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 14px;
+  padding: 14px 26px;
+  border: 3px solid var(--vinotinto);
+  clip-path: var(--pixelStair6);
+  transition: transform .12s, filter .12s;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}
+.ctaPrimary {
+  background: var(--rojoOtonal);
+  color: var(--amarilloLuna);
+  filter: drop-shadow(4px 4px 0 var(--vinotinto));
+}
+.ctaSecondary {
+  background: var(--vinotinto);
+  color: var(--amarilloLuna);
+  filter: drop-shadow(4px 4px 0 var(--grisCarbon));
+}
+.ctaPixel:hover {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(2px 2px 0 var(--vinotinto));
+  color: var(--amarilloLuna);
+}
+.ctaPixel:active {
+  transform: translate(4px, 4px);
+  filter: drop-shadow(0 0 0 var(--vinotinto));
+}
+
+/* ============================================================================
+   Sub-tarjetas (experiencia entradas, refCards) - dentro del slot dinamico
+   ============================================================================ */
+.tarjetaEntrada {
+  background: var(--blanco);
+  border: 2px solid var(--vinotinto);
+  clip-path: var(--pixelStair2);
+  filter: drop-shadow(2px 2px 0 var(--vinotinto));
+  margin-bottom: var(--spacingM);
+  transition: transform .12s, filter .12s;
+}
+.tarjetaEntrada > summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  padding: 10px 14px;
+  font-family: var(--fontBody);
+  font-size: 17px;
+  color: var(--grisCarbon);
+  position: relative;
+}
+.tarjetaEntrada > summary::-webkit-details-marker {
+  display: none;
+}
+.tarjetaEntrada > summary::before {
+  content: '>';
+  margin-right: 8px;
+  color: var(--vinotinto);
+  display: inline-block;
+  transition: transform .15s linear;
+}
+.tarjetaEntrada[open] > summary::before {
+  transform: rotate(90deg);
+}
+.tarjetaEntrada:hover {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(0 0 0 var(--vinotinto));
+}
+.tarjetaEntrada[open] {
+  transform: translate(0, 0);
+  filter: drop-shadow(1px 1px 0 var(--vinotinto));
+}
+.tarjetaEntrada[open]:hover {
+  transform: translate(0, 0);
+  filter: drop-shadow(2px 2px 0 var(--vinotinto));
+}
+.tarjetaEntrada .detailsCuerpo {
+  padding: 6px 18px 14px 22px;
+}
+
+/* ============================================================================
+   Etiquetas tecnicas (Habilidades / Contacto / Referencias)
+   ============================================================================ */
+.etiqueta {
+  font-family: var(--fontPixelLabel);
+  font-weight: normal;
+  color: var(--vinotinto);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 14px;
+}
+.refTel {
+  font-family: var(--fontBody);
+  color: var(--vinotinto);
+}
+
+/* ============================================================================
+   Panel lateral derecho fijo (estilo recorder-panel moonTripMesure)
+   - Sin backdrop modal; flota sobre el hero, fixed al viewport.
+   - body.menuAbierto controla visibilidad del panel completo.
+   - body.infoExpandido expande los botones de seccion de 44px a 180px,
+     revelando los labels (paridad con .recorder-overlay.info-expanded).
+   ============================================================================ */
+.menuPanelFijo {
+  position: fixed;
+  top: 88px;
+  left: 24px;
+  z-index: 90;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  pointer-events: auto;
+}
+body.menuAbierto .menuPanelFijo { display: flex; }
+
+/* Boton info - colapsado: circulo 44x44 con glifo [i].
+   Expandido (body.infoExpandido): pastilla 180px con [ i ] INFO al lado.
+   La transicion border-radius 50% -> 22px hace que el circulo se estire a ovalo. */
+.btnInfoMenu {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--grisCarbon);
+  color: var(--amarilloLuna);
+  border: 2px solid var(--vinotinto);
+  font-family: var(--fontPixelDisplay);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: background .18s, color .18s, transform .12s, filter .12s,
+              width 220ms cubic-bezier(.4, 0, .2, 1),
+              border-radius 220ms cubic-bezier(.4, 0, .2, 1),
+              padding 220ms cubic-bezier(.4, 0, .2, 1);
+  filter: drop-shadow(2px 2px 0 var(--vinotinto));
+}
+.btnInfoMenu:hover {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(0 0 0 var(--vinotinto));
+}
+body.infoExpandido .btnInfoMenu {
+  background: linear-gradient(135deg, var(--naranjaClaro) 0%, var(--vinotinto) 100%);
+  color: var(--amarilloLuna);
+  border-color: var(--amarilloLuna);
+  width: 180px;
+  border-radius: 22px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnInfoMenu .btnInfoGlyph {
+  font-family: var(--fontPixelDisplay);
+  font-size: 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.btnInfoMenu .btnInfoLabel {
+  display: none;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+}
+body.infoExpandido .btnInfoMenu .btnInfoLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
+}
+
+.menuPanelLista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+  align-items: flex-start;
+}
+.menuPanelLista li {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.menuPanelLista li::before {
+  content: none;
+}
+
+/* Boton de seccion - cuadrado 44x44 colapsado, ensanchable a 180px expandido.
+   Transicion width 220ms cubic-bezier identica al patron recorder. */
+.btnSeccionMenu {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--vinotinto);
+  clip-path: var(--pixelStair2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  font-family: var(--fontPixelLabel);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 13px;
+  filter: drop-shadow(3px 3px 0 var(--vinotinto));
+  transition: transform .12s, filter .12s, width 220ms cubic-bezier(.4, 0, .2, 1), padding 220ms cubic-bezier(.4, 0, .2, 1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+body.infoExpandido .btnSeccionMenu {
+  width: 180px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnSeccionMenu:hover {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(1px 1px 0 var(--vinotinto));
+}
+.btnSeccionMenu:active {
+  transform: translate(3px, 3px);
+  filter: drop-shadow(0 0 0 var(--vinotinto));
+}
+.btnSeccionMenu .btnGlyph {
+  font-family: var(--fontPixelDisplay);
+  font-size: 11px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.btnSeccionMenu .btnSecLabel {
+  display: none;
+  white-space: nowrap;
+}
+body.infoExpandido .btnSeccionMenu .btnSecLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
+}
+.btnSeccionMenu[aria-current="true"] {
+  outline: 2px dashed var(--amarilloLuna);
+  outline-offset: 2px;
+}
+
+/* Gradient repartido entre los 7 botones - cada boton es un color solido
+   interpolado linealmente entre --vinotinto (#551E1B) y --naranjaClaro (#E39F43).
+   Vistos en conjunto forman el gradient vino->naranja. */
+.btnSecContacto     { background: #551E1B; color: var(--amarilloLuna); }
+.btnSecFormacion    { background: #6D3422; color: var(--amarilloLuna); }
+.btnSecExperiencia  { background: #844928; color: var(--amarilloLuna); }
+.btnSecCompetencias { background: #9C5F2F; color: var(--amarilloLuna); }
+.btnSecHabilidades  { background: #B47436; color: var(--vinotinto); }
+.btnSecIdiomas      { background: #CB8A3C; color: var(--vinotinto); }
+.btnSecReferencias  { background: #E39F43; color: var(--vinotinto); }
+
+/* ============================================================================
+   Footer dark
+   ============================================================================ */
+.footerDark {
+  background: var(--grisCarbon);
+  color: var(--amarilloLuna);
+  padding: 32px 24px;
+  text-align: center;
+  font-family: var(--fontPixelLabel);
+  border-top: 3px solid var(--vinotinto);
+}
+.paletaChips {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.paletaChips span {
+  width: 24px;
+  height: 24px;
+  clip-path: var(--pixelStair2);
+  display: inline-block;
+  border: 1px solid var(--amarilloLuna);
+}
+.footerContenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacingM);
+}
+.footerCredito {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+.linkRetorno {
+  color: var(--amarilloLuna);
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 2px solid var(--amarilloLuna);
+  clip-path: var(--pixelStair2);
+  display: inline-block;
+  font-family: var(--fontPixelLabel);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 13px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.linkRetorno:hover {
+  background: var(--rojoOtonal);
+  border-color: var(--rojoOtonal);
+  color: var(--amarilloLuna);
+}
+.qrPlaceholder {
+  width: 96px;
+  height: 96px;
+  background: var(--blanco);
+  color: var(--grisCarbon);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fontPixelLabel);
+  font-size: 14px;
+  clip-path: var(--pixelStair2);
+}
+.footerDisclaimer {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--blancoNeutro);
+  margin-top: var(--spacingM);
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.4;
+}
+.footerDisclaimer p {
+  margin-bottom: var(--spacingXS);
+}
+
+/* ============================================================================
+   Responsive
+   ============================================================================ */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 32px 20px;
+  }
+  .heroIlustracion {
+    order: -1;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+  .topbarNav { gap: 4px; }
+  .topbarNav a,
+  .topbarNav button { font-size: 11px; padding: 4px 8px; }
+  .menuPanelFijo { top: 92px; left: 20px; }
+}
+
+@media (max-width: 480px) {
+  .heroNombre { font-size: 22px; }
+  .heroRol { font-size: 13px; }
+  .slotDinamicoHero { font-size: 17px; }
+  .heroCtas { flex-direction: column; }
+  .ctaPixel { text-align: center; }
+  .topbar {
+    padding: 10px 14px;
+    gap: var(--spacingS);
+  }
+  .topbarBrand { font-size: 11px; }
+  .topbarRight { gap: var(--spacingS); }
+  .seccionTitulo { font-size: 16px; }
+  .qrPlaceholder { width: 80px; height: 80px; }
+  .menuPanelFijo { top: 82px; left: 14px; }
+  body.infoExpandido .btnSeccionMenu { width: 160px; padding: 0 12px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjetaEntrada,
+  .ctaPixel,
+  .topbarNav a,
+  .topbarNav button,
+  .langToggle button,
+  .btnToggleMenu,
+  .btnToggleMenuWrap,
+  .btnToggleMenuIcon,
+  .btnInfoMenu,
+  .linkRetorno,
+  .tarjetaEntrada > summary::before,
+  .menuPanelFijo,
+  .btnSeccionMenu,
+  .btnSeccionMenu .btnSecLabel,
+  .seccionDinamicaContenido {
+    transition: none;
+    animation: none;
+  }
+}
+</style>
+</head>
+<body>
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HEAD/BODY OPEN - open -->
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - open -->
+<header class="topbar" id="topbarSeccion">
+  <div class="topbarBrandRow">
+    <button id="btnToggleMenu" class="btnToggleMenu" type="button" aria-expanded="false" aria-controls="menuPanel" aria-label="Abrir menu de secciones del CV"><span class="btnToggleMenuWrap"><img class="btnToggleMenuIcon" id="btnToggleMenuIcon" alt="" width="56" height="56" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADZklEQVR42u2aT0gUcRTHv7+dRV1h9VBuoau0UpkUBWVqXUPyEiIadAk6WETbxaxDtw5FgZlkGFFBQnYSkTx00S4K5qqFofkHo6l0TVfXVUxdl935dVjn14w7mdaszsrvnX7zfm+W/ez3zXu/eSyRJAnb2UzY5sYBOSAH5IAckANyQA4Yu2Y2wpcQzAJdaz8UDJGYA1RClR1wAACO5x5Fd9cHVdzzITH2FdwZCgAA0qkIcWUNANNCXOylqKzcnXsVWFxcwPKCH8GVvbbmlth+BgWzQKtqbiMl6EHvqCdc5UwCAECSQnCcyIf4rlM39bakivoXffi2RFVgkhQCAIykWHUD21QFlWnpnfQwf5ojC0k2G7sedLVj9tBheOkidnz6bDzAvXsyVOU+wZoIqzUJFy+dBQD4prxr3i9+n2Drtz/DxWZhvMMwgFQcc2tunCk6CZMQp1LvbyZ/VoItj2w5oJyC18rPM9/8gh/Pnjawa0lR/uXi4haH4RaHVcoZqorW1j6mbe2tyM7epwIDgNY3HcjNPQYAmJuZ17xfjpVtaOArW5eWFm09YP2rOnR1vVcpN+2dZSlWdvUcpFAAvunZiHvlyinHA8Dg4Ahb9/cNEcMUmQfVLyN8xSUF8E15GYjJJLD16oLS1Niiy7lT9z6YkWFfd6wSVO6BAkmEQBJZjMOepvszSPScbAtmgRaXFET4HRm7mYJK5XpdAxDH3Lqrpjtg981U1v/yKydZiq5lTY0tqHn4CE7nlajB/XeKksBl+D0uumGlFWlp6Bfe+icWuv9HMTLtFgCANesI/KeCoDDDUvg6QkVlMTE0IPU0oafaSQvtFsBuQVLWwbBfEdN5YxfyKyOBrldcgCSFNCuvIVKUepqwjNRIv+K3IitveNGoilFXsKfaSQGwtFwNR2FmgP1dDUiw5RH5KCcfumNm6KSVmvPDH0FouOdZkgWyugLdr6qLSkPXBZAELv95jw0eAEoE+E1WI4x71t8H/R4X7asuZteZdgsIDYESQRX3ZWwpPCG7O060JmibpZwuKaoFl3urmUhzo5rxmw0XlZEFjc8BseXAKPbPgHIqyjYzkYbTL7qJUZTbMGA8xiN8OeW1MCWnk98twnhm1iMljWyE/xGIA3JADsgBOSAH5IAckANyQA7IAbXsF/gLUMd16VquAAAAAElFTkSuQmCC"></span></button>
+    <div class="topbarBrand" data-i18n="topbarBrand">David Forero - GIS developer</div>
+  </div>
+  <nav class="topbarNav" aria-label="Navegacion principal">
+    <a href="#TBD-moonTripLanding-portafolio" id="navPortafolioLink" data-i18n="navPortafolio">[ PORTAFOLIO ]</a>
+    <button type="button" id="navInicioBtn" data-seccion="perfil" data-i18n="navInicio">[ INICIO ]</button>
+    <button type="button" id="navContactoBtn" data-seccion="contacto" data-i18n="navContacto">[ CONTACTO ]</button>
+  </nav>
+  <div class="topbarRight">
+    <div class="langToggle" role="group" aria-label="Language toggle">
+      <button id="btnLangEs" type="button" aria-pressed="true" data-lang="es">ES</button>
+      <button id="btnLangEn" type="button" aria-pressed="false" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - close -->
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HERO - open -->
+<section class="hero" id="heroSeccion">
+  <div class="heroTextos">
+    <h1 class="heroNombre" data-i18n="heroNombre">[ DAVID FORERO PARRA ]</h1>
+    <p class="heroRol" data-i18n="heroRol">Developer GIS &middot; Analista geoespacial &middot; Modelacion ecologica</p>
+    <div class="slotDinamicoHero" id="slotDinamicoHero" aria-live="polite">
+      <!-- Contenido inicial inyectado por JS desde #tplPerfil -->
+    </div>
+    <div class="heroCtas">
+      <button type="button" class="ctaPixel ctaPrimary" data-seccion="experiencia" data-i18n="ctaVerExperiencia">[A] VER EXPERIENCIA</button>
+      <button type="button" class="ctaPixel ctaSecondary" data-seccion="contacto" data-i18n="ctaContactar">[B] CONTACTAR</button>
+    </div>
+  </div>
+  <div class="heroIlustracion">
+    <img class="heroIcon" id="iconoRocket" alt="Moon Trip mascot" src="data:image/png;base64,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">
+  </div>
+</section>
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HERO - close -->
+
+<!-- OWNERSHIP ZONE - Wave 1d HTML semantico ronda 4b - PANEL FIJO DERECHO (estilo mesure) - open -->
+<aside class="menuPanelFijo" id="menuPanel" aria-label="Indice CV">
+  <button type="button" class="btnInfoMenu" id="btnInfoMenu" aria-pressed="false" aria-label="Mostrar u ocultar etiquetas" data-i18n-aria="btnInfoMenuAria"><span class="btnInfoGlyph">[i]</span><span class="btnInfoLabel" data-i18n="btnInfoLabel">INFO</span></button>
+  <ul class="menuPanelLista">
+    <li><button type="button" class="btnSeccionMenu btnSecContacto" data-seccion="contacto" aria-label="Contacto"><span class="btnGlyph">[ C ]</span><span class="btnSecLabel" data-i18n="btnSecContacto">CONTACTO</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecFormacion" data-seccion="formacion" aria-label="Formacion"><span class="btnGlyph">[ F ]</span><span class="btnSecLabel" data-i18n="btnSecFormacion">FORMACION</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecExperiencia" data-seccion="experiencia" aria-label="Experiencia"><span class="btnGlyph">[ E ]</span><span class="btnSecLabel" data-i18n="btnSecExperiencia">EXPERIENCIA</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecCompetencias" data-seccion="competencias" aria-label="Competencias"><span class="btnGlyph">[ T ]</span><span class="btnSecLabel" data-i18n="btnSecCompetencias">COMPETENCIAS</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecHabilidades" data-seccion="habilidades" aria-label="Habilidades"><span class="btnGlyph">[ H ]</span><span class="btnSecLabel" data-i18n="btnSecHabilidades">HABILIDADES</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecIdiomas" data-seccion="idiomas" aria-label="Idiomas"><span class="btnGlyph">[ I ]</span><span class="btnSecLabel" data-i18n="btnSecIdiomas">IDIOMAS</span></button></li>
+    <li><button type="button" class="btnSeccionMenu btnSecReferencias" data-seccion="referencias" aria-label="Referencias"><span class="btnGlyph">[ R ]</span><span class="btnSecLabel" data-i18n="btnSecReferencias">REFERENCIAS</span></button></li>
+  </ul>
+</aside>
+<!-- OWNERSHIP ZONE - Wave 1d HTML semantico ronda 4b - PANEL FIJO DERECHO (estilo mesure) - close -->
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TEMPLATES OCULTOS - open -->
+
+<template id="tplPerfil">
+  <div class="seccionDinamicaContenido seccionPerfil">
+    <p data-i18n="perfilParrafo1">Ingeniero Ambiental con mas de 10 anos de experiencia en analisis geoespacial (GIS), conservacion y planificacion territorial en regiones como Andes, Caribe, Orinoquia y Amazonia. Ha desarrollado modelos de conectividad ecologica, analisis de deforestacion y herramientas cartograficas aplicadas a la toma de decisiones.</p>
+    <p data-i18n="perfilParrafo2">Cuenta con experiencia en trabajo de campo, procesamiento de imagenes satelitales y acompanamiento a comunidades rurales y actores institucionales. Domina herramientas como Spec Driven Development, Ai agentica y skills, Google Earth Engine, QGIS, ArcGIS Pro, Python, HTML, CSS y JavaScript. Es piloto profesional de RPAS y se destaca por su enfoque tecnico, trabajo colaborativo y compromiso con la sostenibilidad y la gobernanza territorial.</p>
+  </div>
+</template>
+
+<template id="tplContacto">
+  <div class="seccionDinamicaContenido seccionContacto">
+    <h2 class="seccionTitulo" data-i18n="contactoTitulo">Contacto inmediato</h2>
+    <div class="contactoInmediato">
+      <p><span class="etiqueta" data-i18n="contactoEmailLabel">Email:</span> <a href="mailto:davidforeroparra@gmail.com">davidforeroparra@gmail.com</a></p>
+      <p><span class="etiqueta" data-i18n="contactoTelLabel">Telefono:</span> <span>(+57) 321 5491211</span></p>
+      <p><span class="etiqueta" data-i18n="contactoUbicLabel">Ubicacion:</span> <span data-i18n="contactoUbicValor">Santa Marta, Colombia</span></p>
+      <p><span class="etiqueta" data-i18n="contactoLinkedinLabel">LinkedIn:</span> <a href="https://linkedin.com/in/david-forero-parra-419893139" target="_blank" rel="noopener">linkedin.com/in/david-forero-parra-419893139</a></p>
+    </div>
+  </div>
+</template>
+
+<template id="tplFormacion">
+  <div class="seccionDinamicaContenido seccionFormacion">
+    <h2 class="seccionTitulo" data-i18n="formacionTitulo">Formacion academica</h2>
+    <ul class="formacionLista">
+      <li data-i18n="formacionItem1">Ingeniero Ambiental | Universidad ECCI | 2013</li>
+      <li data-i18n="formacionItem2">Tecnico en Desarrollo Ambiental | Universidad ECCI | 2007</li>
+      <li data-i18n="formacionItem3">Piloto Profesional de RPAS (drones) | Escuela Aeronautica Civil - APD | 2020</li>
+      <li data-i18n="formacionItem4">Fundamentos de Analitica de Datos | MinTIC y Correlation One | 2022</li>
+    </ul>
+  </div>
+</template>
+
+<template id="tplExperiencia">
+  <div class="seccionDinamicaContenido seccionExperiencia">
+    <h2 class="seccionTitulo" data-i18n="experienciaTitulo">Experiencia profesional destacada</h2>
+
+    <details class="tarjetaEntrada expCard" id="expDeloitte">
+      <summary><strong data-i18n="exp01Rol">Developer GIS</strong> &middot; <span data-i18n="exp01Empresa">Deloitte Colombia - Innovanalisis - BBVA</span> &middot; <span data-i18n="exp01Modalidad">Remoto - contratista</span> &middot; <span data-i18n="exp01Fechas">mayo 2025 - actualidad</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp01Bullet1">Desarrollo de un toolkit para analisis geoespacial, incluido un mapa interactivo y herramientas de apoyo, para la implementacion de la norma de desempeno 6 de IFC, para Innovanalisis, acompanando al equipo de Deloitte y BBVA Colombia.</li>
+          <li data-i18n="exp01Bullet2">Estructuracion, diseno e implementacion de las sesiones de fortalecimiento de capacidades en analisis espacial como complemento al proceso.</li>
+          <li data-i18n="exp01Bullet3">Parte del equipo consultor finalista global del Natural Intelligence Challenge TNFD - Conservation xLabs, encargado de arquitectura y deployment del modulo m01 para analisis espacial, desarrollado en la nube de Google (Google Earth Engine + workspace).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expPNN">
+      <summary><strong data-i18n="exp02Rol">Profesional PVC - Analista de Sensores Remotos</strong> &middot; <span data-i18n="exp02Empresa">Parques Nacionales Naturales de Colombia</span> &middot; <span data-i18n="exp02Modalidad">Santa Marta, Magdalena - Hibrido</span> &middot; <span data-i18n="exp02Fechas">enero 2025 - actualidad</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp02Bullet1">Apoyo en el monitoreo programatico ambiental mediante sensores remotos y plataformas satelitales, con foco en areas protegidas del Caribe colombiano, integrando metodologias de seguimiento al transito maritimo, actividad maritima industrial y pesca ilegal, en areas protegidas bajo presiones antropicas.</li>
+          <li data-i18n="exp02Bullet2">Elaboracion y analisis de insumos geoespaciales que apoyan procesos de planificacion de la conservacion, restauracion ecologica y gestion de amenazas sobre la biodiversidad.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expAlliance">
+      <summary><strong data-i18n="exp03Rol">Consultor GIS</strong> &middot; <span data-i18n="exp03Empresa">Alliance of Bioversity International &amp; CIAT</span> &middot; <span data-i18n="exp03Modalidad">Remoto</span> &middot; <span data-i18n="exp03Fechas">noviembre 2024 - enero 2025</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp03Bullet1">Desarrollo de analisis territoriales multitemporales para monitoreo de deforestacion en mas de 2000 lotes cacaoteros en Peru y Ecuador, en el marco del cumplimiento del reglamento europeo EUDR.</li>
+          <li data-i18n="exp03Bullet2">Estructuracion de insumos geoespaciales y analisis tecnicos para la identificacion de productores en riesgo de incumplimiento con los requerimientos de entrada al mercado europeo.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expUsaid">
+      <summary><strong data-i18n="exp04Rol">Consultor GIS</strong> &middot; <span data-i18n="exp04Empresa">Programa Naturaleza Productiva - USAID</span> &middot; <span data-i18n="exp04Modalidad">Bogota</span> &middot; <span data-i18n="exp04Fechas">enero 2024 - enero 2025</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp04Bullet1">Diseno e implementacion de modelos de conectividad ecologica, fragmentacion del paisaje y huella espacial humana para cadenas productivas sostenibles como cacao, cafe y ganaderia, entre otras, en regiones del Caribe, Andes y Orinoquia.</li>
+          <li data-i18n="exp04Bullet2">Generacion de insumos geoespaciales para la priorizacion de territorios con potencial de implementacion de Soluciones basadas en Naturaleza (SbN), articulando informacion multiescalar para toma de decisiones en conservacion.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expFob">
+      <summary><strong data-i18n="exp05Rol">Consultor GIS</strong> &middot; <span data-i18n="exp05Empresa">Fundacion Orinoquia Biodiversa - FOB</span> &middot; <span data-i18n="exp05Modalidad">Remoto</span> &middot; <span data-i18n="exp05Fechas">agosto 2023 - enero 2024</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp05Bullet1">Apoyo a la formulacion de planes de manejo y conservacion para el Palo de aceite y el Jaguar en jurisdiccion de CorpOrinoquia.</li>
+          <li data-i18n="exp05Bullet2">Generacion de cartografia tematica y capas de cobertura terrestre segun lineamientos oficiales.</li>
+          <li data-i18n="exp05Bullet3">Procesamiento de insumos geoespaciales para analisis de conectividad ecologica.</li>
+          <li data-i18n="exp05Bullet4">Acompanamiento tecnico a equipos interdisciplinarios y entrega de informes para planificacion ambiental.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expGreen">
+      <summary><strong data-i18n="exp06Rol">Analista GIS</strong> &middot; <span data-i18n="exp06Empresa">Green Energy</span> &middot; <span data-i18n="exp06Modalidad">Ibague, Tolima</span> &middot; <span data-i18n="exp06Fechas">mayo 2022 - julio 2023</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp06Bullet1">Elaboracion de cartografia tematica y capas geoespaciales conforme a lineamientos tecnicos para el licenciamiento ambiental. Apoyo en el procesamiento de datos SIG y estructuracion de insumos tecnicos aplicables a normativas ambientales vigentes.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expAqua">
+      <summary><strong data-i18n="exp07Rol">Piloto drones - Analista GIS</strong> &middot; <span data-i18n="exp07Empresa">AquaBiosfera</span> &middot; <span data-i18n="exp07Modalidad">Santa Marta, Magdalena</span> &middot; <span data-i18n="exp07Fechas">octubre 2021 - julio 2023 (periodos no continuos)</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp07Bullet1">Ejecucion de vuelos con drones (RPAS) para captura de datos geoespaciales, analisis de cobertura terrestre aplicando tecnicas de fotointerpretacion, sensores remotos y estructuracion de bases de datos espaciales.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expCorpNatural">
+      <summary><strong data-i18n="exp08Rol">Coordinador SIG - Piloto RPAS</strong> &middot; <span data-i18n="exp08Empresa">Corporacion Natural SIG</span> &middot; <span data-i18n="exp08Modalidad">Santa Marta, Magdalena</span> &middot; <span data-i18n="exp08Fechas">noviembre 2017 - enero 2022</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp08Bullet1">Coordinacion de actividades SIG y operacion de drones (RPAS) para levantamiento geoespacial, aplicando tecnicas de fotogrametria, sensores remotos y trabajo de campo.</li>
+          <li data-i18n="exp08Bullet2">Desarrollo de modelos de conectividad ecologica y coberturas terrestres, estructuracion de bases de datos espaciales bajo estandar GDB-ANLA, aportando insumos clave para procesos de compensacion y planificacion ambiental.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expGiz">
+      <summary><strong data-i18n="exp09Rol">Consultor en GIS y corredores de conectividad</strong> &middot; <span data-i18n="exp09Empresa">Deutsche Gesellschaft fur Internationale Zusammenarbeit - GIZ</span> &middot; <span data-i18n="exp09Modalidad">Remoto</span> &middot; <span data-i18n="exp09Fechas">julio 2019 - noviembre 2019</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp09Bullet1">Diseno de modelos de conectividad ecologica y analisis espacial para identificar areas prioritarias de conservacion en el marco de iniciativas de cooperacion internacional, con enfasis en la declaracion de nuevas areas protegidas y planificacion territorial.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada expCard" id="expInvemar">
+      <summary><strong data-i18n="exp10Rol">Investigador LabSis</strong> &middot; <span data-i18n="exp10Empresa">Instituto de Investigaciones Marinas y Costeras - INVEMAR</span> &middot; <span data-i18n="exp10Modalidad">Santa Marta, Magdalena</span> &middot; <span data-i18n="exp10Fechas">julio 2015 - diciembre 2016</span></summary>
+      <div class="detailsCuerpo">
+        <ul>
+          <li data-i18n="exp10Bullet1">Apoyo tecnico en analisis espaciales costeros y marinos, como parte del Laboratorio de Sistemas de Informacion Geografica (LabSis), incluyendo cartografia tematica para monitoreo ambiental e insumos cientificos para la gestion integral del territorio marino-costero.</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</template>
+
+<template id="tplCompetencias">
+  <div class="seccionDinamicaContenido seccionCompetencias">
+    <h2 class="seccionTitulo" data-i18n="competenciasTitulo">Competencias transversales</h2>
+    <ul class="competenciasLista">
+      <li data-i18n="comp01">Consultoria independiente en analisis geoespacial</li>
+      <li data-i18n="comp02">Trabajo en equipo interdisciplinario y planificacion territorial</li>
+      <li data-i18n="comp03">Liderazgo tecnico y orientacion a resultados</li>
+      <li data-i18n="comp04">Experiencia en recoleccion de datos durante salidas de campo</li>
+      <li data-i18n="comp05">Pensamiento analitico y resolucion de problemas espaciales</li>
+    </ul>
+  </div>
+</template>
+
+<template id="tplHabilidades">
+  <div class="seccionDinamicaContenido seccionHabilidades">
+    <h2 class="seccionTitulo" data-i18n="habilidadesTitulo">Habilidades tecnicas</h2>
+    <ul class="habilidadesLista">
+      <li><span class="etiqueta" data-i18n="hab01Label">GIS Development:</span> <span data-i18n="hab01Valor">arquitectura y despliegue de soluciones geoespaciales en la nube, enfocadas a usuario final, cliente interno o externo.</span></li>
+      <li><span class="etiqueta" data-i18n="hab02Label">Sensores remotos y fotogrametria:</span> <span data-i18n="hab02Valor">procesamiento de imagenes aereas y satelitales.</span></li>
+      <li><span class="etiqueta" data-i18n="hab03Label">Modelacion espacial:</span> <span data-i18n="hab03Valor">conectividad ecologica, fragmentacion del paisaje, coberturas terrestres y huella espacial humana.</span></li>
+      <li><span class="etiqueta" data-i18n="hab04Label">SIG y cartografia:</span> <span data-i18n="hab04Valor">Google Earth Engine, QGIS, ArcGIS Pro.</span></li>
+      <li><span class="etiqueta" data-i18n="hab05Label">Software especializado:</span> <span data-i18n="hab05Valor">Linkage Mapper, Maxent, Conefor, Guidos Toolbox, Gnarly Tools, InVEST.</span></li>
+      <li><span class="etiqueta" data-i18n="hab06Label">Lenguajes de programacion:</span> <span data-i18n="hab06Valor">Python, HTML, CSS y JavaScript aplicados a analisis geoespacial, implementados por medio de Spec Driven Development.</span></li>
+      <li><span class="etiqueta" data-i18n="hab07Label">RPAS y drones:</span> <span data-i18n="hab07Valor">operacion de drones y procesamiento de datos con DroneDeploy y Pix4D.</span></li>
+      <li><span class="etiqueta" data-i18n="hab08Label">Bases de datos espaciales:</span> <span data-i18n="hab08Valor">estructuracion conforme al estandar GDB-ANLA.</span></li>
+      <li><span class="etiqueta" data-i18n="hab09Label">Ofimatica:</span> <span data-i18n="hab09Valor">elaboracion de informes tecnicos y uso de herramientas de oficina.</span></li>
+    </ul>
+  </div>
+</template>
+
+<template id="tplIdiomas">
+  <div class="seccionDinamicaContenido seccionIdiomas">
+    <h2 class="seccionTitulo" data-i18n="idiomasTitulo">Idiomas</h2>
+    <ul class="idiomasLista">
+      <li data-i18n="idioma01">Espanol - Nativo</li>
+      <li data-i18n="idioma02">Ingles - Fluido</li>
+    </ul>
+  </div>
+</template>
+
+<template id="tplReferencias">
+  <div class="seccionDinamicaContenido seccionReferencias">
+    <h2 class="seccionTitulo" data-i18n="referenciasTitulo">Referencias</h2>
+
+    <details class="tarjetaEntrada refCard" id="refCard1" data-refkey="ref1">
+      <summary><strong data-i18n="ref01Nombre">Jair Mendoza Aldana</strong> &middot; <span data-i18n="ref01Org">WWF Colombia</span> &middot; <span data-i18n="ref01Rol">Experto regional etnico en medios de vida y economias locales sostenibles</span> &middot; <span class="refTel">(+57) 304 ********</span></summary>
+      <div class="detailsCuerpo">
+        <p><span class="etiqueta" data-i18n="refTelLabel">Telefono:</span> <span class="refTel" data-reveal="ref1"></span></p>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada refCard" id="refCard2" data-refkey="ref2">
+      <summary><strong data-i18n="ref02Nombre">Angela Fernandez</strong> &middot; <span data-i18n="ref02Org">GEB</span> &middot; <span data-i18n="ref02Rol">Profesional especialista SIG</span> &middot; <span class="refTel">(+57) 301 ********</span></summary>
+      <div class="detailsCuerpo">
+        <p><span class="etiqueta" data-i18n="refTelLabel">Telefono:</span> <span class="refTel" data-reveal="ref2"></span></p>
+      </div>
+    </details>
+
+    <details class="tarjetaEntrada refCard" id="refCard3" data-refkey="ref3">
+      <summary><strong data-i18n="ref03Nombre">Ricardo Sanchez Lopez</strong> &middot; <span data-i18n="ref03Org">Chemonics Colombia</span> &middot; <span data-i18n="ref03Rol">Director</span> &middot; <span class="refTel">(+57) 321 ********</span></summary>
+      <div class="detailsCuerpo">
+        <p><span class="etiqueta" data-i18n="refTelLabel">Telefono:</span> <span class="refTel" data-reveal="ref3"></span></p>
+      </div>
+    </details>
+
+  </div>
+</template>
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TEMPLATES OCULTOS - close -->
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - open -->
+<footer class="footerDark" id="footerSeccion">
+  <div class="paletaChips" aria-hidden="true">
+    <span style="background:#F7F3A1"></span>
+    <span style="background:#E39F43"></span>
+    <span style="background:#A1602A"></span>
+    <span style="background:#9B1B18"></span>
+    <span style="background:#551E1B"></span>
+    <span style="background:#272B2E"></span>
+    <span style="background:#F0F0F0"></span>
+    <span style="background:#FFFFFF"></span>
+  </div>
+  <div class="footerContenido">
+    <p class="footerCredito" data-i18n="footerCredito">moonTripDeveloper &middot; Build SdDd v1.0 &middot; 20260515</p>
+    <a class="linkRetorno" id="linkRetorno" href="#TBD-moonTripLanding-portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
+    <div class="qrPlaceholder" id="qrRetorno" aria-label="QR placeholder" title="QR placeholder - Wave 3">QR</div>
+  </div>
+  <div class="footerDisclaimer">
+    <p data-i18n="disclaimerLinea1">Pagina estatica autocontenida. No activa APIs sensibles del dispositivo. No realiza tracking.</p>
+    <p data-i18n="disclaimerLinea2">moonTripDeveloper - parte del catalogo Moon Trip. Build SdDd v1.0.</p>
+  </div>
+</footer>
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - close -->
+
+<!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HEAD/BODY OPEN - close -->
+
+<!-- OWNERSHIP ZONE - Wave 2 JS i18n + reveal + drawer + slot - SCRIPT - open -->
+<script>
+(function moonTripDeveloperIIFE() {
+  'use strict';
+
+  // ==========================================================================
+  // Configuracion
+  // ==========================================================================
+  var STORAGE_KEY = 'moonTripDeveloper.lang.v1';
+
+  // Variable interna closure - los telefonos NO viven en el DOM al cargar
+  var referencias = {
+    ref1: '(+57) 304 3415443',
+    ref2: '(+57) 301 3906549',
+    ref3: '(+57) 321 4429781'
+  };
+
+  // Idioma vigente recordado en el closure (necesario para reaplicar i18n
+  // sobre contenido inyectado dinamicamente al cargar una seccion del slot)
+  var langActual = 'es';
+
+  // Seccion vigente en el slot dinamico - controla aria-current en el menu
+  var seccionActual = 'perfil';
+
+  // Mapa clave seccion -> id del template
+  var TPL_POR_SECCION = {
+    perfil: 'tplPerfil',
+    contacto: 'tplContacto',
+    formacion: 'tplFormacion',
+    experiencia: 'tplExperiencia',
+    competencias: 'tplCompetencias',
+    habilidades: 'tplHabilidades',
+    idiomas: 'tplIdiomas',
+    referencias: 'tplReferencias'
+  };
+
+  // ==========================================================================
+  // Diccionario bilingue
+  // ==========================================================================
+  var i18n = {
+    es: {
+      topbarBrand: 'David Forero - GIS developer',
+      navPortafolio: '[ PORTAFOLIO ]',
+      navInicio: '[ INICIO ]',
+      navContacto: '[ CONTACTO ]',
+      btnInfoMenuAria: 'Mostrar u ocultar etiquetas',
+      btnInfoLabel: 'INFO',
+      btnSecContacto: 'CONTACTO',
+      btnSecFormacion: 'FORMACIÓN',
+      btnSecExperiencia: 'EXPERIENCIA',
+      btnSecCompetencias: 'COMPETENCIAS',
+      btnSecHabilidades: 'HABILIDADES',
+      btnSecIdiomas: 'IDIOMAS',
+      btnSecReferencias: 'REFERENCIAS',
+
+      heroNombre: '[ DAVID FORERO PARRA ]',
+      heroRol: 'Developer GIS · Analista geoespacial · Modelación ecológica',
+      ctaVerExperiencia: '[A] VER EXPERIENCIA',
+      ctaContactar: '[B] CONTACTAR',
+
+      contactoTitulo: 'Contacto inmediato',
+      contactoEmailLabel: 'Email:',
+      contactoTelLabel: 'Teléfono:',
+      contactoUbicLabel: 'Ubicación:',
+      contactoUbicValor: 'Santa Marta, Colombia',
+      contactoLinkedinLabel: 'LinkedIn:',
+
+      perfilParrafo1: 'Ingeniero Ambiental con más de 10 años de experiencia en análisis geoespacial (GIS), conservación y planificación territorial en regiones como Andes, Caribe, Orinoquía y Amazonia. Ha desarrollado modelos de conectividad ecológica, análisis de deforestación y herramientas cartográficas aplicadas a la toma de decisiones.',
+      perfilParrafo2: 'Cuenta con experiencia en trabajo de campo, procesamiento de imágenes satelitales y acompañamiento a comunidades rurales y actores institucionales. Domina herramientas como Spec Driven Development, Ai agentica y skills, Google Earth Engine, QGIS, ArcGIS Pro, Python, HTML, CSS y JavaScript. Es piloto profesional de RPAS y se destaca por su enfoque técnico, trabajo colaborativo y compromiso con la sostenibilidad y la gobernanza territorial.',
+
+      formacionTitulo: 'Formación académica',
+      formacionItem1: 'Ingeniero Ambiental | Universidad ECCI | 2013',
+      formacionItem2: 'Técnico en Desarrollo Ambiental | Universidad ECCI | 2007',
+      formacionItem3: 'Piloto Profesional de RPAS (drones) | Escuela Aeronáutica Civil - APD | 2020',
+      formacionItem4: 'Fundamentos de Analítica de Datos | MinTIC y Correlation One | 2022',
+
+      experienciaTitulo: 'Experiencia profesional destacada',
+
+      exp01Rol: 'Developer GIS',
+      exp01Empresa: 'Deloitte Colombia - Innovanalisis - BBVA',
+      exp01Modalidad: 'Remoto - contratista',
+      exp01Fechas: 'mayo 2025 - actualidad',
+      exp01Bullet1: 'Desarrollo de un toolkit para análisis geoespacial, incluido un mapa interactivo y herramientas de apoyo, para la implementación de la norma de desempeño 6 de IFC, para Innovanalisis, acompañando al equipo de Deloitte y BBVA Colombia.',
+      exp01Bullet2: 'Estructuración, diseño e implementación de las sesiones de fortalecimiento de capacidades en análisis espacial como complemento al proceso.',
+      exp01Bullet3: 'Parte del equipo consultor finalista global del Natural Intelligence Challenge TNFD - Conservation xLabs, encargado de arquitectura y deployment del módulo m01 para análisis espacial, desarrollado en la nube de Google (Google Earth Engine + workspace).',
+
+      exp02Rol: 'Profesional PVC - Analista de Sensores Remotos',
+      exp02Empresa: 'Parques Nacionales Naturales de Colombia',
+      exp02Modalidad: 'Santa Marta, Magdalena - Híbrido',
+      exp02Fechas: 'enero 2025 - actualidad',
+      exp02Bullet1: 'Apoyo en el monitoreo programático ambiental mediante sensores remotos y plataformas satelitales, con foco en áreas protegidas del Caribe colombiano, integrando metodologías de seguimiento al tránsito marítimo, actividad marítima industrial y pesca ilegal, en áreas protegidas bajo presiones antrópicas.',
+      exp02Bullet2: 'Elaboración y análisis de insumos geoespaciales que apoyan procesos de planificación de la conservación, restauración ecológica y gestión de amenazas sobre la biodiversidad.',
+
+      exp03Rol: 'Consultor GIS',
+      exp03Empresa: 'Alliance of Bioversity International & CIAT',
+      exp03Modalidad: 'Remoto',
+      exp03Fechas: 'noviembre 2024 - enero 2025',
+      exp03Bullet1: 'Desarrollo de análisis territoriales multitemporales para monitoreo de deforestación en más de 2000 lotes cacaoteros en Perú y Ecuador, en el marco del cumplimiento del reglamento europeo EUDR.',
+      exp03Bullet2: 'Estructuración de insumos geoespaciales y análisis técnicos para la identificación de productores en riesgo de incumplimiento con los requerimientos de entrada al mercado europeo.',
+
+      exp04Rol: 'Consultor GIS',
+      exp04Empresa: 'Programa Naturaleza Productiva - USAID',
+      exp04Modalidad: 'Bogotá',
+      exp04Fechas: 'enero 2024 - enero 2025',
+      exp04Bullet1: 'Diseño e implementación de modelos de conectividad ecológica, fragmentación del paisaje y huella espacial humana para cadenas productivas sostenibles como cacao, café y ganadería, entre otras, en regiones del Caribe, Andes y Orinoquía.',
+      exp04Bullet2: 'Generación de insumos geoespaciales para la priorización de territorios con potencial de implementación de Soluciones basadas en Naturaleza (SbN), articulando información multiescalar para toma de decisiones en conservación.',
+
+      exp05Rol: 'Consultor GIS',
+      exp05Empresa: 'Fundación Orinoquia Biodiversa - FOB',
+      exp05Modalidad: 'Remoto',
+      exp05Fechas: 'agosto 2023 - enero 2024',
+      exp05Bullet1: 'Apoyo a la formulación de planes de manejo y conservación para el Palo de aceite y el Jaguar en jurisdicción de CorpOrinoquia.',
+      exp05Bullet2: 'Generación de cartografía temática y capas de cobertura terrestre según lineamientos oficiales.',
+      exp05Bullet3: 'Procesamiento de insumos geoespaciales para análisis de conectividad ecológica.',
+      exp05Bullet4: 'Acompañamiento técnico a equipos interdisciplinarios y entrega de informes para planificación ambiental.',
+
+      exp06Rol: 'Analista GIS',
+      exp06Empresa: 'Green Energy',
+      exp06Modalidad: 'Ibagué, Tolima',
+      exp06Fechas: 'mayo 2022 - julio 2023',
+      exp06Bullet1: 'Elaboración de cartografía temática y capas geoespaciales conforme a lineamientos técnicos para el licenciamiento ambiental. Apoyo en el procesamiento de datos SIG y estructuración de insumos técnicos aplicables a normativas ambientales vigentes.',
+
+      exp07Rol: 'Piloto drones - Analista GIS',
+      exp07Empresa: 'AquaBiosfera',
+      exp07Modalidad: 'Santa Marta, Magdalena',
+      exp07Fechas: 'octubre 2021 - julio 2023 (periodos no continuos)',
+      exp07Bullet1: 'Ejecución de vuelos con drones (RPAS) para captura de datos geoespaciales, análisis de cobertura terrestre aplicando técnicas de fotointerpretación, sensores remotos y estructuración de bases de datos espaciales.',
+
+      exp08Rol: 'Coordinador SIG - Piloto RPAS',
+      exp08Empresa: 'Corporación Natural SIG',
+      exp08Modalidad: 'Santa Marta, Magdalena',
+      exp08Fechas: 'noviembre 2017 - enero 2022',
+      exp08Bullet1: 'Coordinación de actividades SIG y operación de drones (RPAS) para levantamiento geoespacial, aplicando técnicas de fotogrametría, sensores remotos y trabajo de campo.',
+      exp08Bullet2: 'Desarrollo de modelos de conectividad ecológica y coberturas terrestres, estructuración de bases de datos espaciales bajo estándar GDB-ANLA, aportando insumos clave para procesos de compensación y planificación ambiental.',
+
+      exp09Rol: 'Consultor en GIS y corredores de conectividad',
+      exp09Empresa: 'Deutsche Gesellschaft für Internationale Zusammenarbeit - GIZ',
+      exp09Modalidad: 'Remoto',
+      exp09Fechas: 'julio 2019 - noviembre 2019',
+      exp09Bullet1: 'Diseño de modelos de conectividad ecológica y análisis espacial para identificar áreas prioritarias de conservación en el marco de iniciativas de cooperación internacional, con énfasis en la declaración de nuevas áreas protegidas y planificación territorial.',
+
+      exp10Rol: 'Investigador LabSis',
+      exp10Empresa: 'Instituto de Investigaciones Marinas y Costeras - INVEMAR',
+      exp10Modalidad: 'Santa Marta, Magdalena',
+      exp10Fechas: 'julio 2015 - diciembre 2016',
+      exp10Bullet1: 'Apoyo técnico en análisis espaciales costeros y marinos, como parte del Laboratorio de Sistemas de Información Geográfica (LabSis), incluyendo cartografía temática para monitoreo ambiental e insumos científicos para la gestión integral del territorio marino-costero.',
+
+      competenciasTitulo: 'Competencias transversales',
+      comp01: 'Consultoría independiente en análisis geoespacial',
+      comp02: 'Trabajo en equipo interdisciplinario y planificación territorial',
+      comp03: 'Liderazgo técnico y orientación a resultados',
+      comp04: 'Experiencia en recolección de datos durante salidas de campo',
+      comp05: 'Pensamiento analítico y resolución de problemas espaciales',
+
+      habilidadesTitulo: 'Habilidades técnicas',
+      hab01Label: 'GIS Development:',
+      hab01Valor: 'arquitectura y despliegue de soluciones geoespaciales en la nube, enfocadas a usuario final, cliente interno o externo.',
+      hab02Label: 'Sensores remotos y fotogrametría:',
+      hab02Valor: 'procesamiento de imágenes aéreas y satelitales.',
+      hab03Label: 'Modelación espacial:',
+      hab03Valor: 'conectividad ecológica, fragmentación del paisaje, coberturas terrestres y huella espacial humana.',
+      hab04Label: 'SIG y cartografía:',
+      hab04Valor: 'Google Earth Engine, QGIS, ArcGIS Pro.',
+      hab05Label: 'Software especializado:',
+      hab05Valor: 'Linkage Mapper, Maxent, Conefor, Guidos Toolbox, Gnarly Tools, InVEST.',
+      hab06Label: 'Lenguajes de programación:',
+      hab06Valor: 'Python, HTML, CSS y JavaScript aplicados a análisis geoespacial, implementados por medio de Spec Driven Development.',
+      hab07Label: 'RPAS y drones:',
+      hab07Valor: 'operación de drones y procesamiento de datos con DroneDeploy y Pix4D.',
+      hab08Label: 'Bases de datos espaciales:',
+      hab08Valor: 'estructuración conforme al estándar GDB-ANLA.',
+      hab09Label: 'Ofimática:',
+      hab09Valor: 'elaboración de informes técnicos y uso de herramientas de oficina.',
+
+      idiomasTitulo: 'Idiomas',
+      idioma01: 'Español - Nativo',
+      idioma02: 'Inglés - Fluido',
+
+      referenciasTitulo: 'Referencias',
+      ref01Nombre: 'Jair Mendoza Aldana',
+      ref01Org: 'WWF Colombia',
+      ref01Rol: 'Experto regional étnico en medios de vida y economías locales sostenibles',
+      ref02Nombre: 'Angela Fernández',
+      ref02Org: 'GEB',
+      ref02Rol: 'Profesional especialista SIG',
+      ref03Nombre: 'Ricardo Sánchez López',
+      ref03Org: 'Chemonics Colombia',
+      ref03Rol: 'Director',
+      refTelLabel: 'Teléfono:',
+
+      footerCredito: 'moonTripDeveloper · Build SdDd v1.0 · 20260515',
+      linkRetorno: '[← VOLVER AL PORTAFOLIO]',
+      disclaimerLinea1: 'Página estática autocontenida. No activa APIs sensibles del dispositivo. No realiza tracking.',
+      disclaimerLinea2: 'moonTripDeveloper - parte del catálogo Moon Trip. Build SdDd v1.0.'
+    },
+    en: {
+      topbarBrand: 'David Forero - GIS developer',
+      navPortafolio: '[ PORTFOLIO ]',
+      navInicio: '[ HOME ]',
+      navContacto: '[ CONTACT ]',
+      btnInfoMenuAria: 'Show or hide labels',
+      btnInfoLabel: 'INFO',
+      btnSecContacto: 'CONTACT',
+      btnSecFormacion: 'EDUCATION',
+      btnSecExperiencia: 'EXPERIENCE',
+      btnSecCompetencias: 'COMPETENCIES',
+      btnSecHabilidades: 'SKILLS',
+      btnSecIdiomas: 'LANGUAGES',
+      btnSecReferencias: 'REFERENCES',
+
+      heroNombre: '[ DAVID FORERO PARRA ]',
+      heroRol: 'GIS Developer · Geospatial Analyst · Ecological Modelling',
+      ctaVerExperiencia: '[A] VIEW EXPERIENCE',
+      ctaContactar: '[B] CONTACT',
+
+      contactoTitulo: 'Direct contact',
+      contactoEmailLabel: 'Email:',
+      contactoTelLabel: 'Phone:',
+      contactoUbicLabel: 'Location:',
+      contactoUbicValor: 'Santa Marta, Colombia',
+      contactoLinkedinLabel: 'LinkedIn:',
+
+      perfilParrafo1: 'Environmental Engineer with 10+ years of experience in geospatial analysis (GIS), conservation and territorial planning across the Andes, Caribbean, Orinoco and Amazon regions. He has developed ecological connectivity models, deforestation analyses and cartographic tools applied to decision-making.',
+      perfilParrafo2: 'He brings field experience, satellite image processing and rural-community engagement with institutional stakeholders. He commands tools such as Spec Driven Development, agentic AI and skills, Google Earth Engine, QGIS, ArcGIS Pro, Python, HTML, CSS and JavaScript. Certified RPAS pilot, he stands out for technical rigor, collaborative work and commitment to sustainability and territorial governance.',
+
+      formacionTitulo: 'Academic background',
+      formacionItem1: 'Environmental Engineer | ECCI University | 2013',
+      formacionItem2: 'Environmental Development Technician | ECCI University | 2007',
+      formacionItem3: 'Professional RPAS Pilot (drones) | Civil Aeronautics School - APD | 2020',
+      formacionItem4: 'Data Analytics Foundations | MinTIC & Correlation One | 2022',
+
+      experienciaTitulo: 'Selected professional experience',
+
+      exp01Rol: 'GIS Developer',
+      exp01Empresa: 'Deloitte Colombia - Innovanalisis - BBVA',
+      exp01Modalidad: 'Remote - contractor',
+      exp01Fechas: 'May 2025 - present',
+      exp01Bullet1: 'Development of a geospatial analysis toolkit, including an interactive map and supporting tools, for the implementation of IFC Performance Standard 6, for Innovanalisis, supporting the Deloitte and BBVA Colombia teams.',
+      exp01Bullet2: 'Structuring, design and delivery of capacity-building sessions in spatial analysis as a complement to the process.',
+      exp01Bullet3: 'Member of the global finalist consulting team for the Natural Intelligence Challenge TNFD - Conservation xLabs, responsible for the architecture and deployment of module m01 for spatial analysis, developed on Google cloud (Google Earth Engine + workspace).',
+
+      exp02Rol: 'PVC Professional - Remote Sensing Analyst',
+      exp02Empresa: 'National Natural Parks of Colombia',
+      exp02Modalidad: 'Santa Marta, Magdalena - Hybrid',
+      exp02Fechas: 'January 2025 - present',
+      exp02Bullet1: 'Support for programmatic environmental monitoring using remote sensors and satellite platforms, focused on protected areas of the Colombian Caribbean, integrating methodologies to track maritime transit, industrial maritime activity and illegal fishing in protected areas under anthropic pressure.',
+      exp02Bullet2: 'Preparation and analysis of geospatial inputs supporting conservation planning, ecological restoration and biodiversity threat management.',
+
+      exp03Rol: 'GIS Consultant',
+      exp03Empresa: 'Alliance of Bioversity International & CIAT',
+      exp03Modalidad: 'Remote',
+      exp03Fechas: 'November 2024 - January 2025',
+      exp03Bullet1: 'Multitemporal territorial analysis for deforestation monitoring across more than 2,000 cocoa plots in Peru and Ecuador, under the EU EUDR regulation compliance framework.',
+      exp03Bullet2: 'Structuring of geospatial inputs and technical analysis to identify producers at risk of non-compliance with European market entry requirements.',
+
+      exp04Rol: 'GIS Consultant',
+      exp04Empresa: 'Productive Nature Program - USAID',
+      exp04Modalidad: 'Bogotá',
+      exp04Fechas: 'January 2024 - January 2025',
+      exp04Bullet1: 'Design and implementation of ecological connectivity, landscape fragmentation and human spatial footprint models for sustainable productive chains such as cocoa, coffee and livestock, among others, in the Caribbean, Andean and Orinoco regions.',
+      exp04Bullet2: 'Generation of geospatial inputs for the prioritization of territories with potential for Nature-based Solutions (NbS) implementation, articulating multi-scale information for conservation decision-making.',
+
+      exp05Rol: 'GIS Consultant',
+      exp05Empresa: 'Orinoquia Biodiversa Foundation - FOB',
+      exp05Modalidad: 'Remote',
+      exp05Fechas: 'August 2023 - January 2024',
+      exp05Bullet1: 'Support for management and conservation plans for the Oil Palm (Palo de aceite) and the Jaguar in the jurisdiction of CorpOrinoquia.',
+      exp05Bullet2: 'Production of thematic cartography and land cover layers following official guidelines.',
+      exp05Bullet3: 'Processing of geospatial inputs for ecological connectivity analysis.',
+      exp05Bullet4: 'Technical support to interdisciplinary teams and delivery of reports for environmental planning.',
+
+      exp06Rol: 'GIS Analyst',
+      exp06Empresa: 'Green Energy',
+      exp06Modalidad: 'Ibagué, Tolima',
+      exp06Fechas: 'May 2022 - July 2023',
+      exp06Bullet1: 'Production of thematic cartography and geospatial layers in line with technical guidelines for environmental licensing. Support for GIS data processing and structuring of technical inputs applicable to current environmental regulations.',
+
+      exp07Rol: 'Drone Pilot - GIS Analyst',
+      exp07Empresa: 'AquaBiosfera',
+      exp07Modalidad: 'Santa Marta, Magdalena',
+      exp07Fechas: 'October 2021 - July 2023 (non-continuous periods)',
+      exp07Bullet1: 'Execution of drone (RPAS) flights for geospatial data capture, land cover analysis applying photointerpretation and remote sensing techniques, and structuring of spatial databases.',
+
+      exp08Rol: 'GIS Coordinator - RPAS Pilot',
+      exp08Empresa: 'Corporación Natural SIG',
+      exp08Modalidad: 'Santa Marta, Magdalena',
+      exp08Fechas: 'November 2017 - January 2022',
+      exp08Bullet1: 'Coordination of GIS activities and drone (RPAS) operations for geospatial surveying, applying photogrammetry, remote sensing and field-work techniques.',
+      exp08Bullet2: 'Development of ecological connectivity and land cover models, structuring of spatial databases under the GDB-ANLA standard, providing key inputs for environmental compensation and planning processes.',
+
+      exp09Rol: 'GIS and Connectivity Corridors Consultant',
+      exp09Empresa: 'Deutsche Gesellschaft für Internationale Zusammenarbeit - GIZ',
+      exp09Modalidad: 'Remote',
+      exp09Fechas: 'July 2019 - November 2019',
+      exp09Bullet1: 'Design of ecological connectivity models and spatial analysis to identify priority conservation areas in the framework of international cooperation initiatives, with emphasis on the declaration of new protected areas and territorial planning.',
+
+      exp10Rol: 'LabSis Researcher',
+      exp10Empresa: 'Institute of Marine and Coastal Research - INVEMAR',
+      exp10Modalidad: 'Santa Marta, Magdalena',
+      exp10Fechas: 'July 2015 - December 2016',
+      exp10Bullet1: 'Technical support in coastal and marine spatial analysis as part of the Geographic Information Systems Lab (LabSis), including thematic cartography for environmental monitoring and scientific inputs for the integrated management of the marine-coastal territory.',
+
+      competenciasTitulo: 'Transversal competencies',
+      comp01: 'Independent consultancy in geospatial analysis',
+      comp02: 'Interdisciplinary teamwork and territorial planning',
+      comp03: 'Technical leadership and results orientation',
+      comp04: 'Field data collection experience',
+      comp05: 'Analytical thinking and spatial problem solving',
+
+      habilidadesTitulo: 'Technical skills',
+      hab01Label: 'GIS Development:',
+      hab01Valor: 'architecture and deployment of cloud geospatial solutions focused on end users, internal or external clients.',
+      hab02Label: 'Remote sensing and photogrammetry:',
+      hab02Valor: 'processing of aerial and satellite imagery.',
+      hab03Label: 'Spatial modelling:',
+      hab03Valor: 'ecological connectivity, landscape fragmentation, land cover and human spatial footprint.',
+      hab04Label: 'GIS and cartography:',
+      hab04Valor: 'Google Earth Engine, QGIS, ArcGIS Pro.',
+      hab05Label: 'Specialized software:',
+      hab05Valor: 'Linkage Mapper, Maxent, Conefor, Guidos Toolbox, Gnarly Tools, InVEST.',
+      hab06Label: 'Programming languages:',
+      hab06Valor: 'Python, HTML, CSS and JavaScript applied to geospatial analysis, implemented via Spec Driven Development.',
+      hab07Label: 'RPAS and drones:',
+      hab07Valor: 'drone operation and data processing with DroneDeploy and Pix4D.',
+      hab08Label: 'Spatial databases:',
+      hab08Valor: 'structuring under the GDB-ANLA standard.',
+      hab09Label: 'Office tools:',
+      hab09Valor: 'technical report writing and office software.',
+
+      idiomasTitulo: 'Languages',
+      idioma01: 'Spanish - Native',
+      idioma02: 'English - Fluent',
+
+      referenciasTitulo: 'References',
+      ref01Nombre: 'Jair Mendoza Aldana',
+      ref01Org: 'WWF Colombia',
+      ref01Rol: 'Regional Ethnic Expert in Livelihoods and Sustainable Local Economies',
+      ref02Nombre: 'Angela Fernández',
+      ref02Org: 'GEB',
+      ref02Rol: 'GIS Specialist Professional',
+      ref03Nombre: 'Ricardo Sánchez López',
+      ref03Org: 'Chemonics Colombia',
+      ref03Rol: 'Director',
+      refTelLabel: 'Phone:',
+
+      footerCredito: 'moonTripDeveloper · Build SdDd v1.0 · 20260515',
+      linkRetorno: '[← BACK TO PORTFOLIO]',
+      disclaimerLinea1: 'Self-contained static page. No sensitive device APIs activated. No tracking.',
+      disclaimerLinea2: 'moonTripDeveloper - part of the Moon Trip catalog. Build SdDd v1.0.'
+    }
+  };
+
+  // ==========================================================================
+  // localStorage helpers (try/catch para modo privado restrictivo)
+  // ==========================================================================
+  function readStoredLang() {
+    try {
+      return window.localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function persistLang(lang) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    } catch (e) {
+      // modo privado o storage disabled - operacion silenciosa
+    }
+  }
+
+  // ==========================================================================
+  // applyI18n - recorre nodos con data-i18n y reemplaza textContent
+  // Tambien procesa data-i18n-aria para aria-label dinamico
+  // ==========================================================================
+  function applyI18n(lang) {
+    var dict = i18n[lang];
+    if (!dict) {
+      console.warn('moonTripDeveloper: idioma desconocido, fallback es', lang);
+      dict = i18n.es;
+      lang = 'es';
+    }
+    langActual = lang;
+
+    var nodos = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodos.length; i++) {
+      var el = nodos[i];
+      var clave = el.getAttribute('data-i18n');
+      if (Object.prototype.hasOwnProperty.call(dict, clave)) {
+        el.textContent = dict[clave];
+      } else {
+        console.warn('moonTripDeveloper: clave i18n huerfana ->', clave);
+      }
+    }
+
+    var nodosAria = document.querySelectorAll('[data-i18n-aria]');
+    for (var k = 0; k < nodosAria.length; k++) {
+      var elA = nodosAria[k];
+      var claveA = elA.getAttribute('data-i18n-aria');
+      if (Object.prototype.hasOwnProperty.call(dict, claveA)) {
+        elA.setAttribute('aria-label', dict[claveA]);
+      }
+    }
+
+    document.documentElement.setAttribute('lang', lang);
+    actualizarBotonesLang(lang);
+  }
+
+  function actualizarBotonesLang(lang) {
+    var btnEs = document.getElementById('btnLangEs');
+    var btnEn = document.getElementById('btnLangEn');
+    if (btnEs && btnEn) {
+      btnEs.setAttribute('aria-pressed', lang === 'es' ? 'true' : 'false');
+      btnEn.setAttribute('aria-pressed', lang === 'en' ? 'true' : 'false');
+    }
+  }
+
+  // ==========================================================================
+  // Toggle ES/EN preservando estado expandido de <details> dentro del slot
+  // ==========================================================================
+  function cambiarIdioma(nuevoLang) {
+    // Capturar estado abierto antes de re-render
+    var abiertos = [];
+    var allDetails = document.querySelectorAll('details');
+    for (var i = 0; i < allDetails.length; i++) {
+      if (allDetails[i].open) {
+        abiertos.push(allDetails[i].id || ('idx-' + i));
+      }
+    }
+
+    applyI18n(nuevoLang);
+    persistLang(nuevoLang);
+
+    // Restaurar estado abierto (defensivo - applyI18n solo modifica textContent,
+    // los <details> quedan intactos; aun asi se verifica)
+    for (var j = 0; j < allDetails.length; j++) {
+      var idOrIdx = allDetails[j].id || ('idx-' + j);
+      if (abiertos.indexOf(idOrIdx) !== -1 && !allDetails[j].open) {
+        allDetails[j].open = true;
+      }
+    }
+  }
+
+  // ==========================================================================
+  // Handler reveal de referencias - patron Q12 preservado
+  // Se invoca cada vez que la seccion Referencias se carga en el slot, porque
+  // los nodos refCard se clonan dinamicamente y necesitan rebind de listeners.
+  // ==========================================================================
+  function inicializarReferencias() {
+    var refCards = document.querySelectorAll('.refCard');
+    for (var i = 0; i < refCards.length; i++) {
+      (function bindRefCard(card) {
+        // Evitar doble bind si ya tiene flag
+        if (card.dataset.revealBound === '1') return;
+        card.dataset.revealBound = '1';
+        card.addEventListener('toggle', function onToggleRef() {
+          if (card.open) {
+            var clave = card.getAttribute('data-refkey');
+            var span = card.querySelector('[data-reveal="' + clave + '"]');
+            if (span && referencias[clave]) {
+              // Solo rellenar si esta vacio; si ya fue revelado, mantener
+              // para evitar parpadeo al reabrir (trade-off documentado RD-10)
+              if (span.textContent.length === 0) {
+                span.textContent = referencias[clave];
+              }
+            }
+          }
+          // Al cerrar: NO se limpia el span (decision consciente RD-10)
+        });
+      })(refCards[i]);
+    }
+  }
+
+  // ==========================================================================
+  // Carga de seccion en el slot dinamico
+  // ==========================================================================
+  function cargarSeccion(claveSeccion) {
+    var slot = document.getElementById('slotDinamicoHero');
+    var tplId = TPL_POR_SECCION[claveSeccion];
+    if (!slot || !tplId) {
+      console.warn('moonTripDeveloper: seccion desconocida ->', claveSeccion);
+      return;
+    }
+    var tpl = document.getElementById(tplId);
+    if (!tpl || !tpl.content) {
+      console.warn('moonTripDeveloper: template no encontrado ->', tplId);
+      return;
+    }
+
+    // Vaciar slot y clonar
+    while (slot.firstChild) {
+      slot.removeChild(slot.firstChild);
+    }
+    slot.appendChild(tpl.content.cloneNode(true));
+
+    // Reaplicar i18n al contenido recien inyectado
+    applyI18n(langActual);
+
+    // Rebindear reveal pattern si toca referencias
+    if (claveSeccion === 'referencias') {
+      inicializarReferencias();
+    }
+
+    seccionActual = claveSeccion;
+    marcarSeccionActiva(claveSeccion);
+
+    // Mobile: cerrar el menu automaticamente tras seleccion
+    if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
+      cerrarMenu();
+    }
+  }
+
+  function marcarSeccionActiva(claveSeccion) {
+    var botones = document.querySelectorAll('.btnSeccionMenu');
+    for (var i = 0; i < botones.length; i++) {
+      var btn = botones[i];
+      if (btn.getAttribute('data-seccion') === claveSeccion) {
+        btn.setAttribute('aria-current', 'true');
+      } else {
+        btn.removeAttribute('aria-current');
+      }
+    }
+  }
+
+  // ==========================================================================
+  // Panel fijo derecho - abrir/cerrar + toggle info-expandido
+  // Estado global via clases en <body>: menuAbierto + infoExpandido
+  // (paridad con .recorder-overlay.panel-open / .info-expanded de mesure)
+  // ==========================================================================
+  function abrirMenu() {
+    document.body.classList.add('menuAbierto');
+    var btnToggle = document.getElementById('btnToggleMenu');
+    if (btnToggle) btnToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function cerrarMenu() {
+    document.body.classList.remove('menuAbierto');
+    document.body.classList.remove('infoExpandido');
+    var btnToggle = document.getElementById('btnToggleMenu');
+    var btnInfo = document.getElementById('btnInfoMenu');
+    if (btnToggle) btnToggle.setAttribute('aria-expanded', 'false');
+    if (btnInfo) btnInfo.setAttribute('aria-pressed', 'false');
+  }
+
+  function toggleMenu() {
+    if (document.body.classList.contains('menuAbierto')) {
+      cerrarMenu();
+    } else {
+      abrirMenu();
+    }
+  }
+
+  function toggleInfo() {
+    document.body.classList.toggle('infoExpandido');
+    var btnInfo = document.getElementById('btnInfoMenu');
+    if (btnInfo) {
+      btnInfo.setAttribute('aria-pressed', document.body.classList.contains('infoExpandido') ? 'true' : 'false');
+    }
+  }
+
+  // ==========================================================================
+  // Inicializacion
+  // ==========================================================================
+  function detectarIdiomaInicial() {
+    var almacenado = readStoredLang();
+    if (almacenado === 'es' || almacenado === 'en') {
+      return almacenado;
+    }
+    var navLang = (navigator.language || 'es').toLowerCase();
+    return navLang.indexOf('es') === 0 ? 'es' : 'en';
+  }
+
+  function bindToggleLang() {
+    var btnEs = document.getElementById('btnLangEs');
+    var btnEn = document.getElementById('btnLangEn');
+    if (btnEs) {
+      btnEs.addEventListener('click', function onClickEs() {
+        cambiarIdioma('es');
+      });
+    }
+    if (btnEn) {
+      btnEn.addEventListener('click', function onClickEn() {
+        cambiarIdioma('en');
+      });
+    }
+  }
+
+  function bindMenu() {
+    var btnToggle = document.getElementById('btnToggleMenu');
+    var btnInfo = document.getElementById('btnInfoMenu');
+    if (btnToggle) btnToggle.addEventListener('click', toggleMenu);
+    if (btnInfo) btnInfo.addEventListener('click', toggleInfo);
+
+    // ESC cierra el panel si esta abierto
+    document.addEventListener('keydown', function onKeydownEsc(ev) {
+      if (ev.key === 'Escape' || ev.keyCode === 27) {
+        if (document.body.classList.contains('menuAbierto')) {
+          cerrarMenu();
+        }
+      }
+    });
+
+    // Click-outside cierra el panel silenciosamente (solo desktop >=901px).
+    // En mobile se preserva el cierre por click-en-seccion (decision A3 ronda 4).
+    // Sin backdrop ni overlay: el evento sigue burbujeando para que los handlers
+    // del elemento clickeado se ejecuten normalmente.
+    document.addEventListener('click', function onClickOutside(ev) {
+      if (!document.body.classList.contains('menuAbierto')) return;
+      if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+      var panel = document.getElementById('menuPanel');
+      var btn = document.getElementById('btnToggleMenu');
+      if (panel && panel.contains(ev.target)) return;
+      if (btn && btn.contains(ev.target)) return;
+      cerrarMenu();
+    }, true);
+  }
+
+  function bindBotonesSeccionMenu() {
+    var botones = document.querySelectorAll('.btnSeccionMenu');
+    for (var i = 0; i < botones.length; i++) {
+      (function bindBtn(btn) {
+        btn.addEventListener('click', function onClickSeccion() {
+          var clave = btn.getAttribute('data-seccion');
+          if (clave) cargarSeccion(clave);
+        });
+      })(botones[i]);
+    }
+  }
+
+  function bindAtajosTopbar() {
+    var btnInicio = document.getElementById('navInicioBtn');
+    var btnContacto = document.getElementById('navContactoBtn');
+    if (btnInicio) {
+      btnInicio.addEventListener('click', function onClickInicio() {
+        cargarSeccion('perfil');
+      });
+    }
+    if (btnContacto) {
+      btnContacto.addEventListener('click', function onClickContacto() {
+        cargarSeccion('contacto');
+      });
+    }
+  }
+
+  function bindCtasHero() {
+    // Los CTAs y los botones-seccion comparten data-seccion - bind generico
+    var ctasHero = document.querySelectorAll('.heroCtas [data-seccion]');
+    for (var i = 0; i < ctasHero.length; i++) {
+      (function bindCta(btn) {
+        btn.addEventListener('click', function onClickCta() {
+          var clave = btn.getAttribute('data-seccion');
+          if (clave) cargarSeccion(clave);
+        });
+      })(ctasHero[i]);
+    }
+  }
+
+  function bootstrap() {
+    var langInicial = detectarIdiomaInicial();
+    applyI18n(langInicial);
+    persistLang(langInicial);
+    bindToggleLang();
+    bindMenu();
+    bindBotonesSeccionMenu();
+    bindAtajosTopbar();
+    bindCtasHero();
+    // Carga inicial: Perfil profesional en el slot
+    cargarSeccion('perfil');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    bootstrap();
+  }
+
+})();
+</script>
+<!-- OWNERSHIP ZONE - Wave 2 JS i18n + reveal + drawer + slot - SCRIPT - close -->
+
+</body>
+</html>
