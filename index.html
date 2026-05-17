@@ -704,31 +704,40 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   font-family: var(--fontPixelLabel);
   border-top: 3px solid var(--vinotinto);
 }
-.paletaChips {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+.footerDisclaimer {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: var(--blancoNeutro);
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.55;
+  font-family: var(--fontBody);
+  text-transform: none;
 }
-.paletaChips span {
-  width: 24px;
-  height: 24px;
-  clip-path: var(--pixelStair2);
-  display: inline-block;
-  border: 1px solid var(--amarilloLuna);
+.footerDisclaimer p {
+  margin: 0;
 }
-.footerContenido {
+.footerDivider {
+  height: 1px;
+  background: var(--amarilloLuna);
+  opacity: 0.25;
+  max-width: 480px;
+  margin: var(--spacingM) auto;
+}
+.footerCredito {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--amarilloLuna);
+  text-transform: none;
+  font-family: var(--fontBody);
+  margin: 0 0 var(--spacingM) 0;
+  opacity: 0.85;
+}
+.footerNavegacion {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacingM);
-}
-.footerCredito {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0;
 }
 .linkRetorno {
   color: var(--amarilloLuna);
@@ -759,19 +768,6 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   font-family: var(--fontPixelLabel);
   font-size: 14px;
   clip-path: var(--pixelStair2);
-}
-.footerDisclaimer {
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  color: var(--blancoNeutro);
-  margin-top: var(--spacingM);
-  max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.4;
-}
-.footerDisclaimer p {
-  margin-bottom: var(--spacingXS);
 }
 
 /* ============================================================================
@@ -1101,24 +1097,14 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - open -->
 <footer class="footerDark" id="footerSeccion">
-  <div class="paletaChips" aria-hidden="true">
-    <span style="background:#F7F3A1"></span>
-    <span style="background:#E39F43"></span>
-    <span style="background:#A1602A"></span>
-    <span style="background:#9B1B18"></span>
-    <span style="background:#551E1B"></span>
-    <span style="background:#272B2E"></span>
-    <span style="background:#F0F0F0"></span>
-    <span style="background:#FFFFFF"></span>
+  <div class="footerDisclaimer">
+    <p data-i18n="disclaimerLinea1">Pagina estatica autocontenida. Tras la primera carga funciona offline sin necesidad de servidor ni conexion a internet. No activa APIs sensibles del dispositivo. No realiza tracking. No envia datos a terceros.</p>
   </div>
-  <div class="footerContenido">
-    <p class="footerCredito" data-i18n="footerCredito">moonTripDeveloper &middot; Build SdDd v1.0 &middot; 20260515</p>
+  <div class="footerDivider" aria-hidden="true"></div>
+  <p class="footerCredito" data-i18n="footerCredito">&copy; 2026 David Forero Parra &middot; Actualizado 20260515</p>
+  <div class="footerNavegacion">
     <a class="linkRetorno" id="linkRetorno" href="#TBD-moonTripLanding-portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
     <div class="qrPlaceholder" id="qrRetorno" aria-label="QR placeholder" title="QR placeholder - Wave 3">QR</div>
-  </div>
-  <div class="footerDisclaimer">
-    <p data-i18n="disclaimerLinea1">Pagina estatica autocontenida. No activa APIs sensibles del dispositivo. No realiza tracking.</p>
-    <p data-i18n="disclaimerLinea2">moonTripDeveloper - parte del catalogo Moon Trip. Build SdDd v1.0.</p>
   </div>
 </footer>
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - close -->
@@ -1315,10 +1301,9 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
       ref03Rol: 'Director',
       refTelLabel: 'Teléfono:',
 
-      footerCredito: 'moonTripDeveloper · Build SdDd v1.0 · 20260515',
+      footerCredito: '© 2026 David Forero Parra · Actualizado 20260515',
       linkRetorno: '[← VOLVER AL PORTAFOLIO]',
-      disclaimerLinea1: 'Página estática autocontenida. No activa APIs sensibles del dispositivo. No realiza tracking.',
-      disclaimerLinea2: 'moonTripDeveloper - parte del catálogo Moon Trip. Build SdDd v1.0.'
+      disclaimerLinea1: 'Página estática autocontenida. Tras la primera carga funciona offline sin necesidad de servidor ni conexión a internet. No activa APIs sensibles del dispositivo. No realiza tracking. No envía datos a terceros.'
     },
     en: {
       topbarBrand: 'David Forero - GIS developer',
@@ -1470,10 +1455,9 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
       ref03Rol: 'Director',
       refTelLabel: 'Phone:',
 
-      footerCredito: 'moonTripDeveloper · Build SdDd v1.0 · 20260515',
+      footerCredito: '© 2026 David Forero Parra · Updated 20260515',
       linkRetorno: '[← BACK TO PORTFOLIO]',
-      disclaimerLinea1: 'Self-contained static page. No sensitive device APIs activated. No tracking.',
-      disclaimerLinea2: 'moonTripDeveloper - part of the Moon Trip catalog. Build SdDd v1.0.'
+      disclaimerLinea1: 'Self-contained static page. After the first load it works offline without needing a server or internet connection. No sensitive device APIs activated. No tracking. No data sent to third parties.'
     }
   };
 
@@ -1650,17 +1634,101 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   }
 
   // ==========================================================================
-  // Panel fijo derecho - abrir/cerrar + toggle info-expandido
-  // Estado global via clases en <body>: menuAbierto + infoExpandido
-  // (paridad con .recorder-overlay.panel-open / .info-expanded de mesure)
+  // Panel fijo izquierdo - abrir/cerrar + toggle info-expandido + timers
+  // Estado global via clases en <body>: menuAbierto + infoExpandido.
+  // Timers de cierre automatico por hover-off (solo desktop >=901px):
+  //   A (info-expandido) -> 10s sin hover -> colapsa labels -> transiciona a B
+  //   B (panel colapsado) -> 3s sin hover -> cierra panel    -> transiciona a C
+  //   C (panel cerrado, rocket idle) -> estado pasivo, sin timer
+  // Hover unificado: panel + rocket cuentan como una sola entidad.
   // ==========================================================================
+  var TIEMPO_COLAPSO_INFO_MS = 10000;
+  var TIEMPO_CIERRE_PANEL_MS = 3000;
+  var DELAY_VERIFICACION_HOVER_MS = 50;
+  var timerColapsoInfo = null;
+  var timerCierrePanel = null;
+
+  function aplicaTimersHover() {
+    // No aplica en mobile (touch sin hover real)
+    if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
+      return false;
+    }
+    return true;
+  }
+
+  function hoverEnSubsistema() {
+    var panel = document.getElementById('menuPanel');
+    var btnRocket = document.getElementById('btnToggleMenu');
+    if (panel && panel.matches && panel.matches(':hover')) return true;
+    if (btnRocket && btnRocket.matches && btnRocket.matches(':hover')) return true;
+    return false;
+  }
+
+  function cancelarTimersCierre() {
+    if (timerColapsoInfo !== null) {
+      clearTimeout(timerColapsoInfo);
+      timerColapsoInfo = null;
+    }
+    if (timerCierrePanel !== null) {
+      clearTimeout(timerCierrePanel);
+      timerCierrePanel = null;
+    }
+  }
+
+  function iniciarTimerColapsoInfo() {
+    if (!aplicaTimersHover()) return;
+    if (!document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerColapsoInfo = setTimeout(function onColapsoInfo() {
+      timerColapsoInfo = null;
+      if (!document.body.classList.contains('infoExpandido')) return;
+      if (hoverEnSubsistema()) return;
+      // Colapsa labels manteniendo panel abierto, transiciona a estado B
+      document.body.classList.remove('infoExpandido');
+      var btnInfo = document.getElementById('btnInfoMenu');
+      if (btnInfo) btnInfo.setAttribute('aria-pressed', 'false');
+      // Inmediatamente despues encadena el timer de cierre del panel
+      iniciarTimerCierrePanel();
+    }, TIEMPO_COLAPSO_INFO_MS);
+  }
+
+  function iniciarTimerCierrePanel() {
+    if (!aplicaTimersHover()) return;
+    if (!document.body.classList.contains('menuAbierto')) return;
+    if (document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerCierrePanel = setTimeout(function onCierrePanel() {
+      timerCierrePanel = null;
+      if (!document.body.classList.contains('menuAbierto')) return;
+      if (hoverEnSubsistema()) return;
+      cerrarMenu();
+    }, TIEMPO_CIERRE_PANEL_MS);
+  }
+
+  function evaluarTimerSegunEstado() {
+    if (!aplicaTimersHover()) return;
+    if (hoverEnSubsistema()) {
+      cancelarTimersCierre();
+      return;
+    }
+    if (document.body.classList.contains('infoExpandido')) {
+      iniciarTimerColapsoInfo();
+    } else if (document.body.classList.contains('menuAbierto')) {
+      iniciarTimerCierrePanel();
+    }
+  }
+
   function abrirMenu() {
     document.body.classList.add('menuAbierto');
     var btnToggle = document.getElementById('btnToggleMenu');
     if (btnToggle) btnToggle.setAttribute('aria-expanded', 'true');
+    // El hover esta presumiblemente activo al abrir (acaba de click); no arranca timer.
+    // Si el usuario mueve el cursor fuera, el mouseleave lo iniciara.
+    cancelarTimersCierre();
   }
 
   function cerrarMenu() {
+    cancelarTimersCierre();
     document.body.classList.remove('menuAbierto');
     document.body.classList.remove('infoExpandido');
     var btnToggle = document.getElementById('btnToggleMenu');
@@ -1682,6 +1750,12 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     var btnInfo = document.getElementById('btnInfoMenu');
     if (btnInfo) {
       btnInfo.setAttribute('aria-pressed', document.body.classList.contains('infoExpandido') ? 'true' : 'false');
+    }
+    // Cambio de estado -> re-evaluar timers (cancela el viejo, inicia el nuevo si toca)
+    cancelarTimersCierre();
+    // Si tras el toggle el cursor no esta hover, arrancar timer del nuevo estado
+    if (!hoverEnSubsistema()) {
+      evaluarTimerSegunEstado();
     }
   }
 
@@ -1740,6 +1814,31 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
       if (btn && btn.contains(ev.target)) return;
       cerrarMenu();
     }, true);
+
+    // Timers de cierre por hover-off. Subsistema unificado: panel + rocket.
+    // El mouseenter cancela cualquier timer activo; el mouseleave (con verificacion
+    // diferida 50ms) inicia el timer adecuado al estado vigente.
+    var panel = document.getElementById('menuPanel');
+    function onSubsistemaEnter() {
+      if (!aplicaTimersHover()) return;
+      cancelarTimersCierre();
+    }
+    function onSubsistemaLeave() {
+      if (!aplicaTimersHover()) return;
+      // Delay corto para permitir transicion entre rocket <-> panel sin disparar
+      setTimeout(function verificarHoverDiferido() {
+        if (hoverEnSubsistema()) return;
+        evaluarTimerSegunEstado();
+      }, DELAY_VERIFICACION_HOVER_MS);
+    }
+    if (panel) {
+      panel.addEventListener('mouseenter', onSubsistemaEnter);
+      panel.addEventListener('mouseleave', onSubsistemaLeave);
+    }
+    if (btnToggle) {
+      btnToggle.addEventListener('mouseenter', onSubsistemaEnter);
+      btnToggle.addEventListener('mouseleave', onSubsistemaLeave);
+    }
   }
 
   function bindBotonesSeccionMenu() {
