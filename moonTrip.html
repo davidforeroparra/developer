@@ -593,6 +593,23 @@ a { color: inherit; }
   margin-left: 10px;
   vertical-align: middle;
 }
+.badgeEnConstruccion {
+  display: inline-block;
+  background: var(--grisCarbon); color: var(--amarilloLuna);
+  font-family: var(--fontVintageDisplay);
+  font-size: 11px;
+  padding: 3px 10px;
+  letter-spacing: 2px;
+  border: 2px solid var(--grisCarbon);
+  border-radius: 12px;
+  vertical-align: middle;
+}
+.tarjetaLinkInerte {
+  cursor: default;
+  border-bottom: none !important;
+  pointer-events: none;
+  color: var(--grisCarbon) !important;
+}
 .qrTarjeta {
   grid-column: 2 / 3;
   grid-row: 2 / 6;
@@ -1095,7 +1112,7 @@ a { color: inherit; }
       <div class="developerTextoBloque">
         <h3 data-i18n="developerH3">David Forero Parra</h3>
         <p data-i18n="developerDescripcion">PENDIENTE</p>
-        <a class="tarjetaLink" href="#TBD-moonTripDeveloper" data-i18n="developerLinkLabel">Conocer al developer<span class="badgeTbd" data-i18n="badgePlaceholder">TBD</span></a>
+        <a class="tarjetaLink" href="/" data-i18n="developerLinkLabel">Conocer al developer</a>
       </div>
     </div>
   </section>
@@ -1180,6 +1197,7 @@ var dictI18n = {
     "tarjetaDiarioDescripcion": "Bitácora del viaje en el bolsillo: notas con sello horario, vínculos a marcadores y rutas, archivadas en almacenamiento local del dispositivo.",
     "tarjetaLinkLabel": "Abrir",
     "badgePlaceholder": "TBD",
+    "badgeEnConstruccion": "EN CONSTRUCCIÓN",
     "iconoMarkerAlt": "Icono Moon Trip Marker",
     "iconoTrackerAlt": "Icono Moon Trip Tracker",
     "iconoMesureAlt": "Icono Moon Trip Mesure",
@@ -1251,6 +1269,7 @@ var dictI18n = {
     "tarjetaDiarioDescripcion": "Travel logbook in the pocket: timestamped notes, links to markers and routes, archived in the device's local storage.",
     "tarjetaLinkLabel": "Open",
     "badgePlaceholder": "TBD",
+    "badgeEnConstruccion": "UNDER CONSTRUCTION",
     "iconoMarkerAlt": "Moon Trip Marker icon",
     "iconoTrackerAlt": "Moon Trip Tracker icon",
     "iconoMesureAlt": "Moon Trip Mesure icon",
@@ -1824,12 +1843,12 @@ var dictI18n = {
 
   // Dataset (3 izq + 3 der). Orden fisico en cada columna determina secuencia.
   var portafolioCardsData = [
-    { col: 'izq', tester: 'marker',   iconTpl: 'tplIconoMarker',   iconAltKey: 'iconoMarkerAlt',   tituloKey: 'tarjetaMarkerTitulo',   descKey: 'tarjetaMarkerDescripcion',   linkHref: '#TBD-moonTripMarker',     tieneBanderin: false },
-    { col: 'izq', tester: 'mesure',   iconTpl: 'tplIconoMesure',   iconAltKey: 'iconoMesureAlt',   tituloKey: 'tarjetaMesureTitulo',   descKey: 'tarjetaMesureDescripcion',   linkHref: '#TBD-moonTripMesure',     tieneBanderin: false },
-    { col: 'izq', tester: 'compass',  iconTpl: 'tplIconoCompass',  iconAltKey: 'iconoCompassAlt',  tituloKey: 'tarjetaCompassTitulo',  descKey: 'tarjetaCompassDescripcion',  linkHref: '#TBD-moonTripCompass',    tieneBanderin: true  },
-    { col: 'der', tester: 'tracker',  iconTpl: 'tplIconoTracker',  iconAltKey: 'iconoTrackerAlt',  tituloKey: 'tarjetaTrackerTitulo',  descKey: 'tarjetaTrackerDescripcion',  linkHref: '#TBD-moonTripTracker',    tieneBanderin: false },
-    { col: 'der', tester: 'diario',   iconTpl: 'tplIconoDiario',   iconAltKey: 'iconoDiarioAlt',   tituloKey: 'tarjetaDiarioTitulo',   descKey: 'tarjetaDiarioDescripcion',   linkHref: '#TBD-moonTripDiario',     tieneBanderin: true  },
-    { col: 'der', tester: 'branding', iconTpl: 'tplIconoBranding', iconAltKey: 'iconoBrandingAlt', tituloKey: 'tarjetaBrandingTitulo', descKey: 'tarjetaBrandingDescripcion', linkHref: '#TBD-landingBrandingMoon', tieneBanderin: false }
+    { col: 'izq', tester: 'marker',   iconTpl: 'tplIconoMarker',   iconAltKey: 'iconoMarkerAlt',   tituloKey: 'tarjetaMarkerTitulo',   descKey: 'tarjetaMarkerDescripcion',   linkHref: '/moontripmarker',         tieneBanderin: false, enConstruccion: false },
+    { col: 'izq', tester: 'mesure',   iconTpl: 'tplIconoMesure',   iconAltKey: 'iconoMesureAlt',   tituloKey: 'tarjetaMesureTitulo',   descKey: 'tarjetaMesureDescripcion',   linkHref: '/moontripmesure',         tieneBanderin: false, enConstruccion: false },
+    { col: 'izq', tester: 'compass',  iconTpl: 'tplIconoCompass',  iconAltKey: 'iconoCompassAlt',  tituloKey: 'tarjetaCompassTitulo',  descKey: 'tarjetaCompassDescripcion',  linkHref: null,                      tieneBanderin: true,  enConstruccion: true  },
+    { col: 'der', tester: 'tracker',  iconTpl: 'tplIconoTracker',  iconAltKey: 'iconoTrackerAlt',  tituloKey: 'tarjetaTrackerTitulo',  descKey: 'tarjetaTrackerDescripcion',  linkHref: '/moontriptracker',        tieneBanderin: false, enConstruccion: false },
+    { col: 'der', tester: 'diario',   iconTpl: 'tplIconoDiario',   iconAltKey: 'iconoDiarioAlt',   tituloKey: 'tarjetaDiarioTitulo',   descKey: 'tarjetaDiarioDescripcion',   linkHref: null,                      tieneBanderin: true,  enConstruccion: true  },
+    { col: 'der', tester: 'branding', iconTpl: 'tplIconoBranding', iconAltKey: 'iconoBrandingAlt', tituloKey: 'tarjetaBrandingTitulo', descKey: 'tarjetaBrandingDescripcion', linkHref: null,                      tieneBanderin: false, enConstruccion: true  }
   ];
 
   var portafolioState = {
@@ -1900,17 +1919,24 @@ var dictI18n = {
     titEl.textContent = 'PENDIENTE';
     descEl.setAttribute('data-i18n', data.descKey);
     descEl.textContent = 'PENDIENTE';
-    linkEl.setAttribute('href', data.linkHref);
     linkEl.innerHTML = '';
-    var spanLabel = document.createElement('span');
-    spanLabel.setAttribute('data-i18n', 'tarjetaLinkLabel');
-    spanLabel.textContent = 'Abrir';
-    var spanBadge = document.createElement('span');
-    spanBadge.className = 'badgeTbd';
-    spanBadge.setAttribute('data-i18n', 'badgePlaceholder');
-    spanBadge.textContent = 'TBD';
-    linkEl.appendChild(spanLabel);
-    linkEl.appendChild(spanBadge);
+    if (data.enConstruccion) {
+      // G-2: card sin destino real — badge "EN CONSTRUCCION", sin hipervinculo activo
+      linkEl.removeAttribute('href');
+      linkEl.classList.add('tarjetaLinkInerte');
+      var spanBadgeEnObra = document.createElement('span');
+      spanBadgeEnObra.className = 'badgeEnConstruccion';
+      spanBadgeEnObra.setAttribute('data-i18n', 'badgeEnConstruccion');
+      spanBadgeEnObra.textContent = 'EN CONSTRUCCION';
+      linkEl.appendChild(spanBadgeEnObra);
+    } else {
+      linkEl.setAttribute('href', data.linkHref);
+      linkEl.classList.remove('tarjetaLinkInerte');
+      var spanLabel = document.createElement('span');
+      spanLabel.setAttribute('data-i18n', 'tarjetaLinkLabel');
+      spanLabel.textContent = 'Abrir';
+      linkEl.appendChild(spanLabel);
+    }
     qrEl.innerHTML = '';
     var tplQr = document.getElementById('tplQrPlaceholder');
     if (tplQr && tplQr.content) qrEl.appendChild(tplQr.content.cloneNode(true));
