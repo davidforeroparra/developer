@@ -53,11 +53,12 @@
       32 colores (~1 KB base64 inline). Asset distinto al de la mascota Moon
       del hero (que sigue siendo iconoRocket en su posicion original).
   ----------------------------------------------------------------------------
-  Deuda residual diferida:
-    1. Link PORTAFOLIO y linkRetorno usan placeholder #TBD-moonTripLanding-portafolio
-       hasta que F-01 confirme el destino moonTripLanding.html#portafolio.
-    2. QR 96x96 es placeholder cuadrado claro con texto "QR".
-       Wave 3 lo sustituye con SVG inline via toolchain Python qrSvgBuilder.py.
+  Wave 3 finalizacion (20260519) — deuda residual resuelta:
+    1. Link PORTAFOLIO y linkRetorno apuntan a /moontrip#portafolio (clean URL
+       Netlify de moonTrip.html, la landing del sub-proyecto Moon Trip).
+    2. QR 96x96 es PNG real escaneable generado por toolchain Python
+       workshop/scripts/qrGenerator/ (qrcode[pil]) con URL pública del developer
+       (https://davidforeroparra-dev.netlify.app/) e inyectado base64 inline.
   ----------------------------------------------------------------------------
   Disclaimer F-01: no aplica - este tester no accede a APIs sensibles del
   dispositivo. Solo lectura/escritura en localStorage del propio origen.
@@ -836,7 +837,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     <div class="topbarBrand" data-i18n="topbarBrand">David Forero - GIS developer</div>
   </div>
   <nav class="topbarNav" aria-label="Navegacion principal">
-    <a href="#TBD-moonTripLanding-portafolio" id="navPortafolioLink" data-i18n="navPortafolio">[ PORTAFOLIO ]</a>
+    <a href="/moontrip#portafolio" id="navPortafolioLink" data-i18n="navPortafolio">[ PORTAFOLIO ]</a>
     <button type="button" id="navInicioBtn" data-seccion="perfil" data-i18n="navInicio">[ INICIO ]</button>
     <button type="button" id="navContactoBtn" data-seccion="contacto" data-i18n="navContacto">[ CONTACTO ]</button>
   </nav>
@@ -1100,8 +1101,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   <div class="footerDivider" aria-hidden="true"></div>
   <p class="footerCredito" data-i18n="footerCredito">&copy; 2026 David Forero Parra &middot; Actualizado 20260515</p>
   <div class="footerNavegacion">
-    <a class="linkRetorno" id="linkRetorno" href="#TBD-moonTripLanding-portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
-    <div class="qrPlaceholder" id="qrRetorno" aria-label="QR placeholder" title="QR placeholder - Wave 3">QR</div>
+    <a class="linkRetorno" id="linkRetorno" href="/moontrip#portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
+    <div class="qrPlaceholder" id="qrRetorno" aria-label="QR escaneable para volver al portafolio" title="Scan: davidforeroparra-dev.netlify.app"><img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKAQAAAAA0q//cAAABGklEQVR4nK1SMWrDQBCc86kJHEgPSBMwuL2gNIEzp9a/8RcCeUAekH+kCpyQwI1AglQBg18QkNBBMJzYFAmG3bSe6hiGmdnbVYQ/1CtccI2nytqHYlIVZ/24G6ImoZ0qff5C9s9sPZyEbwbgdT9pmZaHJTRIQlsXFliU51pKeDc9Bc5W8aZ4bmvmAAo0ppAsBca6ZnY+ecHCOE/UM3aFtNHYTpb9g6IB9xYw+omnoUvkG+FLqZ/HVHru22bx9oiXwPs68p21VmgP07I/5icxmzN6do0Xfb+j3X1sp4priRySz5k2g9LntthEyB3rfG0eRZotZ2NhRBrwGYb+rZI7jra7K6gWOzbDRmvRDFr3XShFs9+z7q5zyhf8AAPJgHl1z7Y7AAAAAElFTkSuQmCC" width="80" height="80"></div>
   </div>
 </footer>
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - close -->
