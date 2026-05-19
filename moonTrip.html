@@ -412,72 +412,163 @@ a { color: inherit; }
 .reglasDot.active { background: var(--rojoOtonal); transform: scale(1.15); }
 .reglasDot:hover { background: var(--naranjaClaro); }
 
-/* === PORTAFOLIO === */
+/* === PORTAFOLIO (carretesContraflujoSincronizados) === */
 .portafolio {
   max-width: 1280px; margin: 56px auto 0; padding: 0 28px;
   position: relative;
 }
-.portafolioGrid {
+.portafolioContraflujo {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: 40px;
   position: relative;
 }
-.tarjetaPortafolio {
+.colCarrete {
+  position: relative;
+  height: 720px;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x;
+}
+.tarjetaCarretCard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 280px;
+  margin-left: -200px;
+  margin-top: -140px;
   background: #FFFFFF;
   border: var(--bordeInk);
   border-radius: var(--frameRadius);
   box-shadow: var(--sombraOffSm);
-  padding: 24px 26px 28px;
-  position: relative;
+  box-sizing: border-box;
+  transition: transform 600ms cubic-bezier(.4,0,.2,1), opacity 300ms, filter 600ms, box-shadow 600ms;
+  will-change: transform, opacity, filter;
+  overflow: visible;
+  cursor: pointer;
+}
+.tarjetaCarretCard.posCenterY {
+  transform: translateY(0) scale(1);
+  filter: brightness(1);
+  opacity: 1;
+  z-index: 5;
+  cursor: default;
+  box-shadow: 6px 6px 0 var(--grisCarbon);
+}
+.tarjetaCarretCard.posNearUp {
+  transform: translateY(-200px) scale(0.7);
+  filter: brightness(0.78);
+  opacity: 0.95;
+  z-index: 3;
+  box-shadow: 4px 4px 0 var(--grisCarbon);
+}
+.tarjetaCarretCard.posNearDown {
+  transform: translateY(200px) scale(0.7);
+  filter: brightness(0.78);
+  opacity: 0.95;
+  z-index: 3;
+  box-shadow: 4px 4px 0 var(--grisCarbon);
+}
+.tarjetaCarretCard.posFarUp {
+  transform: translateY(-360px) scale(0.5);
+  filter: brightness(0.55);
+  opacity: 0.85;
+  z-index: 1;
+  cursor: default;
+  box-shadow: 3px 3px 0 var(--grisCarbon);
+}
+.tarjetaCarretCard.posFarDown {
+  transform: translateY(360px) scale(0.5);
+  filter: brightness(0.55);
+  opacity: 0.85;
+  z-index: 1;
+  cursor: default;
+  box-shadow: 3px 3px 0 var(--grisCarbon);
+}
+.tarjetaCarretCard.wrapInvisible {
+  opacity: 0 !important;
+}
+.colCarrete.dragging .tarjetaCarretCard {
+  transition: none !important;
+}
+
+/* Cross-fade entre dummyLayer y realLayer (carreteCoverFlow3D) */
+.tarjetaCarretCard .dummyLayer,
+.tarjetaCarretCard .realLayer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  transition: opacity 350ms;
+}
+.tarjetaCarretCard .dummyLayer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.tarjetaCarretCard .realLayer {
+  padding: 24px 26px 22px;
+  opacity: 1;
   display: grid;
   grid-template-columns: 1fr 96px;
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto 1fr auto;
   column-gap: 22px;
   align-items: start;
-  transition: transform .2s, box-shadow .2s;
+  box-sizing: border-box;
 }
-.tarjetaPortafolio:nth-child(1) { transform: rotate(-0.5deg); }
-.tarjetaPortafolio:nth-child(2) { transform: rotate(0.4deg); }
-.tarjetaPortafolio:nth-child(3) { transform: rotate(-0.3deg); }
-.tarjetaPortafolio:nth-child(4) { transform: rotate(0.2deg); }
-.tarjetaPortafolio:hover { transform: rotate(0) translateY(-3px); box-shadow: 8px 10px 0 var(--grisCarbon); }
+.tarjetaCarretCard.posFarUp .dummyLayer,
+.tarjetaCarretCard.posFarDown .dummyLayer {
+  opacity: 1;
+}
+.tarjetaCarretCard.posFarUp .realLayer,
+.tarjetaCarretCard.posFarDown .realLayer {
+  opacity: 0;
+}
+.banderinSlot {
+  grid-column: 1 / 3;
+  grid-row: 1 / 2;
+  min-height: 0;
+}
 .tarjetaIcono {
   grid-column: 1 / 2;
-  grid-row: 1 / 2;
+  grid-row: 2 / 3;
   width: 56px; height: 56px;
   margin-bottom: 6px;
   border: 3px solid var(--grisCarbon);
   background: var(--amarilloLuna);
   border-radius: 12px;
   padding: 8px;
+  box-sizing: border-box;
 }
+.tarjetaIcono svg { width: 100%; height: 100%; }
 .tarjetaTitulo {
   grid-column: 1 / 2;
-  grid-row: 2 / 3;
+  grid-row: 3 / 4;
   font-family: var(--fontVintageDisplay);
   font-size: 22px;
   color: var(--vinotinto);
   text-transform: uppercase;
   letter-spacing: 1.2px;
   line-height: 1.05;
-  margin-bottom: 10px;
+  margin: 4px 0 8px;
 }
 .tarjetaDescripcion {
   grid-column: 1 / 2;
-  grid-row: 3 / 4;
+  grid-row: 4 / 5;
   font-family: var(--fontVintageBody);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--grisCarbon);
-  line-height: 1.55;
-  margin-bottom: 14px;
+  line-height: 1.5;
+  margin: 0 0 10px;
 }
 .tarjetaLink {
   grid-column: 1 / 2;
-  grid-row: 4 / 5;
+  grid-row: 5 / 6;
   align-self: end;
   font-family: var(--fontVintageDisplay);
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--rojoOtonal);
@@ -501,13 +592,12 @@ a { color: inherit; }
 }
 .qrTarjeta {
   grid-column: 2 / 3;
-  grid-row: 1 / 5;
+  grid-row: 2 / 6;
   align-self: center;
   justify-self: end;
   width: 96px; height: 96px;
 }
 .qrTarjeta svg { display: block; width: 100%; height: 100%; }
-
 .banderinNuevo {
   position: absolute;
   top: -22px; right: -18px;
@@ -519,13 +609,8 @@ a { color: inherit; }
   border: 3px solid var(--grisCarbon);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
   transform: rotate(14deg);
-  z-index: 5;
+  z-index: 6;
   box-shadow: 4px 4px 0 var(--grisCarbon);
-}
-
-/* iconos CSS/SVG inline para el portafolio */
-.iconoMarker svg, .iconoTracker svg, .iconoMesure svg, .iconoBranding svg {
-  width: 100%; height: 100%;
 }
 
 /* === DEVELOPER === */
@@ -665,9 +750,23 @@ a { color: inherit; }
   .slideTitulo { font-size: 52px; }
   .slideSubtitulo { font-size: 20px; }
   .slideCuerpo { font-size: 14px; }
-  .portafolioGrid { grid-template-columns: 1fr; }
-  .tarjetaPortafolio { grid-template-columns: 1fr; }
-  .qrTarjeta { grid-column: 1 / 2; grid-row: 5 / 6; justify-self: start; margin-top: 10px; }
+  .portafolioContraflujo { grid-template-columns: 1fr; gap: 24px; }
+  .colCarrete { height: 620px; }
+  .colCarreteDer { display: none; }
+  .tarjetaCarretCard { width: min(320px, 92vw); margin-left: 0; left: 50%; transform-origin: center; }
+  .tarjetaCarretCard.posCenterY,
+  .tarjetaCarretCard.posNearUp,
+  .tarjetaCarretCard.posNearDown,
+  .tarjetaCarretCard.posFarUp,
+  .tarjetaCarretCard.posFarDown { margin-left: calc(min(320px, 92vw) / -2); }
+  .tarjetaCarretCard.posNearUp   { transform: translateY(-160px) scale(0.65); }
+  .tarjetaCarretCard.posNearDown { transform: translateY(160px)  scale(0.65); }
+  .tarjetaCarretCard.posFarUp    { transform: translateY(-280px) scale(0.45); }
+  .tarjetaCarretCard.posFarDown  { transform: translateY(280px)  scale(0.45); }
+  .tarjetaCarretCard .realLayer { grid-template-columns: 1fr; padding: 18px 18px 18px; }
+  .qrTarjeta { grid-column: 1 / 2; grid-row: 6 / 7; justify-self: start; margin-top: 6px; width: 72px; height: 72px; }
+  .tarjetaTitulo { font-size: 19px; }
+  .tarjetaDescripcion { font-size: 12px; }
   .developerCard { padding: 24px; }
   .footerMedallon { width: 130px; height: 130px; }
   .reglasCarrete { height: 300px; }
@@ -683,7 +782,6 @@ a { color: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
-  .tarjetaPortafolio { transform: none !important; }
   .heroSlide.animando { transition: none !important; }
 }
 
@@ -790,174 +888,50 @@ a { color: inherit; }
   <!-- OWNERSHIP ZONE -- Agente B -- PORTAFOLIO -- open -->
   <section class="portafolio" id="portafolio">
     <h2 class="seccionTitulo" data-i18n="portafolioTituloSeccion">Portafolio Moon Trip</h2>
-    <div class="portafolioGrid">
-      <article class="tarjetaPortafolio">
-        <div class="tarjetaIcono iconoMarker" role="img" data-i18n-alt="iconoMarkerAlt"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+
+    <!-- Templates ocultos consumidos por portafolioCarretes (slotDinamicoTemplates): 6 iconos por tester + 1 QR reutilizable (qrPlaceholderDamero) -->
+    <template id="tplIconoMarker"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <path d="M20 4 C12 4 6 10 6 18 C6 28 20 36 20 36 C20 36 34 28 34 18 C34 10 28 4 20 4 Z"
         stroke="#272B2E" stroke-width="3" fill="#9B1B18"/>
   <circle cx="20" cy="17" r="5" fill="#F7F3A1" stroke="#272B2E" stroke-width="2"/>
-</svg></div>
-        <h3 class="tarjetaTitulo" data-i18n="tarjetaMarkerTitulo">PENDIENTE</h3>
-        <p class="tarjetaDescripcion" data-i18n="tarjetaMarkerDescripcion">PENDIENTE</p>
-        <a class="tarjetaLink" href="#TBD-moonTripMarker" data-i18n="tarjetaLinkLabel">Abrir<span class="badgeTbd" data-i18n="badgePlaceholder">TBD</span></a>
-        <div class="qrTarjeta" aria-label="QR placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" aria-label="QR placeholder">
-  <rect width="96" height="96" fill="#F7F3A1" stroke="#272B2E" stroke-width="3"/>
-  <g fill="#272B2E">
-    <!-- esquinas marcadas estilo QR -->
-    <rect x="6" y="6" width="20" height="20"/>
-    <rect x="10" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="13" width="6" height="6"/>
-    <rect x="70" y="6" width="20" height="20"/>
-    <rect x="74" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="77" y="13" width="6" height="6"/>
-    <rect x="6" y="70" width="20" height="20"/>
-    <rect x="10" y="74" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="77" width="6" height="6"/>
-    <!-- patron damero interior -->
-    <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
-    <rect x="48" y="6" width="4" height="4"/><rect x="56" y="6" width="4" height="4"/>
-    <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
-    <rect x="52" y="14" width="4" height="4"/><rect x="60" y="14" width="4" height="4"/>
-    <rect x="36" y="22" width="4" height="4"/><rect x="48" y="22" width="4" height="4"/>
-    <rect x="56" y="22" width="4" height="4"/>
-    <rect x="32" y="32" width="4" height="4"/><rect x="40" y="32" width="4" height="4"/>
-    <rect x="56" y="32" width="4" height="4"/><rect x="64" y="32" width="4" height="4"/>
-    <rect x="36" y="40" width="4" height="4"/><rect x="48" y="40" width="4" height="4"/>
-    <rect x="60" y="40" width="4" height="4"/>
-    <rect x="32" y="48" width="4" height="4"/><rect x="44" y="48" width="4" height="4"/>
-    <rect x="52" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/>
-    <rect x="36" y="56" width="4" height="4"/><rect x="48" y="56" width="4" height="4"/>
-    <rect x="56" y="56" width="4" height="4"/>
-    <rect x="32" y="64" width="4" height="4"/><rect x="40" y="64" width="4" height="4"/>
-    <rect x="52" y="64" width="4" height="4"/><rect x="60" y="64" width="4" height="4"/>
-    <rect x="36" y="74" width="4" height="4"/><rect x="48" y="74" width="4" height="4"/>
-    <rect x="56" y="74" width="4" height="4"/><rect x="64" y="74" width="4" height="4"/>
-    <rect x="44" y="82" width="4" height="4"/><rect x="52" y="82" width="4" height="4"/>
-    <rect x="64" y="82" width="4" height="4"/>
-  </g>
-  <!-- sello central TBD -->
-  <circle cx="48" cy="48" r="11" fill="#9B1B18" stroke="#272B2E" stroke-width="2"/>
-  <text x="48" y="52" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" fill="#F7F3A1" letter-spacing="1">TBD</text>
-</svg></div>
-      </article>
-      <article class="tarjetaPortafolio">
-        <div class="tarjetaIcono iconoTracker" role="img" data-i18n-alt="iconoTrackerAlt"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+</svg></template>
+    <template id="tplIconoTracker"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <path d="M6 30 Q14 10 22 22 Q30 32 34 14" stroke="#9B1B18" stroke-width="3" fill="none" stroke-linecap="round"/>
   <circle cx="6" cy="30" r="3.5" fill="#272B2E"/>
   <circle cx="22" cy="22" r="3.5" fill="#272B2E"/>
   <circle cx="34" cy="14" r="3.5" fill="#272B2E"/>
-</svg></div>
-        <h3 class="tarjetaTitulo" data-i18n="tarjetaTrackerTitulo">PENDIENTE</h3>
-        <p class="tarjetaDescripcion" data-i18n="tarjetaTrackerDescripcion">PENDIENTE</p>
-        <a class="tarjetaLink" href="#TBD-moonTripTracker" data-i18n="tarjetaLinkLabel">Abrir<span class="badgeTbd" data-i18n="badgePlaceholder">TBD</span></a>
-        <div class="qrTarjeta" aria-label="QR placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" aria-label="QR placeholder">
-  <rect width="96" height="96" fill="#F7F3A1" stroke="#272B2E" stroke-width="3"/>
-  <g fill="#272B2E">
-    <!-- esquinas marcadas estilo QR -->
-    <rect x="6" y="6" width="20" height="20"/>
-    <rect x="10" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="13" width="6" height="6"/>
-    <rect x="70" y="6" width="20" height="20"/>
-    <rect x="74" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="77" y="13" width="6" height="6"/>
-    <rect x="6" y="70" width="20" height="20"/>
-    <rect x="10" y="74" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="77" width="6" height="6"/>
-    <!-- patron damero interior -->
-    <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
-    <rect x="48" y="6" width="4" height="4"/><rect x="56" y="6" width="4" height="4"/>
-    <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
-    <rect x="52" y="14" width="4" height="4"/><rect x="60" y="14" width="4" height="4"/>
-    <rect x="36" y="22" width="4" height="4"/><rect x="48" y="22" width="4" height="4"/>
-    <rect x="56" y="22" width="4" height="4"/>
-    <rect x="32" y="32" width="4" height="4"/><rect x="40" y="32" width="4" height="4"/>
-    <rect x="56" y="32" width="4" height="4"/><rect x="64" y="32" width="4" height="4"/>
-    <rect x="36" y="40" width="4" height="4"/><rect x="48" y="40" width="4" height="4"/>
-    <rect x="60" y="40" width="4" height="4"/>
-    <rect x="32" y="48" width="4" height="4"/><rect x="44" y="48" width="4" height="4"/>
-    <rect x="52" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/>
-    <rect x="36" y="56" width="4" height="4"/><rect x="48" y="56" width="4" height="4"/>
-    <rect x="56" y="56" width="4" height="4"/>
-    <rect x="32" y="64" width="4" height="4"/><rect x="40" y="64" width="4" height="4"/>
-    <rect x="52" y="64" width="4" height="4"/><rect x="60" y="64" width="4" height="4"/>
-    <rect x="36" y="74" width="4" height="4"/><rect x="48" y="74" width="4" height="4"/>
-    <rect x="56" y="74" width="4" height="4"/><rect x="64" y="74" width="4" height="4"/>
-    <rect x="44" y="82" width="4" height="4"/><rect x="52" y="82" width="4" height="4"/>
-    <rect x="64" y="82" width="4" height="4"/>
-  </g>
-  <!-- sello central TBD -->
-  <circle cx="48" cy="48" r="11" fill="#9B1B18" stroke="#272B2E" stroke-width="2"/>
-  <text x="48" y="52" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" fill="#F7F3A1" letter-spacing="1">TBD</text>
-</svg></div>
-      </article>
-      <article class="tarjetaPortafolio">
-        <div class="tarjetaIcono iconoMesure" role="img" data-i18n-alt="iconoMesureAlt"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+</svg></template>
+    <template id="tplIconoMesure"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <rect x="4" y="14" width="32" height="12" fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5" rx="2"/>
   <line x1="10" y1="14" x2="10" y2="20" stroke="#272B2E" stroke-width="2"/>
   <line x1="16" y1="14" x2="16" y2="22" stroke="#272B2E" stroke-width="2"/>
   <line x1="22" y1="14" x2="22" y2="20" stroke="#272B2E" stroke-width="2"/>
   <line x1="28" y1="14" x2="28" y2="22" stroke="#272B2E" stroke-width="2"/>
-</svg></div>
-        <h3 class="tarjetaTitulo" data-i18n="tarjetaMesureTitulo">PENDIENTE</h3>
-        <p class="tarjetaDescripcion" data-i18n="tarjetaMesureDescripcion">PENDIENTE</p>
-        <a class="tarjetaLink" href="#TBD-moonTripMesure" data-i18n="tarjetaLinkLabel">Abrir<span class="badgeTbd" data-i18n="badgePlaceholder">TBD</span></a>
-        <div class="qrTarjeta" aria-label="QR placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" aria-label="QR placeholder">
-  <rect width="96" height="96" fill="#F7F3A1" stroke="#272B2E" stroke-width="3"/>
-  <g fill="#272B2E">
-    <!-- esquinas marcadas estilo QR -->
-    <rect x="6" y="6" width="20" height="20"/>
-    <rect x="10" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="13" width="6" height="6"/>
-    <rect x="70" y="6" width="20" height="20"/>
-    <rect x="74" y="10" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="77" y="13" width="6" height="6"/>
-    <rect x="6" y="70" width="20" height="20"/>
-    <rect x="10" y="74" width="12" height="12" fill="#F7F3A1"/>
-    <rect x="13" y="77" width="6" height="6"/>
-    <!-- patron damero interior -->
-    <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
-    <rect x="48" y="6" width="4" height="4"/><rect x="56" y="6" width="4" height="4"/>
-    <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
-    <rect x="52" y="14" width="4" height="4"/><rect x="60" y="14" width="4" height="4"/>
-    <rect x="36" y="22" width="4" height="4"/><rect x="48" y="22" width="4" height="4"/>
-    <rect x="56" y="22" width="4" height="4"/>
-    <rect x="32" y="32" width="4" height="4"/><rect x="40" y="32" width="4" height="4"/>
-    <rect x="56" y="32" width="4" height="4"/><rect x="64" y="32" width="4" height="4"/>
-    <rect x="36" y="40" width="4" height="4"/><rect x="48" y="40" width="4" height="4"/>
-    <rect x="60" y="40" width="4" height="4"/>
-    <rect x="32" y="48" width="4" height="4"/><rect x="44" y="48" width="4" height="4"/>
-    <rect x="52" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/>
-    <rect x="36" y="56" width="4" height="4"/><rect x="48" y="56" width="4" height="4"/>
-    <rect x="56" y="56" width="4" height="4"/>
-    <rect x="32" y="64" width="4" height="4"/><rect x="40" y="64" width="4" height="4"/>
-    <rect x="52" y="64" width="4" height="4"/><rect x="60" y="64" width="4" height="4"/>
-    <rect x="36" y="74" width="4" height="4"/><rect x="48" y="74" width="4" height="4"/>
-    <rect x="56" y="74" width="4" height="4"/><rect x="64" y="74" width="4" height="4"/>
-    <rect x="44" y="82" width="4" height="4"/><rect x="52" y="82" width="4" height="4"/>
-    <rect x="64" y="82" width="4" height="4"/>
-  </g>
-  <!-- sello central TBD -->
-  <circle cx="48" cy="48" r="11" fill="#9B1B18" stroke="#272B2E" stroke-width="2"/>
-  <text x="48" y="52" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" fill="#F7F3A1" letter-spacing="1">TBD</text>
-</svg></div>
-      </article>
-      <article class="tarjetaPortafolio">
-        <div class="banderinNuevo" data-i18n="banderinNuevo">NUEVO</div>
-        <div class="tarjetaIcono iconoBranding" role="img" data-i18n-alt="iconoBrandingAlt"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+</svg></template>
+    <template id="tplIconoBranding"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <path d="M20 4 C10 4 4 12 4 20 C4 28 10 32 16 32 C18 32 18 30 19 28 C20 26 22 26 24 26 C28 26 32 24 34 20 C36 14 30 4 20 4 Z"
         fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5"/>
   <circle cx="13" cy="14" r="2.5" fill="#9B1B18"/>
   <circle cx="20" cy="11" r="2.5" fill="#E39F43"/>
   <circle cx="27" cy="14" r="2.5" fill="#A1602A"/>
   <circle cx="28" cy="21" r="2.5" fill="#551E1B"/>
-</svg></div>
-        <h3 class="tarjetaTitulo" data-i18n="tarjetaBrandingTitulo">PENDIENTE</h3>
-        <p class="tarjetaDescripcion" data-i18n="tarjetaBrandingDescripcion">PENDIENTE</p>
-        <a class="tarjetaLink" href="#TBD-landingBrandingMoon" data-i18n="tarjetaLinkLabel">Abrir<span class="badgeTbd" data-i18n="badgePlaceholder">TBD</span></a>
-        <div class="qrTarjeta" aria-label="QR placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" aria-label="QR placeholder">
+</svg></template>
+    <template id="tplIconoCompass"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <circle cx="20" cy="20" r="15" fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5"/>
+  <polygon points="20,7 17,21 23,21" fill="#9B1B18" stroke="#272B2E" stroke-width="1.2"/>
+  <polygon points="20,33 17,19 23,19" fill="#272B2E"/>
+  <circle cx="20" cy="20" r="2" fill="#272B2E"/>
+</svg></template>
+    <template id="tplIconoDiario"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <rect x="7" y="5" width="22" height="30" fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5" rx="1.5"/>
+  <line x1="11" y1="13" x2="25" y2="13" stroke="#272B2E" stroke-width="1.5"/>
+  <line x1="11" y1="19" x2="25" y2="19" stroke="#272B2E" stroke-width="1.5"/>
+  <line x1="11" y1="25" x2="22" y2="25" stroke="#272B2E" stroke-width="1.5"/>
+  <rect x="24" y="3" width="4" height="14" fill="#9B1B18" stroke="#272B2E" stroke-width="1.2"/>
+</svg></template>
+    <template id="tplQrPlaceholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" aria-label="QR placeholder">
   <rect width="96" height="96" fill="#F7F3A1" stroke="#272B2E" stroke-width="3"/>
   <g fill="#272B2E">
-    <!-- esquinas marcadas estilo QR -->
     <rect x="6" y="6" width="20" height="20"/>
     <rect x="10" y="10" width="12" height="12" fill="#F7F3A1"/>
     <rect x="13" y="13" width="6" height="6"/>
@@ -967,7 +941,6 @@ a { color: inherit; }
     <rect x="6" y="70" width="20" height="20"/>
     <rect x="10" y="74" width="12" height="12" fill="#F7F3A1"/>
     <rect x="13" y="77" width="6" height="6"/>
-    <!-- patron damero interior -->
     <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
     <rect x="48" y="6" width="4" height="4"/><rect x="56" y="6" width="4" height="4"/>
     <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
@@ -989,14 +962,129 @@ a { color: inherit; }
     <rect x="44" y="82" width="4" height="4"/><rect x="52" y="82" width="4" height="4"/>
     <rect x="64" y="82" width="4" height="4"/>
   </g>
-  <!-- sello central TBD -->
   <circle cx="48" cy="48" r="11" fill="#9B1B18" stroke="#272B2E" stroke-width="2"/>
   <text x="48" y="52" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" fill="#F7F3A1" letter-spacing="1">TBD</text>
-</svg></div>
-      </article>
+</svg></template>
+
+    <div class="portafolioContraflujo">
+      <div class="colCarrete colCarreteIzq" id="colCarreteIzq" aria-roledescription="carousel">
+        <div class="tarjetaCarretCard" data-dom-idx="0">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="1">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="2">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="3">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="4">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+      </div>
+      <div class="colCarrete colCarreteDer" id="colCarreteDer" aria-roledescription="carousel">
+        <div class="tarjetaCarretCard" data-dom-idx="0">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="1">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="2">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="3">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+        <div class="tarjetaCarretCard" data-dom-idx="4">
+          <div class="dummyLayer"><span class="dummyAsterisco">&#9733;</span></div>
+          <div class="realLayer">
+            <div class="banderinSlot"></div>
+            <div class="tarjetaIcono" role="img"></div>
+            <h3 class="tarjetaTitulo"></h3>
+            <p class="tarjetaDescripcion"></p>
+            <a class="tarjetaLink" href="#"></a>
+            <div class="qrTarjeta" aria-label="QR placeholder"></div>
+          </div>
+        </div>
+      </div>
     </div>
+    <!-- DATASET-MARKER: las 6 cards reales (3 izq + 3 der) se inyectan desde el módulo IIFE portafolioCarretes en init() -->
   </section>
-  <!-- OWNERSHIP ZONE -- Agente B -- PORTAFOLIO -- close -->
+  <!-- OWNERSHIP ZONE -- Agente B -- PORTAFOLIO (carretesContraflujoSincronizados) -- close -->
 
   <!-- OWNERSHIP ZONE -- Agente B -- DEVELOPER -- open -->
   <section class="developer" id="developer">
@@ -1086,12 +1174,18 @@ var dictI18n = {
     "tarjetaMesureDescripcion": "Medir distancias, áreas y desniveles con instrumentos que pesan lo que pesa la idea: nada más.",
     "tarjetaBrandingTitulo": "landingBrandingMoon",
     "tarjetaBrandingDescripcion": "La identidad cromática y tipográfica del sub-proyecto Moon Trip: paleta, mocks y referentes en una sola landing.",
+    "tarjetaCompassTitulo": "moonTripCompass",
+    "tarjetaCompassDescripcion": "Encontrar el norte con el bolsillo de la Luna: brújula vintage sin agujas mecánicas, magnetómetro del dispositivo y declinación calculada en local.",
+    "tarjetaDiarioTitulo": "moonTripDiario",
+    "tarjetaDiarioDescripcion": "Bitácora del viaje en el bolsillo: notas con sello horario, vínculos a marcadores y rutas, archivadas en almacenamiento local del dispositivo.",
     "tarjetaLinkLabel": "Abrir",
     "badgePlaceholder": "TBD",
     "iconoMarkerAlt": "Icono Moon Trip Marker",
     "iconoTrackerAlt": "Icono Moon Trip Tracker",
     "iconoMesureAlt": "Icono Moon Trip Mesure",
     "iconoBrandingAlt": "Icono Branding Moon",
+    "iconoCompassAlt": "Icono Moon Trip Compass",
+    "iconoDiarioAlt": "Icono Moon Trip Diario",
     "iconoDeveloperAlt": "Cohete Moon Trip Developer",
     "developerTituloSeccion": "Sobre el developer",
     "developerH3": "David Forero Parra",
@@ -1151,12 +1245,18 @@ var dictI18n = {
     "tarjetaMesureDescripcion": "Measure distances, areas and elevations with instruments that weigh what the idea weighs: nothing more.",
     "tarjetaBrandingTitulo": "landingBrandingMoon",
     "tarjetaBrandingDescripcion": "The chromatic and typographic identity of the Moon Trip sub-project: palette, mocks and references in a single landing.",
+    "tarjetaCompassTitulo": "moonTripCompass",
+    "tarjetaCompassDescripcion": "Find north from the Moon's pocket: vintage compass without mechanical needles, device magnetometer and locally-computed declination.",
+    "tarjetaDiarioTitulo": "moonTripDiario",
+    "tarjetaDiarioDescripcion": "Travel logbook in the pocket: timestamped notes, links to markers and routes, archived in the device's local storage.",
     "tarjetaLinkLabel": "Open",
     "badgePlaceholder": "TBD",
     "iconoMarkerAlt": "Moon Trip Marker icon",
     "iconoTrackerAlt": "Moon Trip Tracker icon",
     "iconoMesureAlt": "Moon Trip Mesure icon",
     "iconoBrandingAlt": "Branding Moon icon",
+    "iconoCompassAlt": "Moon Trip Compass icon",
+    "iconoDiarioAlt": "Moon Trip Diario icon",
     "iconoDeveloperAlt": "Moon Trip Developer rocket",
     "developerTituloSeccion": "About the developer",
     "developerH3": "David Forero Parra",
@@ -1274,6 +1374,7 @@ var dictI18n = {
     }
     if (!prefersReducedMotion) iniciarTimer();
     initReglasCarrete();
+    initPortafolioCarretes();
   }
 
   // ==== Carrete 3D de reglas operativas (wheel de 5 DOMs) ====
@@ -1710,6 +1811,284 @@ var dictI18n = {
         if (!isHovered) iniciarTimer();
       }, 400);
     }
+  }
+
+  // ==== Portafolio carretes contraflujo sincronizados (carretesContraflujoSincronizados) ====
+  // Composicion de 2 instancias de carreteCoverFlow3D en eje Y con direcciones opuestas y timer maestro unico.
+  // colCarreteIzq: cards bajan (fisicoDirY = +1)  | colCarreteDer: cards suben (fisicoDirY = -1)
+  // Mobile (<720px): colDer oculto, las 6 cards combinadas circulan por colIzq unidireccional.
+  var PORTAFOLIO_WHEEL_SIZE = 5;
+  var PORTAFOLIO_REPOSO_MS = 15000;
+  var PORTAFOLIO_ANIM_MS = 600;
+  var PORTAFOLIO_POS_CLASSES = ['posCenterY','posNearUp','posNearDown','posFarUp','posFarDown','wrapInvisible'];
+
+  // Dataset (3 izq + 3 der). Orden fisico en cada columna determina secuencia.
+  var portafolioCardsData = [
+    { col: 'izq', tester: 'marker',   iconTpl: 'tplIconoMarker',   iconAltKey: 'iconoMarkerAlt',   tituloKey: 'tarjetaMarkerTitulo',   descKey: 'tarjetaMarkerDescripcion',   linkHref: '#TBD-moonTripMarker',     tieneBanderin: false },
+    { col: 'izq', tester: 'mesure',   iconTpl: 'tplIconoMesure',   iconAltKey: 'iconoMesureAlt',   tituloKey: 'tarjetaMesureTitulo',   descKey: 'tarjetaMesureDescripcion',   linkHref: '#TBD-moonTripMesure',     tieneBanderin: false },
+    { col: 'izq', tester: 'compass',  iconTpl: 'tplIconoCompass',  iconAltKey: 'iconoCompassAlt',  tituloKey: 'tarjetaCompassTitulo',  descKey: 'tarjetaCompassDescripcion',  linkHref: '#TBD-moonTripCompass',    tieneBanderin: true  },
+    { col: 'der', tester: 'tracker',  iconTpl: 'tplIconoTracker',  iconAltKey: 'iconoTrackerAlt',  tituloKey: 'tarjetaTrackerTitulo',  descKey: 'tarjetaTrackerDescripcion',  linkHref: '#TBD-moonTripTracker',    tieneBanderin: false },
+    { col: 'der', tester: 'diario',   iconTpl: 'tplIconoDiario',   iconAltKey: 'iconoDiarioAlt',   tituloKey: 'tarjetaDiarioTitulo',   descKey: 'tarjetaDiarioDescripcion',   linkHref: '#TBD-moonTripDiario',     tieneBanderin: true  },
+    { col: 'der', tester: 'branding', iconTpl: 'tplIconoBranding', iconAltKey: 'iconoBrandingAlt', tituloKey: 'tarjetaBrandingTitulo', descKey: 'tarjetaBrandingDescripcion', linkHref: '#TBD-landingBrandingMoon', tieneBanderin: false }
+  ];
+
+  var portafolioState = {
+    izq: { idx: 0, domAtCenter: 2, cards: [], hover: false, isDragging: false, dragMode: false, startY: 0, deltaY: 0, animating: false, el: null },
+    der: { idx: 0, domAtCenter: 2, cards: [], hover: false, isDragging: false, dragMode: false, startY: 0, deltaY: 0, animating: false, el: null }
+  };
+  var portafolioTimerId = null;
+  var portafolioIsMobile = false;
+  var PORTAFOLIO_DRAG_THRESHOLD = 50;
+
+  function portafolioDataFor(col) {
+    if (portafolioIsMobile) return portafolioCardsData; // mobile: 6 cards en colIzq unicamente
+    var out = [];
+    for (var i = 0; i < portafolioCardsData.length; i++) {
+      if (portafolioCardsData[i].col === col) out.push(portafolioCardsData[i]);
+    }
+    return out;
+  }
+
+  function getRelativePosPortafolio(domIdx, domAtCenter) {
+    var rel = (domIdx - domAtCenter + PORTAFOLIO_WHEEL_SIZE * 2) % PORTAFOLIO_WHEEL_SIZE;
+    if (rel > Math.floor(PORTAFOLIO_WHEEL_SIZE / 2)) rel -= PORTAFOLIO_WHEEL_SIZE;
+    return rel;
+  }
+
+  function getPosClassYPortafolio(rel) {
+    if (rel === 0) return 'posCenterY';
+    if (rel === 1) return 'posNearDown';
+    if (rel === 2) return 'posFarDown';
+    if (rel === -1) return 'posNearUp';
+    if (rel === -2) return 'posFarUp';
+    return '';
+  }
+
+  function fillCardPortafolio(cardEl, data) {
+    var banderinSlot = cardEl.querySelector('.banderinSlot');
+    var iconoEl = cardEl.querySelector('.tarjetaIcono');
+    var titEl = cardEl.querySelector('.tarjetaTitulo');
+    var descEl = cardEl.querySelector('.tarjetaDescripcion');
+    var linkEl = cardEl.querySelector('.tarjetaLink');
+    var qrEl = cardEl.querySelector('.qrTarjeta');
+    if (!data) {
+      banderinSlot.innerHTML = '';
+      iconoEl.innerHTML = '';
+      iconoEl.removeAttribute('data-i18n-alt');
+      titEl.textContent = '';
+      titEl.removeAttribute('data-i18n');
+      descEl.textContent = '';
+      descEl.removeAttribute('data-i18n');
+      linkEl.innerHTML = '';
+      linkEl.removeAttribute('href');
+      qrEl.innerHTML = '';
+      return;
+    }
+    banderinSlot.innerHTML = '';
+    if (data.tieneBanderin) {
+      var ban = document.createElement('div');
+      ban.className = 'banderinNuevo';
+      ban.setAttribute('data-i18n', 'banderinNuevo');
+      ban.textContent = 'NUEVO';
+      banderinSlot.appendChild(ban);
+    }
+    iconoEl.innerHTML = '';
+    var tplIcon = document.getElementById(data.iconTpl);
+    if (tplIcon && tplIcon.content) iconoEl.appendChild(tplIcon.content.cloneNode(true));
+    iconoEl.setAttribute('data-i18n-alt', data.iconAltKey);
+    titEl.setAttribute('data-i18n', data.tituloKey);
+    titEl.textContent = 'PENDIENTE';
+    descEl.setAttribute('data-i18n', data.descKey);
+    descEl.textContent = 'PENDIENTE';
+    linkEl.setAttribute('href', data.linkHref);
+    linkEl.innerHTML = '';
+    var spanLabel = document.createElement('span');
+    spanLabel.setAttribute('data-i18n', 'tarjetaLinkLabel');
+    spanLabel.textContent = 'Abrir';
+    var spanBadge = document.createElement('span');
+    spanBadge.className = 'badgeTbd';
+    spanBadge.setAttribute('data-i18n', 'badgePlaceholder');
+    spanBadge.textContent = 'TBD';
+    linkEl.appendChild(spanLabel);
+    linkEl.appendChild(spanBadge);
+    qrEl.innerHTML = '';
+    var tplQr = document.getElementById('tplQrPlaceholder');
+    if (tplQr && tplQr.content) qrEl.appendChild(tplQr.content.cloneNode(true));
+  }
+
+  function renderColumnaPortafolio(col) {
+    var st = portafolioState[col];
+    var data = portafolioDataFor(col);
+    var dataCount = data.length;
+    if (!dataCount || !st.cards.length) return;
+    for (var i = 0; i < st.cards.length; i++) {
+      var card = st.cards[i];
+      for (var j = 0; j < PORTAFOLIO_POS_CLASSES.length; j++) card.classList.remove(PORTAFOLIO_POS_CLASSES[j]);
+      var rel = getRelativePosPortafolio(i, st.domAtCenter);
+      var posClass = getPosClassYPortafolio(rel);
+      if (posClass) card.classList.add(posClass);
+      var dataIdx = ((st.idx + rel) % dataCount + dataCount) % dataCount;
+      var data_i = (Math.abs(rel) <= 2) ? data[dataIdx] : null;
+      fillCardPortafolio(card, data_i);
+    }
+    aplicarI18n(langActual);
+  }
+
+  function advancePortafolio(col, fisicoDirY) {
+    var st = portafolioState[col];
+    if (st.animating) return;
+    var data = portafolioDataFor(col);
+    if (!data.length) return;
+    st.animating = true;
+    st.idx = (st.idx + 1) % data.length;
+    st.domAtCenter = (st.domAtCenter - fisicoDirY + PORTAFOLIO_WHEEL_SIZE) % PORTAFOLIO_WHEEL_SIZE;
+    renderColumnaPortafolio(col);
+    setTimeout(function() { st.animating = false; }, PORTAFOLIO_ANIM_MS);
+  }
+
+  function tickPortafolio() {
+    if (portafolioIsMobile) {
+      var stM = portafolioState.izq;
+      if (!stM.hover && !stM.isDragging) advancePortafolio('izq', -1); // mobile unidireccional (sube)
+    } else {
+      var sIzq = portafolioState.izq;
+      if (!sIzq.hover && !sIzq.isDragging) advancePortafolio('izq', +1);  // baja
+      var sDer = portafolioState.der;
+      if (!sDer.hover && !sDer.isDragging) advancePortafolio('der', -1);  // sube
+    }
+    reagendarTimerPortafolio();
+  }
+
+  function reagendarTimerPortafolio() {
+    pararTimerPortafolio();
+    if (prefersReducedMotion) return;
+    portafolioTimerId = setTimeout(tickPortafolio, PORTAFOLIO_REPOSO_MS);
+  }
+
+  function pararTimerPortafolio() {
+    if (portafolioTimerId) { clearTimeout(portafolioTimerId); portafolioTimerId = null; }
+  }
+
+  function actualizarModoMobilePortafolio() {
+    var nuevoMobile = !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+    if (nuevoMobile === portafolioIsMobile) return;
+    portafolioIsMobile = nuevoMobile;
+    portafolioState.izq.idx = 0;
+    portafolioState.izq.domAtCenter = 2;
+    portafolioState.der.idx = 0;
+    portafolioState.der.domAtCenter = 2;
+    renderColumnaPortafolio('izq');
+    renderColumnaPortafolio('der');
+  }
+
+  function bindPortafolioInteraccion(col) {
+    var st = portafolioState[col];
+    var el = st.el;
+    el.addEventListener('mouseenter', function() {
+      st.hover = true;
+      // hover pausa SOLO esta columna: si la otra sigue sin hover/drag, el timer maestro la avanza
+      // (el tick es global pero usa flags por-columna para decidir si advance se ejecuta)
+    });
+    el.addEventListener('mouseleave', function() {
+      st.hover = false;
+    });
+    el.addEventListener('pointerdown', function(e) { onPortafolioPointerDown(col, e); });
+    el.addEventListener('pointermove', function(e) { onPortafolioPointerMove(col, e); });
+    el.addEventListener('pointerup',   function(e) { onPortafolioPointerUp(col, e); });
+    el.addEventListener('pointercancel', function(e) { onPortafolioPointerUp(col, e); });
+  }
+
+  function onPortafolioPointerDown(col, e) {
+    var st = portafolioState[col];
+    if (st.animating) return;
+    // ignorar drag si el target es un link o button del realLayer
+    var t = e.target;
+    while (t && t !== st.el) {
+      var tag = t.tagName;
+      if (tag === 'A' || tag === 'BUTTON') return;
+      t = t.parentNode;
+    }
+    st.isDragging = true;
+    st.dragMode = false;
+    st.startY = e.clientY;
+    st.deltaY = 0;
+    try { st.el.setPointerCapture(e.pointerId); } catch (err) {}
+    pararTimerPortafolio();
+  }
+
+  function onPortafolioPointerMove(col, e) {
+    var st = portafolioState[col];
+    if (!st.isDragging) return;
+    st.deltaY = e.clientY - st.startY;
+    if (!st.dragMode && Math.abs(st.deltaY) > 6) {
+      st.dragMode = true;
+      st.el.classList.add('dragging');
+    }
+    if (st.dragMode) {
+      // aplicar translateY temporal a Center, NearUp y NearDown (las 3 visibles principales)
+      for (var i = 0; i < st.cards.length; i++) {
+        var card = st.cards[i];
+        if (card.classList.contains('posCenterY') ||
+            card.classList.contains('posNearUp') ||
+            card.classList.contains('posNearDown')) {
+          var baseTransform = card.style.transform || '';
+          // limpiar translateY anterior aplicado por el drag
+          baseTransform = baseTransform.replace(/translateY\([^)]*\)\s*/g, '');
+          card.style.transform = 'translateY(' + st.deltaY + 'px) ' + baseTransform;
+        }
+      }
+    }
+  }
+
+  function onPortafolioPointerUp(col, e) {
+    var st = portafolioState[col];
+    if (!st.isDragging) return;
+    st.isDragging = false;
+    try { st.el.releasePointerCapture(e.pointerId); } catch (err) {}
+    st.el.classList.remove('dragging');
+    // limpiar transforms temporales
+    for (var i = 0; i < st.cards.length; i++) st.cards[i].style.transform = '';
+    var paso = false;
+    if (st.dragMode && Math.abs(st.deltaY) >= PORTAFOLIO_DRAG_THRESHOLD) {
+      // delta negativo (drag hacia arriba) → cards suben → fisicoDirY = -1
+      // delta positivo (drag hacia abajo) → cards bajan → fisicoDirY = +1
+      var fisicoDirY = st.deltaY < 0 ? -1 : +1;
+      advancePortafolio(col, fisicoDirY);
+      paso = true;
+    }
+    st.dragMode = false;
+    st.deltaY = 0;
+    if (!st.hover) reagendarTimerPortafolio();
+    // bloquear click sintetico inmediato (50ms) si hubo dragMode efectivo
+    if (paso) setTimeout(function() {}, 0);
+  }
+
+  function initPortafolioCarretes() {
+    var colIzqEl = document.getElementById('colCarreteIzq');
+    var colDerEl = document.getElementById('colCarreteDer');
+    if (!colIzqEl || !colDerEl) return;
+    portafolioState.izq.el = colIzqEl;
+    portafolioState.der.el = colDerEl;
+    portafolioIsMobile = !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+
+    var izqCards = colIzqEl.querySelectorAll('.tarjetaCarretCard');
+    for (var i = 0; i < izqCards.length; i++) portafolioState.izq.cards.push(izqCards[i]);
+    var derCards = colDerEl.querySelectorAll('.tarjetaCarretCard');
+    for (var j = 0; j < derCards.length; j++) portafolioState.der.cards.push(derCards[j]);
+
+    renderColumnaPortafolio('izq');
+    renderColumnaPortafolio('der');
+
+    bindPortafolioInteraccion('izq');
+    bindPortafolioInteraccion('der');
+
+    if (window.matchMedia) {
+      var mql = window.matchMedia('(max-width: 720px)');
+      if (mql.addEventListener) mql.addEventListener('change', actualizarModoMobilePortafolio);
+      else if (mql.addListener) mql.addListener(actualizarModoMobilePortafolio);
+    }
+
+    reagendarTimerPortafolio();
   }
 
   if (document.readyState === 'loading') {
