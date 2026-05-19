@@ -1838,7 +1838,7 @@ var dictI18n = {
   };
   var portafolioTimerId = null;
   var portafolioIsMobile = false;
-  var PORTAFOLIO_DRAG_THRESHOLD = 50;
+  var PORTAFOLIO_DRAG_THRESHOLD = 150;
 
   function portafolioDataFor(col) {
     if (portafolioIsMobile) return portafolioCardsData; // mobile: 6 cards en colIzq unicamente
@@ -1981,6 +1981,87 @@ var dictI18n = {
     renderColumnaPortafolio('der');
   }
 
+  // Funciones de interpolacion continua para drag del portafolio (dragInterpolacionPiecewise eje Y)
+  // Anclajes: vr=0 center, vr=±1 near, vr=±2 far (alineados con los valores estaticos posCenterY/posNearUpDown/posFarUpDown)
+  function interpolateYPortafolio(vr) {
+    var sign = vr >= 0 ? 1 : -1;
+    var a = Math.abs(vr);
+    if (a <= 1) return sign * 100 * a;
+    if (a <= 2) return sign * (100 + 36 * (a - 1));
+    return sign * 136;
+  }
+  function interpolateScalePortafolio(vr) {
+    var a = Math.abs(vr);
+    if (a <= 1) return 1 - 0.5 * a;
+    if (a <= 2) return 0.5 - 0.2 * (a - 1);
+    return 0.3;
+  }
+  function interpolateBrightnessPortafolio(vr) {
+    var a = Math.abs(vr);
+    if (a <= 1) return 1 - 0.22 * a;
+    if (a <= 2) return 0.78 - 0.23 * (a - 1);
+    return 0.55;
+  }
+  function interpolateOpacityPortafolio(vr) {
+    var a = Math.abs(vr);
+    if (a <= 1) return 1 - 0.05 * a;
+    if (a <= 2) return 0.95 - 0.10 * (a - 1);
+    return 0.85;
+  }
+
+  function applyPortafolioDragOffset(col, offset) {
+    var st = portafolioState[col];
+    var progress = Math.max(-1, Math.min(1, offset / PORTAFOLIO_DRAG_THRESHOLD));
+    // Identificar el wrap card (la far en sentido OPUESTO al drag) — se queda quieta y se desvanece
+    var wrapCardIdx = null;
+    if (progress < 0) {
+      for (var w = 0; w < PORTAFOLIO_WHEEL_SIZE; w++) {
+        if (getRelativePosPortafolio(w, st.domAtCenter) === -2) { wrapCardIdx = w; break; }
+      }
+    } else if (progress > 0) {
+      for (var w2 = 0; w2 < PORTAFOLIO_WHEEL_SIZE; w2++) {
+        if (getRelativePosPortafolio(w2, st.domAtCenter) === 2) { wrapCardIdx = w2; break; }
+      }
+    }
+    for (var i = 0; i < st.cards.length; i++) {
+      var card = st.cards[i];
+      var rel = getRelativePosPortafolio(i, st.domAtCenter);
+      var realLayer = card.querySelector('.realLayer');
+      var dummyLayer = card.querySelector('.dummyLayer');
+      if (i === wrapCardIdx) {
+        // wrap card: se queda en su posicion far + fade-out proporcional a |progress|
+        var baseY = rel < 0 ? -136 : 136;
+        card.style.transform = 'translateY(' + baseY + 'px) scale(0.3)';
+        card.style.filter = '';
+        card.style.opacity = String(0.85 * (1 - Math.abs(progress)));
+      } else {
+        var virtualRel = rel + progress;
+        card.style.transform = 'translateY(' + interpolateYPortafolio(virtualRel) + 'px) scale(' + interpolateScalePortafolio(virtualRel) + ')';
+        card.style.filter = 'brightness(' + interpolateBrightnessPortafolio(virtualRel) + ')';
+        card.style.opacity = String(interpolateOpacityPortafolio(virtualRel));
+        var absVR = Math.abs(virtualRel);
+        var realOp = absVR <= 1 ? 1 : Math.max(0, 2 - absVR);
+        var dummyOp = absVR <= 1 ? 0 : Math.min(1, absVR - 1);
+        if (realLayer) realLayer.style.opacity = String(realOp);
+        if (dummyLayer) dummyLayer.style.opacity = String(dummyOp);
+      }
+    }
+  }
+
+  function clearPortafolioDragOffset(col) {
+    var st = portafolioState[col];
+    for (var i = 0; i < st.cards.length; i++) {
+      var card = st.cards[i];
+      card.style.transform = '';
+      card.style.filter = '';
+      card.style.opacity = '';
+      var realLayer = card.querySelector('.realLayer');
+      var dummyLayer = card.querySelector('.dummyLayer');
+      if (realLayer) realLayer.style.opacity = '';
+      if (dummyLayer) dummyLayer.style.opacity = '';
+    }
+  }
+
   function bindPortafolioInteraccion(col) {
     var st = portafolioState[col];
     var el = st.el;
@@ -2025,18 +2106,8 @@ var dictI18n = {
       st.el.classList.add('dragging');
     }
     if (st.dragMode) {
-      // aplicar translateY temporal a Center, NearUp y NearDown (las 3 visibles principales)
-      for (var i = 0; i < st.cards.length; i++) {
-        var card = st.cards[i];
-        if (card.classList.contains('posCenterY') ||
-            card.classList.contains('posNearUp') ||
-            card.classList.contains('posNearDown')) {
-          var baseTransform = card.style.transform || '';
-          // limpiar translateY anterior aplicado por el drag
-          baseTransform = baseTransform.replace(/translateY\([^)]*\)\s*/g, '');
-          card.style.transform = 'translateY(' + st.deltaY + 'px) ' + baseTransform;
-        }
-      }
+      // dragInterpolacionPiecewise: cada card interpola transform/filter/opacity en funcion de progress
+      applyPortafolioDragOffset(col, st.deltaY);
     }
   }
 
@@ -2046,8 +2117,8 @@ var dictI18n = {
     st.isDragging = false;
     try { st.el.releasePointerCapture(e.pointerId); } catch (err) {}
     st.el.classList.remove('dragging');
-    // limpiar transforms temporales
-    for (var i = 0; i < st.cards.length; i++) st.cards[i].style.transform = '';
+    // limpiar transforms/filter/opacity temporales (incluye realLayer/dummyLayer del cross-fade)
+    clearPortafolioDragOffset(col);
     var paso = false;
     if (st.dragMode && Math.abs(st.deltaY) >= PORTAFOLIO_DRAG_THRESHOLD) {
       // delta negativo (drag hacia arriba) → cards suben → fisicoDirY = -1
