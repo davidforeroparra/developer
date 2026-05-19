@@ -458,34 +458,37 @@ a { color: inherit; }
   box-shadow: 6px 6px 0 var(--grisCarbon);
 }
 .tarjetaCarretCard.posNearUp {
-  transform: translateY(-200px) scale(0.7);
+  transform: translateY(-100px) scale(0.5);
   filter: brightness(0.78);
   opacity: 0.95;
   z-index: 3;
   box-shadow: 4px 4px 0 var(--grisCarbon);
 }
 .tarjetaCarretCard.posNearDown {
-  transform: translateY(200px) scale(0.7);
+  transform: translateY(100px) scale(0.5);
   filter: brightness(0.78);
   opacity: 0.95;
   z-index: 3;
   box-shadow: 4px 4px 0 var(--grisCarbon);
 }
 .tarjetaCarretCard.posFarUp {
-  transform: translateY(-360px) scale(0.5);
+  transform: translateY(-136px) scale(0.3);
   filter: brightness(0.55);
   opacity: 0.85;
   z-index: 1;
-  cursor: default;
   box-shadow: 3px 3px 0 var(--grisCarbon);
 }
 .tarjetaCarretCard.posFarDown {
-  transform: translateY(360px) scale(0.5);
+  transform: translateY(136px) scale(0.3);
   filter: brightness(0.55);
   opacity: 0.85;
   z-index: 1;
-  cursor: default;
   box-shadow: 3px 3px 0 var(--grisCarbon);
+}
+/* Bloquea clicks en links/buttons de cards no-center (sino el click avanzaria el carrete Y activaria el link) */
+.tarjetaCarretCard:not(.posCenterY) .realLayer a,
+.tarjetaCarretCard:not(.posCenterY) .realLayer button {
+  pointer-events: none;
 }
 .tarjetaCarretCard.wrapInvisible {
   opacity: 0 !important;
@@ -759,10 +762,7 @@ a { color: inherit; }
   .tarjetaCarretCard.posNearDown,
   .tarjetaCarretCard.posFarUp,
   .tarjetaCarretCard.posFarDown { margin-left: calc(min(320px, 92vw) / -2); }
-  .tarjetaCarretCard.posNearUp   { transform: translateY(-160px) scale(0.65); }
-  .tarjetaCarretCard.posNearDown { transform: translateY(160px)  scale(0.65); }
-  .tarjetaCarretCard.posFarUp    { transform: translateY(-280px) scale(0.45); }
-  .tarjetaCarretCard.posFarDown  { transform: translateY(280px)  scale(0.45); }
+  /* mobile usa los mismos translateY/scale del desktop (20% near, 10% far asomo) */
   .tarjetaCarretCard .realLayer { grid-template-columns: 1fr; padding: 18px 18px 18px; }
   .qrTarjeta { grid-column: 1 / 2; grid-row: 6 / 7; justify-self: start; margin-top: 6px; width: 72px; height: 72px; }
   .tarjetaTitulo { font-size: 19px; }
@@ -2055,6 +2055,23 @@ var dictI18n = {
       var fisicoDirY = st.deltaY < 0 ? -1 : +1;
       advancePortafolio(col, fisicoDirY);
       paso = true;
+    } else if (!st.dragMode) {
+      // No fue drag → tratar como click. Detectar card debajo via elementFromPoint (clickViaPointerupElementFromPoint).
+      // Click en near/far → avanza el carrete trayendo esa card al center; click en center no hace nada.
+      var clickTarget = document.elementFromPoint(e.clientX, e.clientY);
+      while (clickTarget && clickTarget !== st.el) {
+        if (clickTarget.classList && clickTarget.classList.contains('tarjetaCarretCard')) {
+          if (clickTarget.classList.contains('posNearUp') || clickTarget.classList.contains('posFarUp')) {
+            advancePortafolio(col, -1);
+            paso = true;
+          } else if (clickTarget.classList.contains('posNearDown') || clickTarget.classList.contains('posFarDown')) {
+            advancePortafolio(col, +1);
+            paso = true;
+          }
+          break;
+        }
+        clickTarget = clickTarget.parentNode;
+      }
     }
     st.dragMode = false;
     st.deltaY = 0;
