@@ -492,7 +492,7 @@
     /* ==========================================================
        OWNERSHIP ZONE · Agente C — CSS Header + QR · open
        Header documental superior · logo moonV3_12 noBackground ·
-       link de retorno a moonTripLanding.html · QR placeholder 96×96 ·
+       link de retorno a /moontrip · QR placeholder 96×96 ·
        toggle ES/EN.
        ========================================================== */
     .headerMoon {
@@ -753,7 +753,7 @@
         </div>
       </div>
       <p style="margin-top:10px;">
-        <a class="returnLink" href="#TBD-moonTripLanding" data-i18n="backToLanding">← moonTripLanding</a>
+        <a class="returnLink" href="/moontrip" data-i18n="backToLanding">← Moon Trip</a>
       </p>
     </div>
   </aside>
@@ -797,10 +797,11 @@
  *
  * Peso final esperado: ~130–150 KB (HTML autocontenido + Leaflet CDN+SRI única dep externa).
  *
- * Deuda residual Wave 3:
+ * Wave 3 finalización (20260519) resuelta:
+ *   - Link de retorno: href="/moontrip" (clean URL Netlify del sub-proyecto Moon Trip).
+ * Deuda residual pendiente:
  *   - moonV3_12 noBackground PNG base64 inline (header logo + burger logo) · GAP develop+
- *   - QR 96×96 real (anchor a moonTripLanding) · placeholder dummy estable
- *   - Link de retorno: anchor #TBD-moonTripLanding
+ *   - QR 96×96 real (anchor a /moontrip) · placeholder dummy estable; toolchain qrGenerator/ ya disponible para reemplazo opcional
  *   - Migración inter-feature DB legacy `geoplacer-recorder` → `moontrip-marker-v1` (G-01 NO migrar · formatos incompatibles)
  *
  * Validación local:
@@ -926,7 +927,7 @@
       downloadTiles: 'Descargar tiles',
       clearTiles: 'Limpiar cache tiles',
       clearPoints: 'Borrar todos los puntos',
-      backToLanding: '← moonTripLanding',
+      backToLanding: '← Moon Trip',
       qrLabel: 'QR placeholder · Wave 3 lo sustituye con SVG real.',
       undoLastPoint: 'Quitar último',
       done: 'Guardar',
@@ -985,7 +986,7 @@
       downloadTiles: 'Download tiles',
       clearTiles: 'Clear tile cache',
       clearPoints: 'Clear all points',
-      backToLanding: '← moonTripLanding',
+      backToLanding: '← Moon Trip',
       qrLabel: 'QR placeholder · Wave 3 will replace with real SVG.',
       undoLastPoint: 'Undo last',
       done: 'Save',
