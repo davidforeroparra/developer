@@ -184,8 +184,13 @@ a { color: inherit; }
   margin: 0 auto 24px;
   text-align: left;
 }
+.slideCtasWrap {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+}
 .slideCta {
   display: inline-block;
+  padding: 10px 21px;
+  font-size: 13px;
 }
 .heroDots {
   display: flex; justify-content: center; gap: 12px;
@@ -833,11 +838,14 @@ a { color: inherit; }
   <section class="hero" id="hero">
     <div class="heroCarrusel" id="heroCarrusel" aria-roledescription="carousel">
       <div class="heroSlide" id="heroSlide" aria-live="polite">
-        <div class="slideTag" id="slideTag" data-i18n="slideBuzzTag">La pausa lunar — 1969</div>
-        <h1 class="slideTitulo" id="slideTitulo" data-i18n="slideBuzzTitulo">Buzz Aldrin</h1>
-        <p class="slideSubtitulo" id="slideSubtitulo" data-i18n="slideBuzzSubtitulo">ve tu teléfono</p>
-        <p class="slideCuerpo" id="slideCuerpo" data-i18n="conceptoBuzz">PENDIENTE</p>
-        <a class="ctaVintage ctaPrimary slideCta" id="slideCta" href="#" role="button" data-i18n="heroCtaLabel">Siguiente</a>
+        <div class="slideTag" id="slideTag" data-i18n="slideEsteticaTag">Estética retro</div>
+        <h1 class="slideTitulo" id="slideTitulo" data-i18n="slideEsteticaTitulo">Estrategia eficiente</h1>
+        <p class="slideSubtitulo" id="slideSubtitulo" data-i18n="slideEsteticaSubtitulo">devolver el silicio</p>
+        <p class="slideCuerpo" id="slideCuerpo" data-i18n="conceptoEstetica">PENDIENTE</p>
+        <div class="slideCtasWrap">
+          <a class="ctaVintage ctaPrimary slideCta" id="slideCtaPrev" href="#" role="button" data-i18n="heroCtaPrevLabel">Previo</a>
+          <a class="ctaVintage ctaPrimary slideCta" id="slideCta" href="#" role="button" data-i18n="heroCtaLabel">Siguiente</a>
+        </div>
       </div>
       <div class="heroDots" id="heroDots" role="tablist" aria-label="Slides del concepto"></div>
     </div>
@@ -1149,6 +1157,7 @@ var dictI18n = {
     "navPortafolio": "Portafolio",
     "navDeveloper": "Developer",
     "heroTagline": "Edición sin telemetría — 2026",
+    "heroCtaPrevLabel": "Previo",
     "heroCtaLabel": "Siguiente",
     "slideBuzzTag": "La pausa lunar — 1969",
     "slideBuzzTitulo": "Buzz Aldrin",
@@ -1165,15 +1174,15 @@ var dictI18n = {
     "slideEvidenciaTag": "El bolsillo que encoge",
     "slideEvidenciaTitulo": "Evidencia",
     "slideEvidenciaSubtitulo": "visible",
-    "slideEsteticaTag": "Estrategia eficiente",
-    "slideEsteticaTitulo": "Estética retro",
+    "slideEsteticaTag": "Estética retro",
+    "slideEsteticaTitulo": "Estrategia eficiente",
     "slideEsteticaSubtitulo": "devolver el silicio",
     "conceptoBuzz": "Buzz Aldrin, el segundo hombre que pisó la Luna, sostiene tu teléfono. Le explicas que es cien millones de veces más rápido que la computadora con la que aterrizaron en el Mar de la Tranquilidad. Pregunta para qué lo usas. Respondes: videos de gatos en vertical, ocho segundos esperando la app del banco, batería que no llega a las seis de la tarde. Buzz parpadea. Aquel verano de 1969, el módulo lunar tenía 64 KB de memoria; cualquier app de pronóstico del tiempo hoy pesa diez mil veces más para mostrarte si lloverá. Moon Trip nace en esa pausa: en la sospecha de que el bolsillo se volvió ruidoso, y que el silicio que cargas merece volver a hacer algo que importe.",
     "conceptoLadron1": "En la película de Pixar de 2008, los humanos viajan sentados en sillones flotantes mientras las máquinas piensan, dirigen, deciden y los entretienen. WALL-E no es una distopía lejana: es la pantalla de inicio de tu teléfono. Tu smartphone trabaja sin parar renderizando gradientes, partículas, sombras suaves y animaciones de 60 fotogramas por segundo; tú quedas como pasajero, observando. La experiencia premium cuesta tu CPU, tu RAM y tu batería. A la empresa que diseñó la app le cuesta cero: el costo se externaliza a tu silicio, al calor en el bolsillo, al cargador que enchufas al mediodía. La interfaz quiere asombrarte; la interfaz pone el espectáculo, tú pones la corriente.",
     "conceptoLadron2": "En la trilogía de las hermanas Wachowski, las máquinas usan a los humanos como baterías mientras les muestran una realidad construida para mantenerlos quietos. La metáfora ya no necesita gafas oscuras. Aproximadamente uno de cada cuatro bytes que transmiten tus apps no es para ti: es telemetría, tracking publicitario, sincronización de perfil, identificadores únicos de dispositivo. Casi la mitad del gasto de batería de un Android promedio ocurre con la pantalla apagada — el teléfono trabaja para alguien más mientras tú duermes. La interfaz brillante de arriba es el espectáculo; debajo, hilos invisibles drenan datos hacia servidores que nunca visitarás. Lo que escogiste instalar es solo la mitad del software que ejecutas.",
     "conceptoLadron3": "En la tercera entrega de Pixar, Andy crece, sus juguetes envejecen y terminan abandonados en una bolsa de basura — no porque dejen de funcionar, sino porque alguien decidió que pertenecen a otra época. Toy Story 3 es el manual no escrito de la industria del smartphone. En 2017, Apple admitió haber ralentizado deliberadamente iPhones antiguos vía actualizaciones de iOS, sin avisar; pagó 113 millones de dólares en demandas colectivas en EE.UU. Las baterías vienen pegadas con adhesivo industrial que solo cede al calor controlado de un taller autorizado. El nombre técnico es obsolescencia programada; el nombre del marketing es upgrade. Tu teléfono no se rompió: lo jubilaron sin consultarte. Como Woody y Buzz, sigue siendo capaz; lo que cambió fue la voluntad ajena.",
     "conceptoEvidencia": "Tetris original, escrito por Alexey Pájitnov en Moscú en 1984, pesaba 16 KB; corría en una calculadora gris. Una sola publicidad dentro de una app gratuita pesa hoy típicamente 2 MB — ciento veinticinco veces más que el juego que entretuvo al planeta entero. Microsoft Teams ocupa cerca de 600 MB de memoria para enviar mensajes; ICQ en 1996 hacía lo mismo en menos de 1 MB y conectaba ciudades enteras por módem de 28.8 kbps. El Game Boy de 1989 funcionaba treinta horas continuas con cuatro pilas AA. Tu smartphone de 2025, con su silicio multimillonario, no siempre llega al final del día sin enchufarse. Los datos no mienten: la curva de capacidad subió, la curva de utilidad para ti no la siguió.",
-    "conceptoEstetica": "La elección estética es, en este contexto, una declaración técnica disfrazada. Cuando una app se ve vintage — pixel art, paleta limitada, tipografía con peso visible, bordes negros gruesos heredados del cómic de prensa de 1930 — está diciéndote en silencio: no voy a gastar tu CPU en gradientes que no aportan información, ni tu batería en animaciones decorativas, ni voy a vender tu atención mientras simulo darte un servicio. Devuelvo el silicio que es tuyo, el tiempo que es tuyo, los watt-hora que pagaste en tu última factura de luz. Lo premium se viste de glassmorphism y te roba batería; lo humilde se viste de pixel y te devuelve el control. Moon Trip es la promesa explícita: cero telemetría, cero frameworks pesados, y dependencias de red explícitas y verificables (SRI) limitadas a librerías cartográficas open-source en los testers con mapa. La estética cartoon vintage no es nostalgia: es el acuse de recibo de un sistema que decidió no robarte.",
+    "conceptoEstetica": "Antes de hablar de funciones, de privacidad o de peso en kilobytes, Moon Trip dice algo con su apariencia: aquí el silicio es tuyo. Cuando una app se ve vintage — pixel art, paleta limitada, tipografía con peso visible, bordes negros gruesos heredados del cómic de prensa de 1930 — no es nostalgia ni decoración: es una decisión técnica disfrazada de imagen. Estamos diciendo que no vamos a gastar tu CPU en gradientes que no aportan información, ni tu batería en animaciones decorativas, ni vamos a vender tu atención mientras fingimos darte un servicio. El glassmorphism de las apps premium es bonito y te roba watt-hora; el pixel de Moon Trip es humilde y te los devuelve. Esa es la apuesta inicial: la estética como primer argumento antes de que veas una sola línea de código.",
     "reglasTituloSeccion": "Tres reglas operativas",
     "introReglaBolsilloTitulo": "Regla del bolsillo",
     "introReglaBolsillo": "Si una app necesita más recursos que los que se usaron para llegar a la Luna en 1969, mejor que sirva para algo más útil que mostrar publicidad. Si no los entrega, sobra.",
@@ -1221,6 +1230,7 @@ var dictI18n = {
     "navPortafolio": "Portfolio",
     "navDeveloper": "Developer",
     "heroTagline": "Edition without telemetry — 2026",
+    "heroCtaPrevLabel": "Prev",
     "heroCtaLabel": "Next",
     "slideBuzzTag": "The lunar pause — 1969",
     "slideBuzzTitulo": "Buzz Aldrin",
@@ -1237,15 +1247,15 @@ var dictI18n = {
     "slideEvidenciaTag": "The shrinking pocket",
     "slideEvidenciaTitulo": "Evidence",
     "slideEvidenciaSubtitulo": "visible",
-    "slideEsteticaTag": "Efficient strategy",
-    "slideEsteticaTitulo": "Retro aesthetics",
+    "slideEsteticaTag": "Retro aesthetics",
+    "slideEsteticaTitulo": "Efficient strategy",
     "slideEsteticaSubtitulo": "return the silicon",
     "conceptoBuzz": "Buzz Aldrin, the second man to walk on the Moon, holds your phone. You tell him it is a hundred million times faster than the computer that landed you in the Sea of Tranquility. He asks what you use it for. You answer: vertical cat videos, eight seconds waiting for the banking app, a battery that does not make it past six in the evening. Buzz blinks. That summer of 1969, the lunar module had 64 KB of memory; any weather forecast app today weighs ten thousand times more just to show whether it will rain. Moon Trip is born in that pause: in the suspicion that the pocket has grown noisy, and that the silicon you carry deserves to do something that matters again.",
     "conceptoLadron1": "In Pixar's 2008 film, humans travel seated in floating recliners while machines think, drive, decide and entertain them. WALL-E is not a distant dystopia: it is the home screen of your phone. Your smartphone works non-stop rendering gradients, particles, soft shadows and sixty-frame-per-second animations; you stay a passenger, watching. The premium experience costs your CPU, your RAM and your battery. The company that designed the app pays zero: the cost is externalized to your silicon, to the warmth in your pocket, to the charger you plug in at noon. The interface wants to dazzle you; the interface brings the spectacle, you bring the current.",
     "conceptoLadron2": "In the Wachowski sisters' trilogy, the machines use humans as batteries while showing them a constructed reality to keep them still. The metaphor no longer needs dark sunglasses. Roughly one in four bytes your apps transmit is not for you: it is telemetry, ad tracking, profile syncing, unique device identifiers. Nearly half the battery drain of an average Android happens with the screen turned off — the phone works for someone else while you sleep. The bright interface on top is the spectacle; underneath, invisible threads drain data to servers you will never visit. What you chose to install is only half of the software you run.",
     "conceptoLadron3": "In Pixar's third installment, Andy grows up, his toys age and end up abandoned in a trash bag — not because they stop working, but because someone decided they belong to another era. Toy Story 3 is the unwritten manual of the smartphone industry. In 2017, Apple admitted to deliberately slowing down older iPhones through iOS updates without notice; it paid 113 million dollars in class-action settlements in the U.S. Batteries come glued with industrial adhesive that only yields to the controlled heat of an authorized workshop. The technical name is planned obsolescence; the marketing name is upgrade. Your phone did not break: it was retired without your consent. Like Woody and Buzz, it still works; what changed was someone else's will.",
     "conceptoEvidencia": "Original Tetris, written by Alexey Pajitnov in Moscow in 1984, weighed 16 KB; it ran on a grey calculator. A single ad inside a free app today typically weighs 2 MB — one hundred and twenty-five times more than the game that entertained the entire planet. Microsoft Teams takes around 600 MB of memory to send messages; ICQ in 1996 did the same in less than 1 MB and connected entire cities through 28.8 kbps modems. The 1989 Game Boy ran thirty continuous hours on four AA batteries. Your 2025 smartphone, with its billion-dollar silicon, does not always make it to the end of the day without being plugged in. The data does not lie: the capacity curve went up, the curve of usefulness to you did not follow.",
-    "conceptoEstetica": "In this context, aesthetic choice is a disguised technical declaration. When an app looks vintage — pixel art, limited palette, typography with visible weight, thick black borders inherited from 1930s newspaper comics — it is quietly telling you: I will not burn your CPU on gradients that carry no information, nor your battery on decorative animations, nor will I sell your attention while pretending to give you a service. I return the silicon that is yours, the time that is yours, the watt-hours you paid for in your last electricity bill. Premium dresses in glassmorphism and steals your battery; humble dresses in pixel and gives you back control. Moon Trip is the explicit promise: zero telemetry, zero heavy frameworks, and explicit verifiable (SRI) network dependencies limited to open-source cartographic libraries in the mapping testers. The vintage cartoon aesthetic is not nostalgia: it is the receipt of a system that decided not to steal from you.",
+    "conceptoEstetica": "Before talking about features, privacy or file size in kilobytes, Moon Trip says something with its appearance: the silicon is yours. When an app looks vintage — pixel art, limited palette, typography with visible weight, thick black borders inherited from 1930s newspaper comics — it is not nostalgia or decoration: it is a technical decision disguised as an image. We are saying we will not burn your CPU on gradients that carry no information, nor your battery on decorative animations, nor will we sell your attention while pretending to give you a service. The glassmorphism of premium apps is beautiful and steals your watt-hours; Moon Trip's pixel is humble and gives them back. That is the opening bet: aesthetics as the first argument before you see a single line of code.",
     "reglasTituloSeccion": "Three operating rules",
     "introReglaBolsilloTitulo": "The pocket rule",
     "introReglaBolsillo": "If an app needs more resources than those used to reach the Moon in 1969, it had better serve something more useful than showing ads. If it does not, it is excess weight.",
@@ -1351,12 +1361,12 @@ var dictI18n = {
 
   // ==== Carrusel del hero ====
   var slidesData = [
+    { tag:'slideEsteticaTag',  titulo:'slideEsteticaTitulo',  subtitulo:'slideEsteticaSubtitulo',  cuerpo:'conceptoEstetica' },
     { tag:'slideBuzzTag',      titulo:'slideBuzzTitulo',      subtitulo:'slideBuzzSubtitulo',      cuerpo:'conceptoBuzz' },
     { tag:'slideLadron1Tag',   titulo:'slideLadron1Titulo',   subtitulo:'slideLadron1Subtitulo',   cuerpo:'conceptoLadron1' },
     { tag:'slideLadron2Tag',   titulo:'slideLadron2Titulo',   subtitulo:'slideLadron2Subtitulo',   cuerpo:'conceptoLadron2' },
     { tag:'slideLadron3Tag',   titulo:'slideLadron3Titulo',   subtitulo:'slideLadron3Subtitulo',   cuerpo:'conceptoLadron3' },
     { tag:'slideEvidenciaTag', titulo:'slideEvidenciaTitulo', subtitulo:'slideEvidenciaSubtitulo', cuerpo:'conceptoEvidencia' },
-    { tag:'slideEsteticaTag',  titulo:'slideEsteticaTitulo',  subtitulo:'slideEsteticaSubtitulo',  cuerpo:'conceptoEstetica' }
   ];
   var currentIndex = 0;
   var carrusel = null, slide = null, dotsContainer = null;
@@ -1389,6 +1399,14 @@ var dictI18n = {
       cta.addEventListener('click', function(e) {
         e.preventDefault();
         avanzar(1);
+      });
+    }
+    var ctaPrev = document.getElementById('slideCtaPrev');
+    if (ctaPrev) {
+      ctaPrev.addEventListener('click', function(e) {
+        e.preventDefault();
+        pararTimer();
+        avanzar(-1);
       });
     }
     if (!prefersReducedMotion) iniciarTimer();
