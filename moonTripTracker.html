@@ -688,7 +688,7 @@
         <div class="topbar-title" id="topbar-title">moonTripTracker<small id="topbar-subtitle">GPS tracks · linea Moon Trip</small></div>
       </div>
       <div class="topbar-extras">
-        <div class="qr-placeholder" id="qr-placeholder" aria-label="QR pendiente">QR<br>pend</div>
+        <div class="qr-placeholder" id="qr-placeholder" aria-label="QR · Moon Trip" title="Scan: davidforeroparra-dev.netlify.app/moontrip"><img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSAQAAAADvV742AAABUUlEQVR4nK2SMWrDMBiFnyNDMSioB+hSyFpQ8BAKDjJkzZG6BAK9RC9RKGSV0VRQkCFToGMPIKNAKFioU2j1Z42mn8fje3q/VCRcTjfB37ndXJSxXS6HoiW68ue4O69S7i8xtJGt32ZlQ3RA4AMtqB/o39dduKe5Qj+xTcCY60UqmAQQe7XJ/WmseDy6pAl/fvB9NZsfRsJ3n1OOB63zXkjeBDiTZNK5npJ1zClG9UY6qaTgivpHNQZvRqo7KTirjc45JU5fErt9ZCD3CbqxQnJFObBcSHiT60WKi/75zOPJdTl/Vf201d7f0f1v4+L4zdqK5grLR8WDobkqyOCTbegepJCiEQm0lxiY72Qh6DsCczNt2CA2pBez0tn6av8qMA+tcJVbN1ABPNcnAM58uxeS/luAn17Y46sG5VuejKkpHwzcSYy0VwIAd2H+599i/gXcF6YCQNezgQAAAABJRU5ErkJggg==" width="52" height="52"></div>
         <button class="lang-toggle" id="lang-toggle" aria-label="Cambiar idioma">ES</button>
       </div>
     </header>
@@ -1609,7 +1609,6 @@
       title.innerHTML = t('appTitle') + '<small id="topbar-subtitle">' + t('appSubtitle') + '</small>';
     }
     if (backLabel) backLabel.textContent = t('backLink');
-    if (qrEl) qrEl.innerHTML = t('qrPending');
     if (langBtn) langBtn.textContent = currentLang === 'es' ? 'EN' : 'ES';
   }
   function bindLangToggle() {
