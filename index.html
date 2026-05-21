@@ -272,7 +272,10 @@ ul li::before {
   top: 14px;
   left: 24px;
   z-index: 200;
-  background: transparent;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--grisCarbon);
   border: none;
   padding: 0;
   cursor: pointer;
@@ -283,14 +286,12 @@ ul li::before {
 }
 .btnToggleMenu:hover,
 .btnToggleMenu:focus {
-  background: transparent;
-  border: none;
   outline: 2px dashed var(--amarilloLuna);
   outline-offset: 2px;
 }
 .topbarMenuPlaceholder {
-  width: 56px;
-  height: 56px;
+  width: 68px;
+  height: 68px;
   flex-shrink: 0;
   pointer-events: none;
 }
