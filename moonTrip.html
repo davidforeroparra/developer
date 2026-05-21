@@ -897,6 +897,15 @@
       background-repeat: no-repeat;
     }
 
+    .developerImgLink {
+      display: block;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .developerImgLink:hover {
+      opacity: 0.8;
+    }
+
     .developerTextoBloque h3 {
       font-family: var(--fontVintageDisplay);
       font-size: 36px;
@@ -1198,7 +1207,7 @@
       <nav class="topbarNav">
         <a href="#hero" data-i18n="navConcepto">Concepto</a>
         <a href="#portafolio" data-i18n="navPortafolio">Portafolio</a>
-        <a href="#developer" data-i18n="navDeveloper">Developer</a>
+        <a href="/" data-i18n="navDeveloper">Developer</a>
       </nav>
       <div class="langToggle" role="group" aria-label="Language toggle">
         <button id="btnLangEs" type="button" aria-pressed="true" data-lang="es">ES</button>
@@ -1511,11 +1520,12 @@
         <h2 class="seccionTitulo" data-i18n="developerTituloSeccion">Sobre el developer</h2>
         <div class="developerCard">
           <div class="developerSeal">MEET<br>THE DEV</div>
-          <div class="developerImg" role="img" data-i18n-alt="iconoDeveloperAlt"></div>
+          <a href="/" class="developerImgLink" aria-label="Ir al portfolio del developer">
+            <div class="developerImg" role="img" data-i18n-alt="iconoDeveloperAlt"></div>
+          </a>
           <div class="developerTextoBloque">
             <h3 data-i18n="developerH3">David Forero Parra</h3>
             <p data-i18n="developerDescripcion">PENDIENTE</p>
-            <a class="tarjetaLink" href="/" data-i18n="developerLinkLabel">Conocer al developer</a>
           </div>
         </div>
       </section>
@@ -1611,8 +1621,7 @@
           "iconoDeveloperAlt": "Cohete Moon Trip Developer",
           "developerTituloSeccion": "Sobre el developer",
           "developerH3": "David Forero Parra",
-          "developerDescripcion": "Developer senior centrado en código mínimo, autocontenido y respetuoso con el silicio del usuario. Moon Trip es su catálogo público de demostraciones técnicas en torno a las APIs nativas del navegador. Más detalles, contacto y portafolio extendido en moonTripDeveloper.",
-          "developerLinkLabel": "Conocer al developer",
+          "developerDescripcion": "Developer GIS senior, centrado en desarrollos alrededor y despliegue de sistemas de información geográfica. El contenido del catálogo Moon Trip se desarrolla como parte de su catálogo para mostrar capacidades de desarrollo. Estos demos del catálogo pueden ser el punto de partida para trabajar juntos. Si tiene una idea, no dude en contactarme y podemos ver cómo llevarla a cabo.",
           "footerCreditos": "Moon Trip \"in pocket\" — sub-proyecto del catálogo del Developer. 2026.",
           "footerReferencia": "Concepto: sin telemetría, sin tracking, sin frameworks pesados.",
         },
@@ -1684,8 +1693,7 @@
           "iconoDeveloperAlt": "Moon Trip Developer rocket",
           "developerTituloSeccion": "About the developer",
           "developerH3": "David Forero Parra",
-          "developerDescripcion": "Senior developer focused on minimal, self-contained code that respects the user's silicon. Moon Trip is his public catalog of technical demonstrations around the browser's native APIs. More details, contact and extended portfolio at moonTripDeveloper.",
-          "developerLinkLabel": "Meet the developer",
+          "developerDescripcion": "Senior GIS developer focused on building and deploying geographic information systems. The Moon Trip catalog content is developed as part of his showcase to demonstrate development capabilities. These catalog demos can be the starting point for working together. If you have an idea, don't hesitate to reach out — we can figure out how to make it happen.",
           "footerCreditos": "Moon Trip \"in pocket\" — sub-project of the Moon Trip Developer catalog. 2026.",
           "footerReferencia": "Concept: no telemetry, no tracking, no heavy frameworks.",
         }
