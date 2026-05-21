@@ -79,6 +79,10 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      transition: transform 0.3s ease;
+    }
+    .topbar--oculta {
+      transform: translateY(-100%);
     }
 
     .topbarLeft {
@@ -138,6 +142,102 @@
     .topbarNav a:hover {
       border-bottom-color: var(--rojoOtonal);
       color: var(--rojoOtonal);
+    }
+
+    /* === MOON BTN FIJO === */
+    .moonBtnPlaceholder {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+    .moonBtnFijo {
+      position: fixed;
+      top: 14px;
+      left: 24px;
+      z-index: 200;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #F0F0F0;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transition: box-shadow 0.15s;
+    }
+    .moonBtnFijo:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+    }
+    .moonBtnIcon {
+      width: 46px;
+      height: 46px;
+      background-image: var(--imgHero);
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    .moonNavPanel {
+      position: fixed;
+      top: 82px;
+      left: 16px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    body.moonPanelAbierto .moonNavPanel {
+      pointer-events: auto;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .moonNavBtn {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 18px;
+      background: var(--grisCarbon);
+      color: var(--amarilloLuna);
+      font-family: var(--fontVintageBody);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .moonNavBtn:hover {
+      background: var(--rojoOtonal);
+    }
+    .moonNavIni {
+      display: inline-block;
+      width: 14px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .moonNavTxt {
+      display: inline-block;
+      max-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      margin-left: 0;
+      transition: max-width 0.22s cubic-bezier(.4,0,.2,1), opacity 0.18s, margin-left 0.22s;
+    }
+    .moonNavBtn:hover .moonNavTxt {
+      max-width: 120px;
+      opacity: 1;
+      margin-left: 6px;
     }
 
     /* langToggle — estructura del index.html (2 botones ES + EN con aria-pressed) + estética vintage pill */
@@ -1188,6 +1288,11 @@
         transition: none !important;
       }
     }
+
+    @media (max-width: 480px) {
+      .moonBtnFijo { top: 10px; left: 14px; }
+      .moonNavPanel { top: 78px; left: 10px; }
+    }
   </style>
 </head>
 
@@ -1198,7 +1303,7 @@
     <!-- OWNERSHIP ZONE -- Agente A -- TOPBAR -- open -->
     <header class="topbar">
       <div class="topbarLeft">
-        <div class="brandMedal" role="img" aria-label="Moon Trip seal" data-i18n-alt="heroIconAlt"></div>
+        <div class="moonBtnPlaceholder" aria-hidden="true"></div>
         <div>
           <div class="brandText" data-i18n="heroTitulo">Moon Trip</div>
           <div class="brandSub" data-i18n="heroSubindice">in pocket</div>
@@ -1215,6 +1320,24 @@
       </div>
     </header>
     <!-- OWNERSHIP ZONE -- Agente A -- TOPBAR -- close -->
+
+    <button id="btnMoon" class="moonBtnFijo" type="button" aria-expanded="false" aria-label="Abrir navegación">
+      <div class="moonBtnIcon" aria-hidden="true"></div>
+    </button>
+    <nav id="moonNavPanel" class="moonNavPanel" aria-label="Navegación rápida">
+      <a href="#hero" class="moonNavBtn">
+        <span class="moonNavIni" aria-hidden="true">C</span>
+        <span class="moonNavTxt" data-i18n="navConcepto">Concepto</span>
+      </a>
+      <a href="#portafolio" class="moonNavBtn">
+        <span class="moonNavIni" aria-hidden="true">P</span>
+        <span class="moonNavTxt" data-i18n="navPortafolio">Portafolio</span>
+      </a>
+      <a href="/" class="moonNavBtn">
+        <span class="moonNavIni" aria-hidden="true">D</span>
+        <span class="moonNavTxt" data-i18n="navDeveloper">Developer</span>
+      </a>
+    </nav>
 
     <!-- OWNERSHIP ZONE -- Agente A -- HERO (carrusel) -- open -->
     <section class="hero" id="hero">
@@ -1751,6 +1874,126 @@
         aplicarI18n(lang);
       }
 
+      // === MOON BTN FIJO ===
+      var esTouchDeviceMoon = false;
+      document.addEventListener('touchstart', function marcaTouchMoon() {
+        esTouchDeviceMoon = true;
+      }, { once: true, passive: true });
+
+      var TIMER_CIERRE_MOON_MS = 3000;
+      var timerCierreMoon = null;
+
+      function esMobileMoon() { return esTouchDeviceMoon; }
+
+      function cancelarTimerMoon() {
+        if (timerCierreMoon !== null) { clearTimeout(timerCierreMoon); timerCierreMoon = null; }
+      }
+
+      function iniciarTimerCierreMoon() {
+        if (!esMobileMoon()) return;
+        if (!document.body.classList.contains('moonPanelAbierto')) return;
+        cancelarTimerMoon();
+        timerCierreMoon = setTimeout(function onCierreMoon() {
+          timerCierreMoon = null;
+          if (!document.body.classList.contains('moonPanelAbierto')) return;
+          cerrarPanelMoon();
+        }, TIMER_CIERRE_MOON_MS);
+      }
+
+      function abrirPanelMoon() {
+        document.body.classList.add('moonPanelAbierto');
+        var btn = document.getElementById('btnMoon');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        cancelarTimerMoon();
+        iniciarTimerCierreMoon();
+      }
+
+      function cerrarPanelMoon() {
+        cancelarTimerMoon();
+        document.body.classList.remove('moonPanelAbierto');
+        var btn = document.getElementById('btnMoon');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+
+      function togglePanelMoon() {
+        if (document.body.classList.contains('moonPanelAbierto')) {
+          cerrarPanelMoon();
+        } else {
+          abrirPanelMoon();
+        }
+      }
+
+      function hoverEnMoonSubsistema() {
+        var panel = document.getElementById('moonNavPanel');
+        var btn = document.getElementById('btnMoon');
+        if (panel && panel.matches && panel.matches(':hover')) return true;
+        if (btn && btn.matches && btn.matches(':hover')) return true;
+        return false;
+      }
+
+      function bindScrollTopbarMoon() {
+        var topbar = document.querySelector('.topbar');
+        if (!topbar) return;
+        var ultimoScroll = 0;
+        window.addEventListener('scroll', function onScrollMoon() {
+          var scrollActual = window.pageYOffset || document.documentElement.scrollTop;
+          if (scrollActual <= 0) {
+            topbar.classList.remove('topbar--oculta');
+            ultimoScroll = 0;
+            return;
+          }
+          if (scrollActual > ultimoScroll) {
+            topbar.classList.add('topbar--oculta');
+          } else {
+            topbar.classList.remove('topbar--oculta');
+          }
+          ultimoScroll = scrollActual;
+        }, { passive: true });
+      }
+
+      function bindMoonBtn() {
+        var btn = document.getElementById('btnMoon');
+        var panel = document.getElementById('moonNavPanel');
+        if (!btn) return;
+        btn.addEventListener('click', togglePanelMoon);
+        document.addEventListener('keydown', function onKeydownMoon(ev) {
+          if ((ev.key === 'Escape' || ev.keyCode === 27) && document.body.classList.contains('moonPanelAbierto')) {
+            cerrarPanelMoon();
+          }
+        });
+        document.addEventListener('click', function onClickOutsideMoon(ev) {
+          if (!document.body.classList.contains('moonPanelAbierto')) return;
+          if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+          if (btn && btn.contains(ev.target)) return;
+          if (panel && panel.contains(ev.target)) return;
+          cerrarPanelMoon();
+        }, true);
+        function onMoonEnter() {
+          if (esMobileMoon()) return;
+          cancelarTimerMoon();
+        }
+        function onMoonLeave() {
+          if (esMobileMoon()) return;
+          setTimeout(function checkMoonHover() {
+            if (hoverEnMoonSubsistema()) return;
+            if (document.body.classList.contains('moonPanelAbierto')) {
+              cancelarTimerMoon();
+              timerCierreMoon = setTimeout(function onHoverOffMoon() {
+                timerCierreMoon = null;
+                if (hoverEnMoonSubsistema()) return;
+                cerrarPanelMoon();
+              }, TIMER_CIERRE_MOON_MS);
+            }
+          }, 50);
+        }
+        btn.addEventListener('mouseenter', onMoonEnter);
+        btn.addEventListener('mouseleave', onMoonLeave);
+        if (panel) {
+          panel.addEventListener('mouseenter', onMoonEnter);
+          panel.addEventListener('mouseleave', onMoonLeave);
+        }
+      }
+
       function init() {
         langActual = detectarLangInicial();
         persistirLang(langActual);
@@ -1760,6 +2003,8 @@
         if (btnEs) btnEs.addEventListener('click', onLangClick);
         if (btnEn) btnEn.addEventListener('click', onLangClick);
         initCarrusel();
+        bindScrollTopbarMoon();
+        bindMoonBtn();
       }
 
       // ==== Carrusel del hero ====
