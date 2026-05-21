@@ -190,6 +190,10 @@ ul li::before {
   font-family: var(--fontPixelLabel);
   border-bottom: 3px solid var(--vinotinto);
   flex-wrap: wrap;
+  transition: transform 0.3s ease;
+}
+.topbar--oculta {
+  transform: translateY(-100%);
 }
 .topbarBrandRow {
   display: inline-flex;
@@ -1715,7 +1719,45 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }, TIEMPO_CIERRE_PANEL_MS);
   }
 
+  function esMobile() {
+    return window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+  }
+
+  function iniciarTimerTouchCierrePanel() {
+    if (!esMobile()) return;
+    if (!document.body.classList.contains('menuAbierto')) return;
+    if (document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerCierrePanel = setTimeout(function onCierrePanelTouch() {
+      timerCierrePanel = null;
+      if (!document.body.classList.contains('menuAbierto')) return;
+      cerrarMenu();
+    }, TIEMPO_CIERRE_PANEL_MS);
+  }
+
+  function iniciarTimerTouchColapsoInfo() {
+    if (!esMobile()) return;
+    if (!document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerColapsoInfo = setTimeout(function onColapsoInfoTouch() {
+      timerColapsoInfo = null;
+      if (!document.body.classList.contains('infoExpandido')) return;
+      document.body.classList.remove('infoExpandido');
+      var btnInfo = document.getElementById('btnInfoMenu');
+      if (btnInfo) btnInfo.setAttribute('aria-pressed', 'false');
+      iniciarTimerTouchCierrePanel();
+    }, TIEMPO_COLAPSO_INFO_MS);
+  }
+
   function evaluarTimerSegunEstado() {
+    if (esMobile()) {
+      if (document.body.classList.contains('infoExpandido')) {
+        iniciarTimerTouchColapsoInfo();
+      } else if (document.body.classList.contains('menuAbierto')) {
+        iniciarTimerTouchCierrePanel();
+      }
+      return;
+    }
     if (!aplicaTimersHover()) return;
     if (hoverEnSubsistema()) {
       cancelarTimersCierre();
@@ -1735,6 +1777,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     // El hover esta presumiblemente activo al abrir (acaba de click); no arranca timer.
     // Si el usuario mueve el cursor fuera, el mouseleave lo iniciara.
     cancelarTimersCierre();
+    iniciarTimerTouchCierrePanel();
   }
 
   function cerrarMenu() {
@@ -1891,12 +1934,33 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }
   }
 
+  function bindScrollTopbar() {
+    var topbar = document.querySelector('.topbar');
+    if (!topbar) return;
+    var ultimoScroll = 0;
+    window.addEventListener('scroll', function onScrollTopbar() {
+      var scrollActual = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollActual <= 0) {
+        topbar.classList.remove('topbar--oculta');
+        ultimoScroll = 0;
+        return;
+      }
+      if (scrollActual > ultimoScroll) {
+        topbar.classList.add('topbar--oculta');
+      } else {
+        topbar.classList.remove('topbar--oculta');
+      }
+      ultimoScroll = scrollActual;
+    }, { passive: true });
+  }
+
   function bootstrap() {
     var langInicial = detectarIdiomaInicial();
     applyI18n(langInicial);
     persistLang(langInicial);
     bindToggleLang();
     bindMenu();
+    bindScrollTopbar();
     bindBotonesSeccionMenu();
     bindAtajosTopbar();
     bindCtasHero();
