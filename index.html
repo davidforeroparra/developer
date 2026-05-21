@@ -1976,8 +1976,9 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     bindBotonesSeccionMenu();
     bindAtajosTopbar();
     bindCtasHero();
-    // Carga inicial: Perfil profesional en el slot
-    cargarSeccion('perfil');
+    // Carga inicial: perfil por defecto, o la seccion indicada por hash (deep-link)
+    var hashInicial = window.location.hash ? window.location.hash.slice(1) : '';
+    cargarSeccion(TPL_POR_SECCION[hashInicial] ? hashInicial : 'perfil');
   }
 
   if (document.readyState === 'loading') {
