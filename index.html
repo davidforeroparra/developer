@@ -264,6 +264,10 @@ ul li::before {
    Estructura: <button> > <span class="btnToggleMenuWrap"> > <img class="btnToggleMenuIcon">
    El wrap absorbe el scale (independiente de layout) y el img la animacion viaje. */
 .btnToggleMenu {
+  position: fixed;
+  top: 14px;
+  left: 24px;
+  z-index: 200;
   background: transparent;
   border: none;
   padding: 0;
@@ -279,6 +283,12 @@ ul li::before {
   border: none;
   outline: 2px dashed var(--amarilloLuna);
   outline-offset: 2px;
+}
+.topbarMenuPlaceholder {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 .btnToggleMenuWrap {
   display: inline-flex;
@@ -546,7 +556,7 @@ body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
   position: fixed;
   top: 88px;
   left: 24px;
-  z-index: 90;
+  z-index: 200;
   display: none;
   flex-direction: column;
   gap: 10px;
@@ -793,6 +803,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   .slotDinamicoHero { font-size: 17px; }
   .heroCtas { flex-direction: column; }
   .ctaPixel { text-align: center; }
+  .btnToggleMenu { top: 10px; left: 14px; }
   .topbar {
     padding: 10px 14px;
     gap: var(--spacingS);
@@ -833,7 +844,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - open -->
 <header class="topbar" id="topbarSeccion">
   <div class="topbarBrandRow">
-    <button id="btnToggleMenu" class="btnToggleMenu" type="button" aria-expanded="false" aria-controls="menuPanel" aria-label="Abrir menu de secciones del CV"><span class="btnToggleMenuWrap"><img class="btnToggleMenuIcon" id="btnToggleMenuIcon" alt="" width="56" height="56" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADZklEQVR42u2aT0gUcRTHv7+dRV1h9VBuoau0UpkUBWVqXUPyEiIadAk6WETbxaxDtw5FgZlkGFFBQnYSkTx00S4K5qqFofkHo6l0TVfXVUxdl935dVjn14w7mdaszsrvnX7zfm+W/ez3zXu/eSyRJAnb2UzY5sYBOSAH5IAckANyQA4Yu2Y2wpcQzAJdaz8UDJGYA1RClR1wAACO5x5Fd9cHVdzzITH2FdwZCgAA0qkIcWUNANNCXOylqKzcnXsVWFxcwPKCH8GVvbbmlth+BgWzQKtqbiMl6EHvqCdc5UwCAECSQnCcyIf4rlM39bakivoXffi2RFVgkhQCAIykWHUD21QFlWnpnfQwf5ojC0k2G7sedLVj9tBheOkidnz6bDzAvXsyVOU+wZoIqzUJFy+dBQD4prxr3i9+n2Drtz/DxWZhvMMwgFQcc2tunCk6CZMQp1LvbyZ/VoItj2w5oJyC18rPM9/8gh/Pnjawa0lR/uXi4haH4RaHVcoZqorW1j6mbe2tyM7epwIDgNY3HcjNPQYAmJuZ17xfjpVtaOArW5eWFm09YP2rOnR1vVcpN+2dZSlWdvUcpFAAvunZiHvlyinHA8Dg4Ahb9/cNEcMUmQfVLyN8xSUF8E15GYjJJLD16oLS1Niiy7lT9z6YkWFfd6wSVO6BAkmEQBJZjMOepvszSPScbAtmgRaXFET4HRm7mYJK5XpdAxDH3Lqrpjtg981U1v/yKydZiq5lTY0tqHn4CE7nlajB/XeKksBl+D0uumGlFWlp6Bfe+icWuv9HMTLtFgCANesI/KeCoDDDUvg6QkVlMTE0IPU0oafaSQvtFsBuQVLWwbBfEdN5YxfyKyOBrldcgCSFNCuvIVKUepqwjNRIv+K3IitveNGoilFXsKfaSQGwtFwNR2FmgP1dDUiw5RH5KCcfumNm6KSVmvPDH0FouOdZkgWyugLdr6qLSkPXBZAELv95jw0eAEoE+E1WI4x71t8H/R4X7asuZteZdgsIDYESQRX3ZWwpPCG7O060JmibpZwuKaoFl3urmUhzo5rxmw0XlZEFjc8BseXAKPbPgHIqyjYzkYbTL7qJUZTbMGA8xiN8OeW1MCWnk98twnhm1iMljWyE/xGIA3JADsgBOSAH5IAckANyQA7IAbXsF/gLUMd16VquAAAAAElFTkSuQmCC"></span></button>
+    <div class="topbarMenuPlaceholder" aria-hidden="true"></div>
     <div class="topbarBrand" data-i18n="topbarBrand">David Forero - GIS developer</div>
   </div>
   <nav class="topbarNav" aria-label="Navegacion principal">
@@ -848,6 +859,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     </div>
   </div>
 </header>
+<button id="btnToggleMenu" class="btnToggleMenu" type="button" aria-expanded="false" aria-controls="menuPanel" aria-label="Abrir menu de secciones del CV"><span class="btnToggleMenuWrap"><img class="btnToggleMenuIcon" id="btnToggleMenuIcon" alt="" width="56" height="56" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADZklEQVR42u2aT0gUcRTHv7+dRV1h9VBuoau0UpkUBWVqXUPyEiIadAk6WETbxaxDtw5FgZlkGFFBQnYSkTx00S4K5qqFofkHo6l0TVfXVUxdl935dVjn14w7mdaszsrvnX7zfm+W/ez3zXu/eSyRJAnb2UzY5sYBOSAH5IAckANyQA4Yu2Y2wpcQzAJdaz8UDJGYA1RClR1wAACO5x5Fd9cHVdzzITH2FdwZCgAA0qkIcWUNANNCXOylqKzcnXsVWFxcwPKCH8GVvbbmlth+BgWzQKtqbiMl6EHvqCdc5UwCAECSQnCcyIf4rlM39bakivoXffi2RFVgkhQCAIykWHUD21QFlWnpnfQwf5ojC0k2G7sedLVj9tBheOkidnz6bDzAvXsyVOU+wZoIqzUJFy+dBQD4prxr3i9+n2Drtz/DxWZhvMMwgFQcc2tunCk6CZMQp1LvbyZ/VoItj2w5oJyC18rPM9/8gh/Pnjawa0lR/uXi4haH4RaHVcoZqorW1j6mbe2tyM7epwIDgNY3HcjNPQYAmJuZ17xfjpVtaOArW5eWFm09YP2rOnR1vVcpN+2dZSlWdvUcpFAAvunZiHvlyinHA8Dg4Ahb9/cNEcMUmQfVLyN8xSUF8E15GYjJJLD16oLS1Niiy7lT9z6YkWFfd6wSVO6BAkmEQBJZjMOepvszSPScbAtmgRaXFET4HRm7mYJK5XpdAxDH3Lqrpjtg981U1v/yKydZiq5lTY0tqHn4CE7nlajB/XeKksBl+D0uumGlFWlp6Bfe+icWuv9HMTLtFgCANesI/KeCoDDDUvg6QkVlMTE0IPU0oafaSQvtFsBuQVLWwbBfEdN5YxfyKyOBrldcgCSFNCuvIVKUepqwjNRIv+K3IitveNGoilFXsKfaSQGwtFwNR2FmgP1dDUiw5RH5KCcfumNm6KSVmvPDH0FouOdZkgWyugLdr6qLSkPXBZAELv95jw0eAEoE+E1WI4x71t8H/R4X7asuZteZdgsIDYESQRX3ZWwpPCG7O060JmibpZwuKaoFl3urmUhzo5rxmw0XlZEFjc8BseXAKPbPgHIqyjYzkYbTL7qJUZTbMGA8xiN8OeW1MCWnk98twnhm1iMljWyE/xGIA3JADsgBOSAH5IAckANyQA7IAbXsF/gLUMd16VquAAAAAElFTkSuQmCC"></span></button>
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - close -->
 
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HERO - open -->
