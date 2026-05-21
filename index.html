@@ -355,7 +355,7 @@ body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
    ============================================================================ */
 .hero {
   background: var(--blancoNeutro);
-  padding: 48px 32px;
+  padding: 12px 32px;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 32px;
@@ -788,7 +788,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
-    padding: 32px 20px;
+    padding: 8px 20px;
   }
   .heroIlustracion {
     order: -1;
@@ -1661,6 +1661,10 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   var DELAY_VERIFICACION_HOVER_MS = 50;
   var timerColapsoInfo = null;
   var timerCierrePanel = null;
+  var esTouchDevice = false;
+  document.addEventListener('touchstart', function marcaTouchDevice() {
+    esTouchDevice = true;
+  }, { once: true, passive: true });
 
   function aplicaTimersHover() {
     // No aplica en mobile (touch sin hover real)
@@ -1720,7 +1724,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   }
 
   function esMobile() {
-    return window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+    return esTouchDevice;
   }
 
   function iniciarTimerTouchCierrePanel() {
@@ -1806,6 +1810,14 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }
     // Cambio de estado -> re-evaluar timers (cancela el viejo, inicia el nuevo si toca)
     cancelarTimersCierre();
+    if (esMobile()) {
+      if (document.body.classList.contains('infoExpandido')) {
+        iniciarTimerTouchColapsoInfo();
+      } else {
+        iniciarTimerTouchCierrePanel();
+      }
+      return;
+    }
     // Si tras el toggle el cursor no esta hover, arrancar timer del nuevo estado
     if (!hoverEnSubsistema()) {
       evaluarTimerSegunEstado();
