@@ -146,8 +146,8 @@
 
     /* === MOON BTN FIJO === */
     .moonBtnPlaceholder {
-      width: 56px;
-      height: 56px;
+      width: 80px;
+      height: 80px;
       flex-shrink: 0;
       pointer-events: none;
     }
@@ -156,8 +156,8 @@
       top: 14px;
       left: 24px;
       z-index: 200;
-      width: 56px;
-      height: 56px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       background: #F0F0F0;
       border: none;
@@ -173,8 +173,8 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.28);
     }
     .moonBtnIcon {
-      width: 46px;
-      height: 46px;
+      width: 68px;
+      height: 68px;
       background-image: var(--imgHero);
       background-position: center;
       background-size: contain;
@@ -182,7 +182,7 @@
     }
     .moonNavPanel {
       position: fixed;
-      top: 82px;
+      top: 100px;
       left: 16px;
       z-index: 200;
       display: flex;
@@ -204,7 +204,7 @@
       height: 36px;
       padding: 0 12px;
       border-radius: 18px;
-      background: var(--grisCarbon);
+      background: var(--naranjaProfundo);
       color: var(--amarilloLuna);
       font-family: var(--fontVintageBody);
       font-size: 12px;
@@ -222,9 +222,15 @@
     }
     .moonNavIni {
       display: inline-block;
-      width: 14px;
+      max-width: 14px;
+      overflow: hidden;
       text-align: center;
       flex-shrink: 0;
+      transition: max-width 0.15s, opacity 0.15s;
+    }
+    .moonNavBtn:hover .moonNavIni {
+      max-width: 0;
+      opacity: 0;
     }
     .moonNavTxt {
       display: inline-block;
@@ -1290,8 +1296,8 @@
     }
 
     @media (max-width: 480px) {
-      .moonBtnFijo { top: 10px; left: 14px; }
-      .moonNavPanel { top: 78px; left: 10px; }
+      .moonBtnFijo { top: 6px; left: 10px; }
+      .moonNavPanel { top: 92px; left: 10px; }
     }
   </style>
 </head>
