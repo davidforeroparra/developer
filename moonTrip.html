@@ -260,9 +260,9 @@
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: var(--grisCarbon);
+      background: var(--vinotinto);
       color: var(--amarilloLuna);
-      border: 2px solid var(--vinotinto);
+      border: none;
       font-family: var(--fontVintageDisplay);
       font-size: 11px;
       letter-spacing: 1px;
@@ -278,11 +278,23 @@
                   width 220ms cubic-bezier(.4, 0, .2, 1),
                   border-radius 220ms cubic-bezier(.4, 0, .2, 1),
                   padding 220ms cubic-bezier(.4, 0, .2, 1);
-      filter: drop-shadow(2px 2px 0 var(--vinotinto));
+      filter: drop-shadow(2px 2px 0 var(--naranjaProfundo));
     }
     .btnInfoMoon:hover {
+      background: var(--naranjaClaro);
       transform: translate(2px, 2px);
-      filter: drop-shadow(0 0 0 var(--vinotinto));
+      filter: drop-shadow(0 0 0 var(--naranjaProfundo));
+      width: 180px;
+      border-radius: 22px;
+      justify-content: flex-start;
+      padding: 0 14px;
+    }
+    .btnInfoMoon:hover .btnInfoGlyph {
+      display: none;
+    }
+    .btnInfoMoon:hover .btnInfoLabel {
+      display: inline;
+      animation: fadeInLabel 180ms ease-out 100ms both;
     }
     body.moonInfoExpandido .btnInfoMoon {
       width: 180px;
@@ -301,6 +313,9 @@
       white-space: nowrap;
       font-size: 13px;
       letter-spacing: 1.5px;
+    }
+    body.moonInfoExpandido .btnInfoMoon .btnInfoGlyph {
+      display: none;
     }
     body.moonInfoExpandido .btnInfoMoon .btnInfoLabel {
       display: inline;
@@ -1402,7 +1417,7 @@
         </div>
       </div>
       <nav class="topbarNav">
-        <a href="#hero" data-i18n="navConcepto">Concepto</a>
+        <a href="#hero" data-i18n="navInicio">Inicio</a>
         <a href="#portafolio" data-i18n="navPortafolio">Portafolio</a>
         <a href="/" data-i18n="navDeveloper">Developer</a>
       </nav>
@@ -1417,10 +1432,10 @@
       <div class="moonBtnIcon" aria-hidden="true"></div>
     </button>
     <nav id="moonNavPanel" class="moonNavPanel" aria-label="Navegación rápida">
-      <button type="button" class="btnInfoMoon" id="btnInfoMoon" aria-pressed="false" aria-label="Mostrar u ocultar etiquetas"><span class="btnInfoGlyph">[i]</span><span class="btnInfoLabel">INFO</span></button>
-      <a href="#hero" class="moonNavBtn">
-        <span class="moonNavIni" aria-hidden="true">C</span>
-        <span class="moonNavTxt" data-i18n="navConcepto">Concepto</span>
+      <button type="button" class="btnInfoMoon" id="btnInfoMoon" aria-pressed="false" aria-label="Mostrar u ocultar etiquetas"><span class="btnInfoGlyph">i</span><span class="btnInfoLabel">INFO</span></button>
+      <a href="#hero" class="moonNavBtn" id="btnInicioMoonTrip">
+        <span class="moonNavIni" aria-hidden="true">I</span>
+        <span class="moonNavTxt" data-i18n="navInicio">Inicio</span>
       </a>
       <a href="#portafolio" class="moonNavBtn">
         <span class="moonNavIni" aria-hidden="true">P</span>
@@ -1775,7 +1790,7 @@
           "heroSubindice": "in pocket",
           "heroIconAlt": "Sello Moon Trip",
           "langToggleLabel": "EN",
-          "navConcepto": "Concepto",
+          "navInicio": "Inicio",
           "navPortafolio": "Portafolio",
           "navDeveloper": "Developer",
           "heroTagline": "Edición sin telemetría — 2026",
@@ -1848,7 +1863,7 @@
           "heroSubindice": "in pocket",
           "heroIconAlt": "Moon Trip seal",
           "langToggleLabel": "ES",
-          "navConcepto": "Concept",
+          "navInicio": "Home",
           "navPortafolio": "Portfolio",
           "navDeveloper": "Developer",
           "heroTagline": "Edition without telemetry — 2026",
@@ -2073,6 +2088,12 @@
         btn.addEventListener('click', togglePanelMoon);
         var btnInfoMoon = document.getElementById('btnInfoMoon');
         if (btnInfoMoon) btnInfoMoon.addEventListener('click', toggleInfoMoon);
+        var btnInicioMoonTrip = document.getElementById('btnInicioMoonTrip');
+        if (btnInicioMoonTrip) {
+          btnInicioMoonTrip.addEventListener('click', function onInicioMoon() {
+            if (currentIndex !== 0) irAlSlide(0);
+          });
+        }
         document.addEventListener('keydown', function onKeydownMoon(ev) {
           if ((ev.key === 'Escape' || ev.keyCode === 27) && document.body.classList.contains('moonPanelAbierto')) {
             cerrarPanelMoon();
@@ -2159,16 +2180,22 @@
       function iniciarIdleVibrationMoon() {
         setInterval(function tickIdleMoon() {
           if (demoActivoMoon) return;
-          if (document.body.classList.contains('moonPanelAbierto')) return;
+          var panelAbierto = document.body.classList.contains('moonPanelAbierto');
           var btnInfo = document.getElementById('btnInfoMoon');
           var btnMoonEl = document.getElementById('btnMoon');
-          if (btnInfo) {
-            btnInfo.classList.add('enIdle');
-            setTimeout(function quitarIdleInfo() { if (btnInfo) btnInfo.classList.remove('enIdle'); }, IDLE_ANIM_MOON_MS);
+          // btnInfoMoon vibra cuando el panel está abierto e info no expandido
+          if (panelAbierto && !document.body.classList.contains('moonInfoExpandido')) {
+            if (btnInfo) {
+              btnInfo.classList.add('enIdle');
+              setTimeout(function quitarIdleInfo() { if (btnInfo) btnInfo.classList.remove('enIdle'); }, IDLE_ANIM_MOON_MS);
+            }
           }
-          if (btnMoonEl) {
-            btnMoonEl.classList.add('enIdle');
-            setTimeout(function quitarIdleMoon() { if (btnMoonEl) btnMoonEl.classList.remove('enIdle'); }, IDLE_ANIM_MOON_MS);
+          // btnMoon vibra cuando el panel está cerrado
+          if (!panelAbierto) {
+            if (btnMoonEl) {
+              btnMoonEl.classList.add('enIdle');
+              setTimeout(function quitarIdleMoon() { if (btnMoonEl) btnMoonEl.classList.remove('enIdle'); }, IDLE_ANIM_MOON_MS);
+            }
           }
         }, IDLE_INTERVAL_MOON_MS);
       }

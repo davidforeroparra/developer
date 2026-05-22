@@ -610,6 +610,14 @@ body.menuAbierto .menuPanelFijo { display: flex; }
 .btnInfoMenu:hover {
   transform: translate(2px, 2px);
   filter: drop-shadow(0 0 0 var(--vinotinto));
+  width: 180px;
+  border-radius: 22px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnInfoMenu:hover .btnInfoLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
 }
 body.infoExpandido .btnInfoMenu {
   width: 180px;
@@ -681,6 +689,13 @@ body.infoExpandido .btnSeccionMenu {
 .btnSeccionMenu:hover {
   transform: translate(2px, 2px);
   filter: drop-shadow(1px 1px 0 var(--vinotinto));
+  width: 180px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnSeccionMenu:hover .btnSecLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
 }
 .btnSeccionMenu:active {
   transform: translate(3px, 3px);
@@ -708,6 +723,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 /* Gradient repartido entre los 7 botones - cada boton es un color solido
    interpolado linealmente entre --vinotinto (#551E1B) y --naranjaClaro (#E39F43).
    Vistos en conjunto forman el gradient vino->naranja. */
+.btnSecInicio       { background: #3D1418; color: var(--amarilloLuna); }
+.btnSecPortafolio   { background: #471B19; color: var(--amarilloLuna); }
 .btnSecContacto     { background: #551E1B; color: var(--amarilloLuna); }
 .btnSecFormacion    { background: #6D3422; color: var(--amarilloLuna); }
 .btnSecExperiencia  { background: #844928; color: var(--amarilloLuna); }
@@ -899,6 +916,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 <aside class="menuPanelFijo" id="menuPanel" aria-label="Indice CV">
   <button type="button" class="btnInfoMenu" id="btnInfoMenu" aria-pressed="false" aria-label="Mostrar u ocultar etiquetas" data-i18n-aria="btnInfoMenuAria"><span class="btnInfoGlyph">[i]</span><span class="btnInfoLabel" data-i18n="btnInfoLabel">INFO</span></button>
   <ul class="menuPanelLista">
+    <li><button type="button" class="btnSeccionMenu btnSecInicio" data-seccion="perfil" aria-label="Inicio"><span class="btnGlyph">[ N ]</span><span class="btnSecLabel">INICIO</span></button></li>
+    <li><a href="/moontrip#portafolio" class="btnSeccionMenu btnSecPortafolio" aria-label="Portafolio"><span class="btnGlyph">[ P ]</span><span class="btnSecLabel">PORTAFOLIO</span></a></li>
     <li><button type="button" class="btnSeccionMenu btnSecContacto" data-seccion="contacto" aria-label="Contacto"><span class="btnGlyph">[ C ]</span><span class="btnSecLabel" data-i18n="btnSecContacto">CONTACTO</span></button></li>
     <li><button type="button" class="btnSeccionMenu btnSecFormacion" data-seccion="formacion" aria-label="Formacion"><span class="btnGlyph">[ F ]</span><span class="btnSecLabel" data-i18n="btnSecFormacion">FORMACION</span></button></li>
     <li><button type="button" class="btnSeccionMenu btnSecExperiencia" data-seccion="experiencia" aria-label="Experiencia"><span class="btnGlyph">[ E ]</span><span class="btnSecLabel" data-i18n="btnSecExperiencia">EXPERIENCIA</span></button></li>
@@ -1896,7 +1915,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   function iniciarIdleVibration() {
     setInterval(function tickIdle() {
       if (demoActivo) return;
-      if (document.body.classList.contains('menuAbierto')) return;
+      if (!document.body.classList.contains('menuAbierto')) return;
+      if (document.body.classList.contains('infoExpandido')) return;
       var btnInfo = document.getElementById('btnInfoMenu');
       if (!btnInfo) return;
       btnInfo.classList.add('enIdle');
