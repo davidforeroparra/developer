@@ -26,37 +26,39 @@
        rojoOtonal · grisCarbon · blancoNeutro. Matriz §9.1 del spec. */
     :root {
       /* Alias semánticos Moon Trip (legibilidad del CSS) — Wave 2 F-05 */
-      --amarilloLuna:    #F7F3A1;
-      --naranjaClaro:    #E39F43;
-      --naranjaProfundo: #A1602A;
-      --rojoOtonal:      #9B1B18;
-      --vinotinto:       #551E1B;
+      --amarilloLuna:    #F0F0F0;  /* greyscale → blancoNeutro */
+      --naranjaClaro:    #8C9198;  /* greyscale → grisMedio */
+      --naranjaProfundo: #4A5260;  /* greyscale → grisOscuro */
+      --rojoOtonal:      #272B2E;  /* greyscale → grisCarbon */
+      --vinotinto:       #272B2E;  /* greyscale → grisCarbon */
+      --grisOscuro:      #4A5260;
+      --grisMedio:       #8C9198;
       --grisCarbon:      #272B2E;
       --blancoNeutro:    #F0F0F0;
 
       /* Variables heredadas del padre · nombres preservados · hex remapeados a Moon Trip */
-      --navy:        #551E1B;             /* primario · vinotinto (era #6b1d2a vino tinto otoñal) */
-      --green:       #E39F43;             /* acento principal · naranjaClaro (era #d2691e naranja quemado) */
-      --green-dark:  #A1602A;             /* hover/darker · naranjaProfundo (era #a85816) */
-      --blue:        #F7F3A1;             /* secundario · amarilloLuna (era #d4a017 amarillo dorado) */
-      --orange:      #E39F43;             /* acento naranja · idem green (RD-07) */
-      --offwhite:    #F7F3A1;             /* fondo principal · amarilloLuna (era #fbf3df pergamino) */
-      --white:       #F0F0F0;             /* surface secundaria · blancoNeutro (era #ffffff) */
-      --lightgray:   rgba(240,240,240,0.6);/* bordes suaves · blancoNeutro semi (era #e8dfd0) */
-      --gray:        rgba(39,43,46,0.55); /* texto secundario · grisCarbon semi (era #8a7e72) */
-      --darkgray:    #272B2E;             /* tinta principal · grisCarbon (era #1a1612) */
-      --red:         #9B1B18;             /* alerta · rojoOtonal (era #b53b1f terracota) */
-      --pale-navy:   rgba(85,30,27,0.12); /* fondo suave primario · vinotinto pale */
-      --pale-green:  rgba(227,159,67,0.18);/* fondo suave naranjaClaro pale */
-      --pale-blue:   rgba(247,243,161,0.45);/* fondo suave amarilloLuna pale */
-      --pale-orange: rgba(227,159,67,0.18);/* fondo suave naranjaClaro pale (espejo) */
-      --pale-red:    rgba(155,27,24,0.14);/* fondo suave alerta · rojoOtonal pale */
+      --navy:        #272B2E;             /* greyscale → grisCarbon */
+      --green:       #8C9198;             /* greyscale → grisMedio */
+      --green-dark:  #4A5260;             /* greyscale → grisOscuro */
+      --blue:        #F0F0F0;             /* greyscale → blancoNeutro */
+      --orange:      #8C9198;             /* greyscale → grisMedio */
+      --offwhite:    #F0F0F0;             /* greyscale → blancoNeutro */
+      --white:       #FFFFFF;             /* greyscale → blancoPuro */
+      --lightgray:   rgba(240,240,240,0.6);/* sin cambio */
+      --gray:        rgba(39,43,46,0.55); /* sin cambio */
+      --darkgray:    #272B2E;             /* sin cambio */
+      --red:         #272B2E;             /* greyscale → grisCarbon */
+      --pale-navy:   rgba(39,43,46,0.12); /* greyscale → grisCarbon pale */
+      --pale-green:  rgba(140,145,152,0.18);/* greyscale → grisMedio pale */
+      --pale-blue:   rgba(240,240,240,0.45);/* greyscale → blancoNeutro pale */
+      --pale-orange: rgba(140,145,152,0.18);/* greyscale → grisMedio pale */
+      --pale-red:    rgba(39,43,46,0.14); /* greyscale → grisCarbon pale */
 
       /* Roles cromáticos accuracy heredados del micro iconosPixelArt para los markers */
-      --colorAccuracyGood: var(--amarilloLuna);
-      --colorAccuracyWarn: var(--naranjaClaro);
-      --colorAccuracyBad:  var(--rojoOtonal);
-      --colorPinFill:      var(--naranjaProfundo);
+      --colorAccuracyGood: var(--blancoNeutro);
+      --colorAccuracyWarn: var(--grisMedio);
+      --colorAccuracyBad:  var(--grisCarbon);
+      --colorPinFill:      var(--grisOscuro);
       --colorMarkerStroke: #FFFFFF;
 
       --r-card: 14px;

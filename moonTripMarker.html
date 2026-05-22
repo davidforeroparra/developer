@@ -19,36 +19,38 @@
        + contenedor centrado en desktop.
        ========================================================== */
     :root {
-      /* 6 hex Moon · paletaBrandingMoon v1.1 */
-      --amarilloLuna:    #F7F3A1;
-      --naranjaClaro:    #E39F43;
-      --naranjaProfundo: #A1602A;
-      --rojoOtonal:      #9B1B18;
-      --vinotinto:       #551E1B;
+      /* escala de grises · microPaletaGrisesMoonTesters */
+      --amarilloLuna:    #F0F0F0;  /* greyscale → blancoNeutro */
+      --naranjaClaro:    #8C9198;  /* greyscale → grisMedio */
+      --naranjaProfundo: #4A5260;  /* greyscale → grisOscuro */
+      --rojoOtonal:      #272B2E;  /* greyscale → grisCarbon */
+      --vinotinto:       #272B2E;  /* greyscale → grisCarbon */
       --grisCarbon:      #272B2E;
       --blancoNeutro:    #F0F0F0;
       --whitePuro:       #FFFFFF;
+      --grisOscuro:      #4A5260;
+      --grisMedio:       #8C9198;
 
-      /* Roles semánticos resueltos según paletaBrandingMoon.json §roles */
-      --fondoPrimario:                var(--amarilloLuna);
-      --fondoNeutro:                  var(--blancoNeutro);
-      --textoPrincipalSobreAmarillo:  var(--vinotinto);
+      /* Roles semánticos */
+      --fondoPrimario:                var(--blancoNeutro);
+      --fondoNeutro:                  var(--whitePuro);
+      --textoPrincipalSobreAmarillo:  var(--grisCarbon);
       --textoPrincipalSobreBlanco:    var(--grisCarbon);
-      --acentoCalido:                 var(--naranjaClaro);
-      --acentoDramatico:              var(--rojoOtonal);
-      --detalleSecundario:            var(--naranjaProfundo);
+      --acentoCalido:                 var(--grisMedio);
+      --acentoDramatico:              var(--grisCarbon);
+      --detalleSecundario:            var(--grisOscuro);
       --contornoLinea:                var(--grisCarbon);
 
       /* Glifos · roles consumidos por SVG inline pixel art */
       --glifoColorPrimario: var(--grisCarbon);
-      --glifoColorAcento:   var(--rojoOtonal);
+      --glifoColorAcento:   var(--grisCarbon);
       --glifoColorStroke:   var(--blancoNeutro);
 
-      /* Markers de mapa (gradiente cálido por accuracy) */
-      --colorAccuracyGood: var(--amarilloLuna);
-      --colorAccuracyWarn: var(--naranjaClaro);
-      --colorAccuracyBad:  var(--rojoOtonal);
-      --colorPinFill:      var(--naranjaProfundo);
+      /* Markers de mapa (escala de grises por accuracy) */
+      --colorAccuracyGood: var(--blancoNeutro);
+      --colorAccuracyWarn: var(--grisMedio);
+      --colorAccuracyBad:  var(--grisCarbon);
+      --colorPinFill:      var(--grisOscuro);
       --colorMarkerStroke: var(--whitePuro);
 
       --rCard:  10px;
