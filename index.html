@@ -610,6 +610,14 @@ body.menuAbierto .menuPanelFijo { display: flex; }
 .btnInfoMenu:hover {
   transform: translate(2px, 2px);
   filter: drop-shadow(0 0 0 var(--vinotinto));
+  width: 180px;
+  border-radius: 22px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnInfoMenu:hover .btnInfoLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
 }
 body.infoExpandido .btnInfoMenu {
   width: 180px;
@@ -715,6 +723,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 /* Gradient repartido entre los 7 botones - cada boton es un color solido
    interpolado linealmente entre --vinotinto (#551E1B) y --naranjaClaro (#E39F43).
    Vistos en conjunto forman el gradient vino->naranja. */
+.btnSecInicio       { background: #3D1418; color: var(--amarilloLuna); }
+.btnSecPortafolio   { background: #471B19; color: var(--amarilloLuna); }
 .btnSecContacto     { background: #551E1B; color: var(--amarilloLuna); }
 .btnSecFormacion    { background: #6D3422; color: var(--amarilloLuna); }
 .btnSecExperiencia  { background: #844928; color: var(--amarilloLuna); }

@@ -262,7 +262,7 @@
       border-radius: 50%;
       background: var(--vinotinto);
       color: var(--amarilloLuna);
-      border: 2px solid var(--naranjaProfundo);
+      border: none;
       font-family: var(--fontVintageDisplay);
       font-size: 11px;
       letter-spacing: 1px;
@@ -284,6 +284,17 @@
       background: var(--naranjaClaro);
       transform: translate(2px, 2px);
       filter: drop-shadow(0 0 0 var(--naranjaProfundo));
+      width: 180px;
+      border-radius: 22px;
+      justify-content: flex-start;
+      padding: 0 14px;
+    }
+    .btnInfoMoon:hover .btnInfoGlyph {
+      display: none;
+    }
+    .btnInfoMoon:hover .btnInfoLabel {
+      display: inline;
+      animation: fadeInLabel 180ms ease-out 100ms both;
     }
     body.moonInfoExpandido .btnInfoMoon {
       width: 180px;
@@ -302,6 +313,9 @@
       white-space: nowrap;
       font-size: 13px;
       letter-spacing: 1.5px;
+    }
+    body.moonInfoExpandido .btnInfoMoon .btnInfoGlyph {
+      display: none;
     }
     body.moonInfoExpandido .btnInfoMoon .btnInfoLabel {
       display: inline;
