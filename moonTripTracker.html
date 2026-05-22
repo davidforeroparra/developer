@@ -18,34 +18,37 @@
        Restricción WCAG: naranjaClaro PROHIBIDO como texto sobre amarilloLuna.
        ============================================================ */
     :root {
-      --amarilloLuna:    #F7F3A1;
-      --naranjaClaro:    #E39F43;
-      --naranjaProfundo: #A1602A;
-      --rojoOtonal:      #9B1B18;
-      --vinotinto:       #551E1B;
+      --amarilloLuna:    #F0F0F0;  /* greyscale → blancoNeutro */
+      --naranjaClaro:    #8C9198;  /* greyscale → grisMedio */
+      --naranjaProfundo: #4A5260;  /* greyscale → grisOscuro */
+      --rojoOtonal:      #272B2E;  /* greyscale → grisCarbon */
+      --vinotinto:       #272B2E;  /* greyscale → grisCarbon */
+      --whitePuro:       #FFFFFF;
+      --grisOscuro:      #4A5260;
+      --grisMedio:       #8C9198;
       --grisCarbon:      #272B2E;
       --blancoNeutro:    #F0F0F0;
 
       /* Roles semánticos (RD-12) */
-      --colorBase:                var(--amarilloLuna);
-      --colorAcentoCalido:        var(--naranjaClaro);
-      --colorDetalle:             var(--naranjaProfundo);
-      --colorAcentoDramatico:     var(--rojoOtonal);
-      --colorTextoSobreAmarillo:  var(--vinotinto);
+      --colorBase:                var(--whitePuro);
+      --colorAcentoCalido:        var(--grisMedio);
+      --colorDetalle:             var(--grisOscuro);
+      --colorAcentoDramatico:     var(--grisCarbon);
+      --colorTextoSobreAmarillo:  var(--grisCarbon);
       --colorContorno:            var(--grisCarbon);
       --colorFondoBody:           var(--blancoNeutro);
 
       /* Marker calidad gradiente cálido (RD-10) */
-      --colorAccuracyGood:    var(--amarilloLuna);     /* Excelente/Bueno */
-      --colorAccuracyWarn:    var(--naranjaClaro);     /* Aceptable */
-      --colorAccuracyBad:     var(--rojoOtonal);       /* Pobre */
-      --colorAccuracyVoid:    var(--vinotinto);        /* Sin señal */
-      --colorPinFill:         var(--naranjaProfundo);
+      --colorAccuracyGood:    var(--blancoNeutro);     /* Excelente/Bueno */
+      --colorAccuracyWarn:    var(--grisMedio);         /* Aceptable */
+      --colorAccuracyBad:     var(--grisCarbon);        /* Pobre */
+      --colorAccuracyVoid:    var(--grisCarbon);        /* Sin señal */
+      --colorPinFill:         var(--grisOscuro);
       --colorMarkerStroke:    var(--blancoNeutro);
 
       /* Glifo colors (mutables por context) */
       --glifoColorPrimario:   var(--grisCarbon);
-      --glifoColorAcento:     var(--rojoOtonal);
+      --glifoColorAcento:     var(--grisCarbon);
       --glifoColorStroke:     var(--blancoNeutro);
     }
 
