@@ -351,6 +351,16 @@ body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
   to   { opacity: 1; }
 }
 
+@keyframes vibrarIdle {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-3px, 0); }
+  50%      { transform: translate(3px, 0); }
+  75%      { transform: translate(-2px, 0); }
+}
+.enIdle {
+  animation: vibrarIdle 0.45s ease-in-out;
+}
+
 /* ============================================================================
    Hero - amarilloLuna, grid 2-col desktop
    ============================================================================ */
@@ -1661,6 +1671,17 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   var DELAY_VERIFICACION_HOVER_MS = 50;
   var timerColapsoInfo = null;
   var timerCierrePanel = null;
+
+  // === Demo inicial + idle vibration ===
+  var DEMO_DELAY_INICIAL  = 2000;
+  var DEMO_DELAY_EXPAND   = 2000;
+  var DEMO_DELAY_INFO     = 2000;
+  var DEMO_DELAY_COLLAPSE = 1000;
+  var IDLE_INTERVAL_MS    = 20000;
+  var IDLE_ANIM_MS        = 450;
+  var demoTimers          = [];
+  var demoActivo          = false;
+
   var esTouchDevice = false;
   document.addEventListener('touchstart', function marcaTouchDevice() {
     esTouchDevice = true;
@@ -1825,6 +1846,67 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   }
 
   // ==========================================================================
+  // Demo inicial + idle vibration
+  // ==========================================================================
+  function iniciarDemoInicial() {
+    demoActivo = true;
+    var demoInterrumpido = false;
+
+    function cancelarDemo() {
+      if (demoInterrumpido) return;
+      demoInterrumpido = true;
+      demoActivo = false;
+      for (var k = 0; k < demoTimers.length; k++) { clearTimeout(demoTimers[k]); }
+      demoTimers = [];
+      document.removeEventListener('click', cancelarDemo);
+      document.removeEventListener('touchstart', cancelarDemo);
+      document.removeEventListener('keydown', cancelarDemo);
+    }
+
+    function finalizarDemo() {
+      demoActivo = false;
+      document.removeEventListener('click', cancelarDemo);
+      document.removeEventListener('touchstart', cancelarDemo);
+      document.removeEventListener('keydown', cancelarDemo);
+    }
+
+    document.addEventListener('click', cancelarDemo);
+    document.addEventListener('touchstart', cancelarDemo, { passive: true });
+    document.addEventListener('keydown', cancelarDemo);
+
+    demoTimers.push(setTimeout(function demoExpandir() {
+      if (!demoActivo) return;
+      abrirMenu();
+      demoTimers.push(setTimeout(function demoInfo() {
+        if (!demoActivo) return;
+        if (!document.body.classList.contains('infoExpandido')) toggleInfo();
+        demoTimers.push(setTimeout(function demoColapsarInfo() {
+          if (!demoActivo) return;
+          if (document.body.classList.contains('infoExpandido')) toggleInfo();
+          demoTimers.push(setTimeout(function demoCerrar() {
+            if (!demoActivo) return;
+            cerrarMenu();
+            finalizarDemo();
+          }, DEMO_DELAY_COLLAPSE));
+        }, DEMO_DELAY_INFO));
+      }, DEMO_DELAY_EXPAND));
+    }, DEMO_DELAY_INICIAL));
+  }
+
+  function iniciarIdleVibration() {
+    setInterval(function tickIdle() {
+      if (demoActivo) return;
+      if (document.body.classList.contains('menuAbierto')) return;
+      var btnInfo = document.getElementById('btnInfoMenu');
+      if (!btnInfo) return;
+      btnInfo.classList.add('enIdle');
+      setTimeout(function quitarIdle() {
+        if (btnInfo) btnInfo.classList.remove('enIdle');
+      }, IDLE_ANIM_MS);
+    }, IDLE_INTERVAL_MS);
+  }
+
+  // ==========================================================================
   // Inicializacion
   // ==========================================================================
   function detectarIdiomaInicial() {
@@ -1979,6 +2061,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     // Carga inicial: perfil por defecto, o la seccion indicada por hash (deep-link)
     var hashInicial = window.location.hash ? window.location.hash.slice(1) : '';
     cargarSeccion(TPL_POR_SECCION[hashInicial] ? hashInicial : 'perfil');
+    iniciarDemoInicial();
+    iniciarIdleVibration();
   }
 
   if (document.readyState === 'loading') {
