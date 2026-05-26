@@ -333,8 +333,8 @@
     /* ── FAB Rocket · botón principal consolidado ── */
     .fabContainer {
       position: absolute;
-      bottom: 28px;
-      right: 28px;
+      top: 76px;
+      right: 16px;
       z-index: 20;
     }
     .fabRocket {
@@ -342,24 +342,24 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: var(--grisCarbon);
-      border: 3px solid var(--blancoNeutro);
+      background: var(--blancoNeutro);
+      border: 3px solid var(--grisOscuro);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 14px rgba(39,43,46,0.55);
+      box-shadow: 0 4px 14px rgba(39,43,46,0.4);
       transition: transform 0.25s ease;
     }
-    .fabRocket img { width: 40px; height: 40px; object-fit: contain; display: block; }
+    .fabRocket img { width: 40px; height: 40px; object-fit: contain; display: block; filter: brightness(0.15); }
     .fabContainer.open .fabRocket { transform: rotate(45deg); }
     .fabItem {
       position: absolute;
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--grisOscuro);
-      border: 2px solid var(--blancoNeutro);
+      background: var(--blancoNeutro);
+      border: 2px solid var(--grisOscuro);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -367,12 +367,38 @@
       pointer-events: none;
       transform: scale(0.4);
       transition: opacity 0.2s ease, transform 0.25s ease;
-      box-shadow: 0 2px 8px rgba(39,43,46,0.45);
+      box-shadow: 0 2px 8px rgba(39,43,46,0.3);
       cursor: pointer;
+      color: var(--grisCarbon);
     }
-    .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; }
+    .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; filter: brightness(0.15); }
+    .fabItem span { line-height: 1; font-family: sans-serif; color: var(--grisCarbon); }
     .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
     .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
+    /* ── FAB Lupa · zoom + proveedor ── */
+    .fabLupaContainer {
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      z-index: 20;
+    }
+    .fabLupaBtn {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--blancoNeutro);
+      border: 2px solid var(--grisOscuro);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(39,43,46,0.4);
+      transition: transform 0.25s ease;
+      color: var(--grisCarbon);
+    }
+    .fabLupaContainer.open .fabLupaBtn { transform: rotate(45deg); }
+
 
 
     .markerCounter {
@@ -591,6 +617,7 @@
 <body>
 
   <div class="shell">
+    <div id="headerShowZone" style="position:fixed;top:0;left:0;right:0;height:12px;z-index:65;cursor:pointer;" aria-hidden="true"></div>
     <header class="headerMoon" id="headerMoon">
       <div class="headerTitle">
         <span class="headerTitleMain" data-i18n="appName">moonTripMarker</span>
@@ -1569,7 +1596,7 @@
     $view().innerHTML = '<div class="markerShell"><div class="mapContainer" id="mapTestEl"></div></div>';
     initMap('mapTestEl');
     const shell = $view().querySelector('.markerShell');
-    showMapBar(shell);
+    buildFabLupa(shell);
   }
   // OWNERSHIP ZONE · Agente A — MAP INIT · close
 
@@ -1601,16 +1628,83 @@
   }
 
 
+
+  // ── buildFabLupa · zoom in/out + proveedor · despliegue radial ──────────
+  function buildFabLupa(shell) {
+    if (shell.querySelector('#fabLupaEl')) { return; }
+    var R = 120;
+    var lupaItems = [
+      { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
+      { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
+      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' }
+    ];
+
+    var cont = document.createElement('div');
+    cont.className = 'fabLupaContainer';
+    cont.id = 'fabLupaEl';
+
+    var lupaBtn = document.createElement('button');
+    lupaBtn.className = 'fabLupaBtn';
+    lupaBtn.id = 'fabLupaBtn';
+    lupaBtn.setAttribute('aria-label', 'Zoom / Mapa');
+    lupaBtn.innerHTML = '<svg viewBox="0 0 22 22" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="9" r="6.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>';
+    cont.appendChild(lupaBtn);
+
+    lupaItems.forEach(function (item) {
+      var rad = item.angle * Math.PI / 180;
+      var dx  = Math.cos(rad) * R;
+      var dy  = Math.sin(rad) * R;
+      var el  = document.createElement('button');
+      el.className = 'fabItem';
+      el.id = item.id;
+      el.setAttribute('aria-label', item.label);
+      el.setAttribute('title', item.label);
+      el.style.right  = (24 - dx - 24) + 'px';
+      el.style.bottom = (24 + dy - 24) + 'px';
+      el.innerHTML = item.html ? item.html
+        : svgGlifo(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+      cont.appendChild(el);
+    });
+
+    shell.appendChild(cont);
+
+    lupaBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      cont.classList.toggle('open');
+    });
+    document.addEventListener('click', function (e) {
+      if (!cont.contains(e.target)) cont.classList.remove('open');
+    }, true);
+
+    function closeLupa() { cont.classList.remove('open'); }
+
+    var lupaZoomIn = document.getElementById('lupaZoomIn');
+    if (lupaZoomIn) lupaZoomIn.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomIn(); });
+
+    var lupaZoomOut = document.getElementById('lupaZoomOut');
+    if (lupaZoomOut) lupaZoomOut.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomOut(); });
+
+    var lupaProvider = document.getElementById('lupaProvider');
+    if (lupaProvider) lupaProvider.addEventListener('click', function () {
+      closeLupa();
+      var next = state.mapProvider === 'osm' ? 'sat' : 'osm';
+      setProvider(next);
+      lupaProvider.innerHTML = svgGlifo(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+      toast(t('providerSwitched'));
+    });
+
+    return cont;
+  }
+
   // ── buildFabRadial · FAB consolidado con menú radial ─────────────────────
   function buildFabRadial(shell) {
-    var R = 90;
+    var R = 160;
     var items = [
-      { id: 'fabCaptura',  angle: 100, iconKey: 'iconCamera',      label: 'Captura' },
-      { id: 'fabUndo',     angle: 117, iconKey: 'iconUndo',        label: 'Deshacer' },
-      { id: 'fabExport',   angle: 134, iconKey: 'iconExport',      label: 'Exportar' },
-      { id: 'fabProvider', angle: 151, iconKey: state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm', label: 'Mapa' },
-      { id: 'fabDelete',   angle: 168, iconKey: 'iconDelete',      label: 'Borrar puntos' },
-      { id: 'fabTiles',    angle: 185, iconKey: 'iconDone',        label: 'Tiles' }
+      { id: 'fabCaptura', angle: 195, iconKey: 'iconCamera',  label: 'Captura' },
+      { id: 'fabUndo',    angle: 215, iconKey: 'iconUndo',    label: 'Deshacer' },
+      { id: 'fabExport',  angle: 235, iconKey: 'iconExport',  label: 'Exportar' },
+      { id: 'fabDelete',  angle: 255, iconKey: 'iconDelete',  label: 'Borrar' },
+      { id: 'fabTiles',   angle: 275, iconKey: 'iconDone',    label: 'Tiles' }
     ];
 
     var cont = document.createElement('div');
@@ -1633,8 +1727,8 @@
       el.id = item.id;
       el.setAttribute('aria-label', item.label);
       el.setAttribute('title', item.label);
-      el.style.right  = (60 - dx - 24) + 'px';
-      el.style.bottom = (60 + dy - 24) + 'px';
+      el.style.left = (32 + dx - 24) + 'px';
+      el.style.top  = (32 - dy - 24) + 'px';
       el.innerHTML = svgGlifo(item.iconKey);
       cont.appendChild(el);
     });
@@ -1666,14 +1760,6 @@
     var fabExport = document.getElementById('fabExport');
     if (fabExport) fabExport.addEventListener('click', function () { closeMenu(); exportAllPuntos(); });
 
-    var fabProvider = document.getElementById('fabProvider');
-    if (fabProvider) fabProvider.addEventListener('click', function () {
-      closeMenu();
-      var next = state.mapProvider === 'osm' ? 'sat' : 'osm';
-      setProvider(next);
-      fabProvider.innerHTML = svgGlifo(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
-      toast(t('providerSwitched'));
-    });
 
     var fabDelete = document.getElementById('fabDelete');
     if (fabDelete) fabDelete.addEventListener('click', async function () {
@@ -1723,7 +1809,7 @@
 
     initMap('mapMarkerEl', { skipInitialView: true });
     const shell = $view().querySelector('.markerShell');
-    showMapBar(shell);
+    buildFabLupa(shell);
 
     const pinLayer = L.layerGroup().addTo(state.map);
     let liveMarker = null;
@@ -2013,13 +2099,15 @@
     updateConnectionStatus();
     setLang(getLang());
     initLangToggle();
-    // Auto-hide header · oculta tras 4s de interacción; tap en header restituye
+    // Auto-hide header · oculta tras 4s; tap en header o franja superior restituye
     (function () {
-      var hdr = document.getElementById('headerMoon');
-      var tmr = null;
+      var hdr  = document.getElementById('headerMoon');
+      var zone = document.getElementById('headerShowZone');
+      var tmr  = null;
       function showHdr() { hdr.classList.remove('oculto'); clearTimeout(tmr); }
       function schedHide() { clearTimeout(tmr); tmr = setTimeout(function () { hdr.classList.add('oculto'); }, 4000); }
       hdr.addEventListener('click', showHdr);
+      if (zone) zone.addEventListener('click', showHdr);
       schedHide();
       window._hdrSchedHide = schedHide;
       window._hdrShow = showHdr;
