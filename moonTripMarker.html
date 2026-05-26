@@ -236,8 +236,8 @@
     .markerShell {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px);
-      height: calc(100dvh - 60px);
+      height: 100vh;
+      height: 100dvh;
       position: relative;
     }
     .mapContainer {
@@ -286,14 +286,7 @@
     }
     .mapBarBtn:active { transform: scale(0.92); }
     .mapBarBtn:hover { background: var(--naranjaClaro); }
-    .mapBarBtn.toggle { background: var(--vinotinto); color: var(--amarilloLuna); }
-    .mapBarControls {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .mapBar.collapsed .mapBarControls { display: none; }
-    .mapBarBtn svg { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+    .mapBarBtn svg, .mapBarBtn span { display: block; }
 
     /* live marker divIcon overrides Leaflet */
     .markerLiveIcon { background: transparent; border: none; }
@@ -310,7 +303,7 @@
        ========================================================== */
     .markerOverlay {
       position: absolute;
-      top: 12px;
+      top: 76px;
       left: 12px;                                                                  /* fix-intercambioStacks F-03 · era right:12px en el padre v00 */
       display: flex;
       flex-direction: column;
@@ -336,59 +329,51 @@
     .markerStatsLine.bad  { color: var(--amarilloLuna); background: var(--rojoOtonal); border-color: var(--vinotinto); }
     .markerStatsLine .lbl { opacity: 0.75; margin-right: 4px; }
 
-    .markerCameraBtn {
+
+    /* ── FAB Rocket · botón principal consolidado ── */
+    .fabContainer {
       position: absolute;
       bottom: 28px;
-      right: 28px;                                                                  /* botón principal de captura · esquina derecha-abajo */
+      right: 28px;
+      z-index: 20;
+    }
+    .fabRocket {
+      position: relative;
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: var(--rojoOtonal);
-      color: var(--amarilloLuna);
-      border: 3px solid var(--vinotinto);
-      box-shadow: 0 4px 12px rgba(39,43,46,0.35);
+      background: var(--grisCarbon);
+      border: 3px solid var(--blancoNeutro);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: auto;
-      transition: transform var(--tFast), background var(--tFast);
-      z-index: 12;
+      box-shadow: 0 4px 14px rgba(39,43,46,0.55);
+      transition: transform 0.25s ease;
     }
-    .markerCameraBtn:hover:not(:disabled) { background: var(--naranjaProfundo); }
-    .markerCameraBtn:active:not(:disabled) { transform: scale(0.92); }
-    .markerCameraBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .markerCameraBtn svg { width: 38px; height: 38px; }
-
-    .markerSecondaryStack {
+    .fabRocket img { width: 40px; height: 40px; object-fit: contain; display: block; }
+    .fabContainer.open .fabRocket { transform: rotate(45deg); }
+    .fabItem {
       position: absolute;
-      bottom: 28px;
-      left: 12px;                                                                   /* stack secundario izquierda · intercambio respecto al padre */
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--grisOscuro);
+      border: 2px solid var(--blancoNeutro);
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      pointer-events: auto;
-      z-index: 11;
-    }
-    .markerSecondaryBtn {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--rInput);
-      background: var(--amarilloLuna);
-      border: 2px solid var(--vinotinto);
-      color: var(--vinotinto);
-      cursor: pointer;
-      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
-      box-shadow: 0 2px 6px rgba(39,43,46,0.25);
-      transition: transform var(--tFast), background var(--tFast);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.4);
+      transition: opacity 0.2s ease, transform 0.25s ease;
+      box-shadow: 0 2px 8px rgba(39,43,46,0.45);
+      cursor: pointer;
     }
-    .markerSecondaryBtn:hover:not(:disabled) { background: var(--naranjaClaro); }
-    .markerSecondaryBtn:active:not(:disabled) { transform: scale(0.92); }
-    .markerSecondaryBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .markerSecondaryBtn svg { width: 28px; height: 28px; }
+    .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; }
+    .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
+    .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
+
 
     .markerCounter {
       position: absolute;
@@ -505,8 +490,10 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 60;
       box-shadow: 0 2px 8px rgba(39,43,46,0.35);
       border-bottom: 2px solid var(--amarilloLuna);
@@ -516,22 +503,7 @@
       transform: translateY(-100%);
       pointer-events: none;
     }
-    .headerLogo {
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--blancoNeutro);
-      border-radius: 50%;
-      border: 2px solid var(--blancoNeutro);
-      overflow: hidden;
-      /* GAP · moonV3_12 noBackground PNG base64 inline esperado · sandbox
-         de develop+ no permitió extraer 554KB del JSON imagenesInlineMoonNoBackground.json;
-         Wave 3 sustituirá este SVG inline placeholder por el data URI definitivo. */
-    }
-    .headerLogo svg, .headerLogo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
     .headerTitle {
       flex: 1;
       min-width: 0;
@@ -598,69 +570,7 @@
     .qrPlaceholder svg { display: block; width: 100%; height: 100%; }
 
     /* Burger menu (lateral) · contiene export + provider + descarga tiles + clear cache + idioma */
-    .burgerBtn {
-      width: 44px;
-      height: 44px;
-      flex-shrink: 0;
-      background: var(--amarilloLuna);
-      border: 2px solid var(--amarilloLuna);
-      border-radius: var(--rInput);
-      cursor: pointer;
-      padding: 4px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: background var(--tFast);
-    }
-    .burgerBtn:hover { background: var(--naranjaClaro); }
-    .burgerBtn svg { width: 28px; height: 28px; }
 
-    .burgerDrawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: min(320px, 80vw);
-      height: 100%;
-      background: var(--amarilloLuna);
-      border-left: 3px solid var(--vinotinto);
-      box-shadow: -8px 0 24px rgba(39,43,46,0.45);
-      z-index: 500;
-      transform: translateX(100%);
-      transition: transform 220ms cubic-bezier(.4,.0,.2,1);
-      display: flex;
-      flex-direction: column;
-      padding: 18px 14px;
-      gap: 10px;
-      overflow-y: auto;
-    }
-    .burgerDrawer.open { transform: translateX(0); }
-    .burgerDrawer h3 {
-      font-size: 20px;
-      color: var(--vinotinto);
-      letter-spacing: 0.04em;
-      font-weight: normal;
-      margin-bottom: 6px;
-    }
-    .burgerDrawer .btn { flex: none; }
-    .burgerDrawerSection { margin-top: 10px; padding-top: 10px; border-top: 1.5px solid var(--vinotinto); }
-    .burgerDrawerHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .burgerDrawerClose {
-      margin-left: auto;
-      background: transparent;
-      color: var(--vinotinto);
-      border: 1.5px solid var(--vinotinto);
-      padding: 4px 10px;
-      border-radius: var(--rInput);
-      cursor: pointer;
-    }
-    .burgerBackdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(39,43,46,0.55);
-      z-index: 450;
-      display: none;
-    }
-    .burgerBackdrop.show { display: block; }
 
     .qrAndLinkRow {
       display: flex;
@@ -681,12 +591,7 @@
 <body>
 
   <div class="shell">
-    <div id="headerShowZone" style="position:fixed;top:0;left:0;right:0;height:10px;z-index:65;cursor:pointer;" aria-hidden="true"></div>
     <header class="headerMoon" id="headerMoon">
-      <!-- Logo moonV3_12 noBackground · PNG base64 inline (56×31 px · ~2.6 KB · replicado de F-04 RD-12) -->
-      <div class="headerLogo" aria-label="moonTrip">
-        <img class="moonLogoIcon" alt="moonTripMarker" width="56" height="31" src="data:image/png;base64,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" style="display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;">
-      </div>
       <div class="headerTitle">
         <span class="headerTitleMain" data-i18n="appName">moonTripMarker</span>
         <span class="headerTitleSub" data-i18n="appTagline">Punto + Foto + Comentario</span>
@@ -694,10 +599,6 @@
       <div class="headerRight">
         <button class="langToggle" id="langToggleBtn" aria-label="Toggle ES/EN">
           <span id="langEs">ES</span> · <span id="langEn">EN</span>
-        </button>
-        <button class="burgerBtn" id="burgerBtn" aria-label="Menú · Menu">
-          <!-- Burger button · moonV3_12 noBackground PNG base64 inline (replicado de F-04 RD-12 · sizing 28×16 coherente con el SVG original 28×28) -->
-          <img class="moonLogoIcon" alt="Menu" width="28" height="16" src="data:image/png;base64,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" style="display:block;image-rendering:pixelated;image-rendering:crisp-edges;">
         </button>
       </div>
     </header>
@@ -710,32 +611,6 @@
   <div id="overlay"></div>
   <div id="toastHost"></div>
 
-  <!-- Burger drawer · contiene export, provider, descarga offline, clear cache, link y QR -->
-  <div class="burgerBackdrop" id="burgerBackdrop"></div>
-  <aside class="burgerDrawer" id="burgerDrawer" aria-hidden="true">
-    <div class="burgerDrawerHeader">
-      <h3 data-i18n="menuTitle">Menú</h3>
-      <button class="burgerDrawerClose" id="burgerDrawerClose" data-i18n="close">Cerrar · Close</button>
-    </div>
-
-    <button class="btn btnPrimary" id="drawerExport" data-i18n="exportGeojson">Exportar GeoJSON · Export GeoJSON</button>
-    <button class="btn btnSecondary" id="drawerProvider" data-i18n="switchProvider">Cambiar mapa · Switch map</button>
-    <button class="btn btnSecondary" id="drawerDownloadTiles" data-i18n="downloadTiles">Descargar tiles · Download tiles</button>
-    <button class="btn btnSecondary" id="drawerClearTiles" data-i18n="clearTiles">Limpiar cache tiles · Clear tile cache</button>
-    <button class="btn btnDanger" id="drawerClearPuntos" data-i18n="clearPoints">Borrar todos los puntos · Clear all points</button>
-
-    <div class="burgerDrawerSection">
-      <div class="qrAndLinkRow">
-        <div class="qrPlaceholder" aria-label="QR · Moon Trip" title="Scan: davidforeroparra-dev.netlify.app/moontrip"><img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSAQAAAADvV742AAABUUlEQVR4nK2SMWrDMBiFnyNDMSioB+hSyFpQ8BAKDjJkzZG6BAK9RC9RKGSV0VRQkCFToGMPIKNAKFioU2j1Z42mn8fje3q/VCRcTjfB37ndXJSxXS6HoiW68ue4O69S7i8xtJGt32ZlQ3RA4AMtqB/o39dduKe5Qj+xTcCY60UqmAQQe7XJ/WmseDy6pAl/fvB9NZsfRsJ3n1OOB63zXkjeBDiTZNK5npJ1zClG9UY6qaTgivpHNQZvRqo7KTirjc45JU5fErt9ZCD3CbqxQnJFObBcSHiT60WKi/75zOPJdTl/Vf201d7f0f1v4+L4zdqK5grLR8WDobkqyOCTbegepJCiEQm0lxiY72Qh6DsCczNt2CA2pBez0tn6av8qMA+tcJVbN1ABPNcnAM58uxeS/luAn17Y46sG5VuejKkpHwzcSYy0VwIAd2H+599i/gXcF6YCQNezgQAAAABJRU5ErkJggg==" width="88" height="88"></div>
-        <div class="qrLabel">
-          <span data-i18n="qrLabel">QR · Moon Trip</span>
-        </div>
-      </div>
-      <p style="margin-top:10px;">
-        <a class="returnLink" href="moonTrip.html" data-i18n="backToLanding">← Moon Trip</a>
-      </p>
-    </div>
-  </aside>
 
   <!-- Input cámara invisible · invocado programmatic por flujo de captura -->
   <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
@@ -1659,29 +1534,12 @@
     bar.className = 'mapBar';
     bar.id = 'mMapBar';
     bar.innerHTML = ''
-      + '<button class="mapBarBtn toggle" id="mbToggle" aria-label="Toggle">' + '<svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="9" r="6.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>' + '</button>'
-      + '<div class="mapBarControls" id="mbControls">'
-      +   '<button class="mapBarBtn" id="mbZoomIn"  aria-label="Zoom in">'  + '<span style="font-size:22px;font-weight:bold;line-height:1;font-family:sans-serif;">+</span>' + '</button>'
-      +   '<button class="mapBarBtn" id="mbZoomOut" aria-label="Zoom out">' + '<span style="font-size:22px;font-weight:bold;line-height:1;font-family:sans-serif;">&minus;</span>' + '</button>'
-      +   '<button class="mapBarBtn" id="mbProvider" aria-label="Provider">' + (state.mapProvider === 'osm' ? svgGlifo('iconProviderSat') : svgGlifo('iconProviderOsm')) + '</button>'
-      + '</div>';
+      + '<button class="mapBarBtn" id="mbZoomIn"  aria-label="Zoom in">'  + '<span style="font-size:22px;font-weight:bold;line-height:1;font-family:sans-serif;">+</span>' + '</button>'
+      + '<button class="mapBarBtn" id="mbZoomOut" aria-label="Zoom out">' + '<span style="font-size:22px;font-weight:bold;line-height:1;font-family:sans-serif;">&minus;</span>' + '</button>';
     parentEl.appendChild(bar);
-    bar.querySelector('#mbToggle').addEventListener('click', toggleMapBarCollapsed);
     bar.querySelector('#mbZoomIn').addEventListener('click', function () { if (state.map) state.map.zoomIn(); });
     bar.querySelector('#mbZoomOut').addEventListener('click', function () { if (state.map) state.map.zoomOut(); });
-    bar.querySelector('#mbProvider').addEventListener('click', function () {
-      const next = state.mapProvider === 'osm' ? 'sat' : 'osm';
-      setProvider(next);
-      const btn = bar.querySelector('#mbProvider');
-      if (btn) btn.innerHTML = next === 'osm' ? svgGlifo('iconProviderSat') : svgGlifo('iconProviderOsm');
-      toast(t('providerSwitched'));
-    });
     return bar;
-  }
-  function toggleMapBarCollapsed() {
-    const bar = $('#mMapBar');
-    if (!bar) return;
-    bar.classList.toggle('collapsed');
   }
   async function handleDownloadTilesClick() {
     if (!state.map) { toast(t('noGps')); return; }
@@ -1742,6 +1600,115 @@
     return L.divIcon({ html: svgInner, className: 'markerPinIcon', iconSize: [28, 28], iconAnchor: [14, 24] });
   }
 
+
+  // ── buildFabRadial · FAB consolidado con menú radial ─────────────────────
+  function buildFabRadial(shell) {
+    var R = 90;
+    var items = [
+      { id: 'fabCaptura',  angle: 100, iconKey: 'iconCamera',      label: 'Captura' },
+      { id: 'fabUndo',     angle: 117, iconKey: 'iconUndo',        label: 'Deshacer' },
+      { id: 'fabExport',   angle: 134, iconKey: 'iconExport',      label: 'Exportar' },
+      { id: 'fabProvider', angle: 151, iconKey: state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm', label: 'Mapa' },
+      { id: 'fabDelete',   angle: 168, iconKey: 'iconDelete',      label: 'Borrar puntos' },
+      { id: 'fabTiles',    angle: 185, iconKey: 'iconDone',        label: 'Tiles' }
+    ];
+
+    var cont = document.createElement('div');
+    cont.className = 'fabContainer';
+    cont.id = 'fabContainerEl';
+
+    var rocketBtn = document.createElement('button');
+    rocketBtn.className = 'fabRocket';
+    rocketBtn.id = 'fabRocketBtn';
+    rocketBtn.setAttribute('aria-label', 'Menú');
+    rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="40" height="40" style="object-fit:contain;">';
+    cont.appendChild(rocketBtn);
+
+    items.forEach(function (item) {
+      var rad = item.angle * Math.PI / 180;
+      var dx  = Math.cos(rad) * R;
+      var dy  = Math.sin(rad) * R;
+      var el  = document.createElement('button');
+      el.className = 'fabItem';
+      el.id = item.id;
+      el.setAttribute('aria-label', item.label);
+      el.setAttribute('title', item.label);
+      el.style.right  = (60 - dx - 24) + 'px';
+      el.style.bottom = (60 + dy - 24) + 'px';
+      el.innerHTML = svgGlifo(item.iconKey);
+      cont.appendChild(el);
+    });
+
+    // Reemplazar placeholder
+    var placeholder = shell.querySelector('#fabContainerPlaceholder');
+    if (placeholder) { shell.removeChild(placeholder); }
+    shell.appendChild(cont);
+
+    // Toggle abre/cierra
+    rocketBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      cont.classList.toggle('open');
+    });
+    // Cierra al tap fuera
+    document.addEventListener('click', function (e) {
+      if (!cont.contains(e.target)) cont.classList.remove('open');
+    }, true);
+
+    function closeMenu() { cont.classList.remove('open'); }
+
+    // Acciones
+    var fabCaptura = document.getElementById('fabCaptura');
+    if (fabCaptura) fabCaptura.addEventListener('click', function () { closeMenu(); handleCameraTap(); });
+
+    var fabUndo = document.getElementById('fabUndo');
+    if (fabUndo) fabUndo.addEventListener('click', function () { closeMenu(); handleUndoTap(); });
+
+    var fabExport = document.getElementById('fabExport');
+    if (fabExport) fabExport.addEventListener('click', function () { closeMenu(); exportAllPuntos(); });
+
+    var fabProvider = document.getElementById('fabProvider');
+    if (fabProvider) fabProvider.addEventListener('click', function () {
+      closeMenu();
+      var next = state.mapProvider === 'osm' ? 'sat' : 'osm';
+      setProvider(next);
+      fabProvider.innerHTML = svgGlifo(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+      toast(t('providerSwitched'));
+    });
+
+    var fabDelete = document.getElementById('fabDelete');
+    if (fabDelete) fabDelete.addEventListener('click', async function () {
+      closeMenu();
+      if (state.puntos.length === 0) { toast(t('noExportYet')); return; }
+      const ok = await confirmDialog({
+        title: t('clearPointsTitle'),
+        message: t('clearPointsMsg', { n: state.puntos.length }),
+        danger: true, confirm: t('clearPoints'), cancel: t('cancel')
+      });
+      if (!ok) return;
+      try {
+        await dbClearStore('puntos');
+        state.puntos = [];
+        if (state._redrawMarkerView) state._redrawMarkerView();
+        toast(t('pointsCleared'));
+      } catch (e) { toast(t('saveFailed')); }
+    });
+
+    var fabTiles = document.getElementById('fabTiles');
+    if (fabTiles) fabTiles.addEventListener('click', function () { closeMenu(); handleDownloadTilesClick(); });
+
+    // actualizar disabled según puntos
+    function updateFabDisabled() {
+      var hasPoints = state.puntos.length > 0;
+      if (fabUndo)   fabUndo.disabled   = !hasPoints;
+      if (fabExport) fabExport.disabled = !hasPoints;
+      if (fabDelete) fabDelete.disabled = !hasPoints;
+    }
+    updateFabDisabled();
+    state._updateFabDisabled = updateFabDisabled;
+
+    return cont;
+  }
+
   function viewMarkerMode() {
     $view().className = 'view noPad';
     $view().innerHTML = ''
@@ -1751,11 +1718,7 @@
       + '  <div class="markerOverlay" id="mOverlay">'
       + '    <div class="markerStatsLine good" id="mQuality"><span class="lbl">GPS:</span><span id="mQualityVal">—</span></div>'
       + '  </div>'
-      + '  <div class="markerSecondaryStack" id="mSecondaryStack">'
-      + '    <button class="markerSecondaryBtn" id="mUndoBtn" aria-label="Undo" data-i18n-title="undoLastPoint" title="' + t('undoLastPoint') + '">' + svgGlifo('iconUndo') + '</button>'
-      + '    <button class="markerSecondaryBtn" id="mExportBtn" aria-label="Export" data-i18n-title="exportGeojson" title="' + t('exportGeojson') + '">' + svgGlifo('iconExport') + '</button>'
-      + '  </div>'
-      + '  <button class="markerCameraBtn" id="mCameraBtn" aria-label="' + t('capture') + '" title="' + t('capture') + '">' + svgGlifo('iconRubikCube') + '</button>'
+      + '  <div id="fabContainerPlaceholder"></div>'
       + '</div>';
 
     initMap('mapMarkerEl', { skipInitialView: true });
@@ -1802,10 +1765,7 @@
     function updateCounter() {
       const el = $('#mCounter');
       if (el) el.textContent = state.puntos.length + ' ' + t('pointsCountSuffix');
-      const undoBtn = $('#mUndoBtn');
-      if (undoBtn) undoBtn.disabled = state.puntos.length === 0;
-      const exportBtn = $('#mExportBtn');
-      if (exportBtn) exportBtn.disabled = state.puntos.length === 0;
+      if (state._updateFabDisabled) state._updateFabDisabled();
     }
     function applyLiveFix(fix) {
       state.liveFix = fix;
@@ -1858,10 +1818,8 @@
       if (state.map) { state.map.remove(); state.map = null; }
     };
 
-    // === Handlers de botones ===
-    $('#mCameraBtn').addEventListener('click', handleCameraTap);
-    $('#mUndoBtn').addEventListener('click', handleUndoTap);
-    $('#mExportBtn').addEventListener('click', function () { exportAllPuntos(); });
+    // === FAB radial consolidado ===
+    buildFabRadial(shell);
 
     // primer paint
     drawAllPinMarkers();
@@ -1898,7 +1856,7 @@
   async function handleCameraTap() {
     if (state.captureInFlight) return;                                            // edge case §4 · doble tap rápido
     state.captureInFlight = true;
-    const camBtn = $('#mCameraBtn');
+    const camBtn = $('#fabCaptura');
     if (camBtn) camBtn.disabled = true;
     try {
       // RD-05 · primer tap muestra modal contextual; sesiones siguientes no
@@ -1955,7 +1913,7 @@
       toast(t('pointSaved', { n: state.puntos.length }));
     } finally {
       state.captureInFlight = false;
-      const camBtn2 = $('#mCameraBtn');
+      const camBtn2 = $('#fabCaptura');
       if (camBtn2) camBtn2.disabled = false;
     }
   }
@@ -2050,91 +2008,18 @@
   // ============================================================
   // BURGER DRAWER · listeners + handler clearPuntos
   // ============================================================
-  function bindBurgerDrawer() {
-    const btn = $('#burgerBtn');
-    const drawer = $('#burgerDrawer');
-    const backdrop = $('#burgerBackdrop');
-    const closeBtn = $('#burgerDrawerClose');
-    const openFn = function () { drawer.classList.add('open'); backdrop.classList.add('show'); drawer.setAttribute('aria-hidden', 'false'); };
-    const closeFn = function () { drawer.classList.remove('open'); backdrop.classList.remove('show'); drawer.setAttribute('aria-hidden', 'true'); };
-    btn.addEventListener('click', openFn);
-    backdrop.addEventListener('click', closeFn);
-    closeBtn.addEventListener('click', closeFn);
 
-    $('#drawerExport').addEventListener('click', function () { exportAllPuntos(); closeFn(); });
-    $('#drawerProvider').addEventListener('click', function () {
-      const next = state.mapProvider === 'osm' ? 'sat' : 'osm';
-      setProvider(next);
-      const mb = $('#mbProvider');
-      if (mb) mb.innerHTML = next === 'osm' ? svgGlifo('iconProviderSat') : svgGlifo('iconProviderOsm');
-      toast(t('providerSwitched'));
-      closeFn();
-    });
-    $('#drawerDownloadTiles').addEventListener('click', function () { closeFn(); handleDownloadTilesClick(); });
-    $('#drawerClearTiles').addEventListener('click', async function () {
-      closeFn();
-      await clearTilesCache();
-    });
-    $('#drawerClearPuntos').addEventListener('click', async function () {
-      closeFn();
-      if (state.puntos.length === 0) { toast(t('noExportYet')); return; }
-      const ok = await confirmDialog({
-        title: t('clearPointsTitle'),
-        message: t('clearPointsMsg', { n: state.puntos.length }),
-        confirm: t('delete'),
-        cancel: t('cancel'),
-        danger: true
-      });
-      if (!ok) return;
-      try {
-        await dbClearStore('puntos');
-        state.puntos = [];
-        state.exported = false;
-        if (state._redrawMarkerView) state._redrawMarkerView();
-        toast(t('tilesCleared'));
-      } catch (e) {
-        console.error('clearPuntos error:', e);
-        toast(t('saveFailed'));
-      }
-    });
-  }
-
-
-  // ============================================================
-  // BEFOREUNLOAD WARNING · RD-10
-  // ============================================================
-  window.addEventListener('beforeunload', function (e) {
-    if (state.puntos.length > 0 && state.exported === false) {
-      e.preventDefault();
-      e.returnValue = t('beforeUnload');
-      return e.returnValue;
-    }
-  });
-
-
-  // ============================================================
-  // BOOT · RD-19 dev shortcuts: #mapTest, #marker (renombrado de #walk).
-  // #trace eliminado completamente.
-  // ============================================================
   async function boot() {
     updateConnectionStatus();
     setLang(getLang());
     initLangToggle();
-    // Header logo → rocketGray
+    // Auto-hide header · oculta tras 4s de interacción; tap en header restituye
     (function () {
-      var logoEl = document.querySelector('#headerMoon .headerLogo');
-      if (logoEl) logoEl.innerHTML = svgGlifo('iconRocketGray');
-    })();
-    bindBurgerDrawer();
-    // Auto-hide header · se oculta tras interacción con el mapa; tap restituye
-    (function () {
-      var hdr  = document.getElementById('headerMoon');
-      var zone = document.getElementById('headerShowZone');
-      var tmr  = null;
+      var hdr = document.getElementById('headerMoon');
+      var tmr = null;
       function showHdr() { hdr.classList.remove('oculto'); clearTimeout(tmr); }
       function schedHide() { clearTimeout(tmr); tmr = setTimeout(function () { hdr.classList.add('oculto'); }, 4000); }
       hdr.addEventListener('click', showHdr);
-      if (zone) zone.addEventListener('click', showHdr);
       schedHide();
       window._hdrSchedHide = schedHide;
       window._hdrShow = showHdr;
