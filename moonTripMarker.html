@@ -400,6 +400,41 @@
     }
     .fabLupaContainer.open .fabLupaBtn { transform: rotate(45deg); }
     .fabLupaContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
+    /* ── Hover states · botones trigger ── */
+    .fabRocket:hover { box-shadow: 0 6px 18px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabContainer.open .fabRocket:hover { transform: rotate(45deg) scale(1.04); }
+    .fabLupaBtn:hover { box-shadow: 0 5px 16px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabLupaContainer.open .fabLupaBtn:hover { transform: rotate(45deg) scale(1.04); }
+    /* ── OPEN+LABELS: trigger rota 90deg (estado 3) ── */
+    .fabContainer.open.labelsVisible .fabRocket { transform: rotate(90deg); }
+    .fabContainer.open.labelsVisible .fabRocket:hover { transform: rotate(90deg) scale(1.04); }
+    .fabLupaContainer.open.labelsVisible .fabLupaBtn { transform: rotate(90deg); }
+    .fabLupaContainer.open.labelsVisible .fabLupaBtn:hover { transform: rotate(90deg) scale(1.04); }
+    /* ── fabItemLabel · chip externo A2 ── */
+    .fabItemLabel {
+      position: absolute;
+      right: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      white-space: nowrap;
+      background: var(--blancoNeutro);
+      color: var(--grisCarbon);
+      border: 1.5px solid var(--grisOscuro);
+      padding: 3px 8px;
+      border-radius: var(--rPill);
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(39,43,46,0.2);
+      transition: max-width 0.22s cubic-bezier(.4,0,.2,1), opacity 0.18s;
+    }
+    .fabItem:hover .fabItemLabel { max-width: 120px; opacity: 1; }
+    .fabContainer.open.labelsVisible .fabItemLabel,
+    .fabLupaContainer.open.labelsVisible .fabItemLabel { max-width: 120px; opacity: 1; }
 
 
 
@@ -490,6 +525,12 @@
     /* Estado disabled · opacidad procedural aplicada al SVG inline */
     button:disabled .iconSvg { opacity: 0.55; }
     /* Pulso para markers tipo first */
+    @keyframes counterBump {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .counterBump { animation: counterBump 220ms cubic-bezier(.4,0,.2,1); }
     @keyframes circleMarkerPulse {
       0%   { transform: scale(0.7); opacity: 1; }
       50%  { transform: scale(1.3); opacity: 0.45; }
@@ -1650,7 +1691,7 @@
     lupaBtn.innerHTML = '<svg viewBox="0 0 22 22" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="9" r="6.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>';
     cont.appendChild(lupaBtn);
 
-    lupaItems.forEach(function (item) {
+    lupaItems.forEach(function (item, idx) {
       var rad = item.angle * Math.PI / 180;
       var dx  = Math.cos(rad) * R;
       var dy  = Math.sin(rad) * R;
@@ -1661,8 +1702,10 @@
       el.setAttribute('title', item.label);
       el.style.right  = (24 - dx - 24) + 'px';
       el.style.bottom = (24 + dy - 24) + 'px';
-      el.innerHTML = item.html ? item.html
+      el.style.transitionDelay = (idx * 25) + 'ms';
+      var iconHtml = item.html ? item.html
         : svgGlifo(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+      el.innerHTML = iconHtml + '<span class="fabItemLabel">' + item.label + '</span>';
       cont.appendChild(el);
     });
 
@@ -1670,13 +1713,19 @@
 
     lupaBtn.addEventListener('click', function (e) {
       e.stopPropagation();
-      cont.classList.toggle('open');
+      if (!cont.classList.contains('open')) {
+        cont.classList.add('open');
+      } else if (!cont.classList.contains('labelsVisible')) {
+        cont.classList.add('labelsVisible');
+      } else {
+        cont.classList.remove('open', 'labelsVisible');
+      }
     });
     document.addEventListener('click', function (e) {
-      if (!cont.contains(e.target)) cont.classList.remove('open');
+      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
     }, true);
 
-    function closeLupa() { cont.classList.remove('open'); }
+    function closeLupa() { cont.classList.remove('open', 'labelsVisible'); }
 
     var lupaZoomIn = document.getElementById('lupaZoomIn');
     if (lupaZoomIn) lupaZoomIn.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomIn(); });
@@ -1718,7 +1767,7 @@
     rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="56" height="56" style="object-fit:contain;pointer-events:none;">';
     cont.appendChild(rocketBtn);
 
-    items.forEach(function (item) {
+    items.forEach(function (item, idx) {
       var rad = item.angle * Math.PI / 180;
       var dx  = Math.cos(rad) * R;
       var dy  = Math.sin(rad) * R;
@@ -1729,7 +1778,8 @@
       el.setAttribute('title', item.label);
       el.style.left = (24 + dx - 24) + 'px';
       el.style.top  = (24 - dy - 24) + 'px';
-      el.innerHTML = svgGlifo(item.iconKey);
+      el.style.transitionDelay = (idx * 25) + 'ms';
+      el.innerHTML = svgGlifo(item.iconKey) + '<span class="fabItemLabel">' + item.label + '</span>';
       cont.appendChild(el);
     });
 
@@ -1738,17 +1788,23 @@
     if (placeholder) { shell.removeChild(placeholder); }
     shell.appendChild(cont);
 
-    // Toggle abre/cierra
+    // 3-state: CLOSED → OPEN → OPEN+LABELS → CLOSED
     rocketBtn.addEventListener('click', function (e) {
       e.stopPropagation();
-      cont.classList.toggle('open');
+      if (!cont.classList.contains('open')) {
+        cont.classList.add('open');
+      } else if (!cont.classList.contains('labelsVisible')) {
+        cont.classList.add('labelsVisible');
+      } else {
+        cont.classList.remove('open', 'labelsVisible');
+      }
     });
     // Cierra al tap fuera
     document.addEventListener('click', function (e) {
-      if (!cont.contains(e.target)) cont.classList.remove('open');
+      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
     }, true);
 
-    function closeMenu() { cont.classList.remove('open'); }
+    function closeMenu() { cont.classList.remove('open', 'labelsVisible'); }
 
     // Acciones
     var fabCaptura = document.getElementById('fabCaptura');
@@ -1848,9 +1904,19 @@
         }
       });
     }
+    var prevPuntosCount = -1;
     function updateCounter() {
       const el = $('#mCounter');
-      if (el) el.textContent = state.puntos.length + ' ' + t('pointsCountSuffix');
+      const n = state.puntos.length;
+      if (el) {
+        el.textContent = n + ' ' + t('pointsCountSuffix');
+        if (n > prevPuntosCount && prevPuntosCount >= 0) {
+          el.classList.remove('counterBump');
+          void el.offsetWidth;
+          el.classList.add('counterBump');
+        }
+        prevPuntosCount = n;
+      }
       if (state._updateFabDisabled) state._updateFabDisabled();
     }
     function applyLiveFix(fix) {
