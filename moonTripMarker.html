@@ -339,8 +339,8 @@
     }
     .fabRocket {
       position: relative;
-      width: 64px;
-      height: 64px;
+      width: 96px;
+      height: 96px;
       border-radius: 50%;
       background: var(--blancoNeutro);
       border: 3px solid var(--grisOscuro);
@@ -351,7 +351,7 @@
       box-shadow: 0 4px 14px rgba(39,43,46,0.4);
       transition: transform 0.25s ease;
     }
-    .fabRocket img { width: 40px; height: 40px; object-fit: contain; display: block; }
+    .fabRocket img { width: 80px; height: 80px; object-fit: contain; display: block; }
     .fabContainer.open .fabRocket { transform: rotate(45deg); }
     .fabItem {
       position: absolute;
@@ -1716,7 +1716,7 @@
     rocketBtn.className = 'fabRocket';
     rocketBtn.id = 'fabRocketBtn';
     rocketBtn.setAttribute('aria-label', 'Menú');
-    rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="40" height="40" style="object-fit:contain;">';
+    rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="80" height="80" style="object-fit:contain;">';
     cont.appendChild(rocketBtn);
 
     items.forEach(function (item) {
@@ -1728,8 +1728,8 @@
       el.id = item.id;
       el.setAttribute('aria-label', item.label);
       el.setAttribute('title', item.label);
-      el.style.left = (32 + dx - 24) + 'px';
-      el.style.top  = (32 - dy - 24) + 'px';
+      el.style.left = (48 + dx - 24) + 'px';
+      el.style.top  = (48 - dy - 24) + 'px';
       el.innerHTML = svgGlifo(item.iconKey);
       cont.appendChild(el);
     });
