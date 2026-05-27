@@ -339,8 +339,8 @@
     }
     .fabRocket {
       position: relative;
-      width: 32px;
-      height: 32px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: var(--blancoNeutro);
       border: 2px solid var(--grisOscuro);
@@ -348,10 +348,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       box-shadow: 0 4px 14px rgba(39,43,46,0.4);
       transition: transform 0.25s ease;
     }
-    .fabRocket img { width: 240px; height: 240px; object-fit: contain; display: block; pointer-events: none; }
+    .fabRocket img { width: 56px; height: 56px; object-fit: contain; display: block; pointer-events: none; }
     .fabContainer.open .fabRocket { transform: rotate(45deg); }
     .fabItem {
       position: absolute;
@@ -1716,7 +1717,7 @@
     rocketBtn.className = 'fabRocket';
     rocketBtn.id = 'fabRocketBtn';
     rocketBtn.setAttribute('aria-label', 'Menú');
-    rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="240" height="240" style="object-fit:contain;pointer-events:none;">';
+    rocketBtn.innerHTML = '<img src="' + spritesGray.iconRocketGray + '" width="56" height="56" style="object-fit:contain;pointer-events:none;">';
     cont.appendChild(rocketBtn);
 
     items.forEach(function (item) {
@@ -1728,8 +1729,8 @@
       el.id = item.id;
       el.setAttribute('aria-label', item.label);
       el.setAttribute('title', item.label);
-      el.style.left = (16 + dx - 24) + 'px';
-      el.style.top  = (16 - dy - 24) + 'px';
+      el.style.left = (24 + dx - 24) + 'px';
+      el.style.top  = (24 - dy - 24) + 'px';
       el.innerHTML = svgGlifo(item.iconKey);
       cont.appendChild(el);
     });
