@@ -366,7 +366,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transform: scale(0.4);
+      transform: scale(0);
       transition: opacity 0.2s ease, transform 0.25s ease;
       box-shadow: 0 2px 8px rgba(39,43,46,0.3);
       cursor: pointer;
@@ -1265,11 +1265,10 @@
     return '<svg viewBox="0 0 24 24" width="28" height="28" shape-rendering="crispEdges">' + rects.join('') + '</svg>';
   }
 
-  // iconCircleMarker paramétrico (live fix marker)
+  // iconCircleMarker → pin sprite (spritesGray.iconPin) — live fix marker
   function svgCircleMarker(opts) {
     opts = opts || {};
-    const clase = opts.pulse ? ' circleMarkerPulse' : '';
-    return '<img src="' + spritesGray.iconCircleMarker + '" class="icono-sprite' + clase + '" style="width:24px;height:24px;display:block;">';
+    return '<img src="' + spritesGray.iconPin + '" style="width:48px;height:30px;display:block;opacity:0.75;pointer-events:none;">';
   }
   // OWNERSHIP ZONE · Agente B — CSS Iconos Micro · close
 
@@ -1620,7 +1619,7 @@
     const ql = accuracyToLevel(fix && fix.accuracy);
     const accBucket = ql.cls;
     const svgInner = svgCircleMarker({ accuracy: accBucket, size: 'resto', pulse: true });
-    return L.divIcon({ html: svgInner, className: 'markerLiveIcon', iconSize: [24, 24], iconAnchor: [12, 12] });
+    return L.divIcon({ html: svgInner, className: 'markerLiveIcon', iconSize: [48, 30], iconAnchor: [16, 22] });
   }
   function buildPinMarkerIcon(opts) {
     opts = opts || {};
