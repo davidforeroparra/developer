@@ -399,6 +399,104 @@
     .track-mapBar.collapsed .track-mapBar-controls { display: none; }
     .track-mapBar-btn svg { width: 22px; height: 22px; }
 
+    /* ── FAB Dual · Rocket (acciones) + Lupa (mapa) ── */
+    .fabContainer {
+      position: absolute;
+      top: 76px;
+      right: 16px;
+      z-index: 20;
+    }
+    .fabRocket {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--blancoNeutro);
+      border: 2px solid var(--grisOscuro);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(39,43,46,0.4);
+      transition: transform 0.25s ease;
+    }
+    .fabRocket img { width: 28px; height: 28px; object-fit: contain; display: block; pointer-events: none; }
+    .fabContainer.open .fabRocket { transform: rotate(45deg); }
+    .fabItem {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--blancoNeutro);
+      border: 2px solid var(--grisOscuro);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0);
+      transition: opacity 0.2s ease, transform 0.25s ease;
+      box-shadow: 0 2px 8px rgba(39,43,46,0.3);
+      cursor: pointer;
+      color: var(--grisCarbon);
+      overflow: hidden;
+    }
+    .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; }
+    .fabItem span { line-height: 1; font-family: sans-serif; color: var(--grisCarbon); }
+    .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
+    .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
+    .fabLupaContainer {
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      z-index: 20;
+    }
+    .fabLupaBtn {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--blancoNeutro);
+      border: 2px solid var(--grisOscuro);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(39,43,46,0.4);
+      transition: transform 0.25s ease;
+      color: var(--grisCarbon);
+    }
+    .fabLupaContainer.open .fabLupaBtn { transform: rotate(45deg); }
+    .fabLupaContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
+    .fabRocket:hover { box-shadow: 0 6px 18px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabContainer.open .fabRocket:hover { transform: rotate(45deg) scale(1.04); }
+    .fabLupaBtn:hover { box-shadow: 0 5px 16px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabLupaContainer.open .fabLupaBtn:hover { transform: rotate(45deg) scale(1.04); }
+    .fabContainer.open.labelsVisible .fabRocket { transform: rotate(90deg); }
+    .fabContainer.open.labelsVisible .fabRocket:hover { transform: rotate(90deg) scale(1.04); }
+    .fabLupaContainer.open.labelsVisible .fabLupaBtn { transform: rotate(90deg); }
+    .fabLupaContainer.open.labelsVisible .fabLupaBtn:hover { transform: rotate(90deg) scale(1.04); }
+    .fabItemLabel {
+      position: absolute;
+      opacity: 0;
+      white-space: nowrap;
+      background: var(--blancoNeutro);
+      color: var(--grisCarbon);
+      border: 1.5px solid var(--grisOscuro);
+      padding: 3px 8px;
+      border-radius: 100px;
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(39,43,46,0.2);
+      transition: opacity 0.18s;
+    }
+    .fabItemLabel.visible { opacity: 1; }
+    .fabContainer.open.labelsVisible .fabItemLabel,
+    .fabLupaContainer.open.labelsVisible .fabItemLabel { opacity: 1; }
+
     /* ============================================================
        OWNERSHIP ZONE · CSS Estética · Overlay panel (RD-13)
        INTERCAMBIO STACKS · overlay con chips KPI + panel-section en la IZQUIERDA
@@ -1806,6 +1904,220 @@
     return [c.lat, c.lng];
   }
 
+  // ── buildFabLupa · zoom + proveedor · despliegue radial (patchTracerFab01) ──
+  function buildFabLupa(shell) {
+    if (shell.querySelector('#fabLupaEl')) return;
+    var R = 120;
+    var lupaItems = [
+      { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',       label: 'Zoom in' },
+      { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>', label: 'Zoom out' },
+      { id: 'lupaProvider', angle: 160, html: null,                                                              label: 'Mapa' },
+      { id: 'fabTilesBtn',  angle:  85, iconKey: 'iconCollapse',                                                 label: 'Tiles' }
+    ];
+    var cont = document.createElement('div');
+    cont.className = 'fabLupaContainer';
+    cont.id = 'fabLupaEl';
+    var lupaBtn = document.createElement('button');
+    lupaBtn.className = 'fabLupaBtn';
+    lupaBtn.id = 'fabLupaBtn';
+    lupaBtn.setAttribute('aria-label', 'Zoom / Mapa');
+    lupaBtn.innerHTML = '<svg viewBox="0 0 22 22" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="9" r="6.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>';
+    cont.appendChild(lupaBtn);
+    lupaItems.forEach(function (item, idx) {
+      var rad = item.angle * Math.PI / 180;
+      var el = document.createElement('button');
+      el.className = 'fabItem';
+      el.id = item.id;
+      el.setAttribute('aria-label', item.label);
+      el.setAttribute('title', item.label);
+      el.style.right  = (24 - Math.cos(rad) * R - 24) + 'px';
+      el.style.bottom = (24 + Math.sin(rad) * R - 24) + 'px';
+      el.style.transitionDelay = (idx * 25) + 'ms';
+      var iconHtml = item.html ? item.html
+        : item.iconKey ? svgIcon(item.iconKey)
+        : svgIcon(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+      el.innerHTML = iconHtml;
+      cont.appendChild(el);
+      var chip = document.createElement('span');
+      chip.className = 'fabItemLabel';
+      var cssAngle = ((-item.angle) % 360 + 360) % 360;
+      chip.innerHTML = (cssAngle >= 90 && cssAngle <= 270)
+        ? '<span style="display:inline-block;transform:scale(-1,-1)">' + item.label + '</span>'
+        : item.label;
+      var exitDist = R + 32;
+      chip.style.left = (24 + Math.cos(rad) * exitDist) + 'px';
+      chip.style.top  = (24 - Math.sin(rad) * exitDist - 10) + 'px';
+      chip.style.transformOrigin = '0 50%';
+      chip.style.transform = 'rotate(' + (-item.angle) + 'deg)';
+      cont.appendChild(chip);
+      (function(b, ch) {
+        b.addEventListener('mouseenter', function () { ch.classList.add('visible'); });
+        b.addEventListener('mouseleave', function () { ch.classList.remove('visible'); });
+      })(el, chip);
+    });
+    shell.appendChild(cont);
+    lupaBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!cont.classList.contains('open')) cont.classList.add('open');
+      else if (!cont.classList.contains('labelsVisible')) cont.classList.add('labelsVisible');
+      else cont.classList.remove('open', 'labelsVisible');
+    });
+    document.addEventListener('click', function (e) {
+      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
+    }, true);
+    function closeLupa() { cont.classList.remove('open', 'labelsVisible'); }
+    var elZoomIn = document.getElementById('lupaZoomIn');
+    if (elZoomIn) elZoomIn.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomIn(); });
+    var elZoomOut = document.getElementById('lupaZoomOut');
+    if (elZoomOut) elZoomOut.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomOut(); });
+    var elTiles = document.getElementById('fabTilesBtn');
+    if (elTiles) elTiles.addEventListener('click', function () { closeLupa(); handleDownloadTilesClick(); });
+    var elProvider = document.getElementById('lupaProvider');
+    if (elProvider) elProvider.addEventListener('click', function () {
+      closeLupa();
+      var next = state.mapProvider === 'osm' ? 'sat' : 'osm';
+      setProvider(next);
+      elProvider.innerHTML = svgIcon(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
+    });
+    return cont;
+  }
+
+  // ── buildFabRocketWalk · pausa/undo/guardar para Walk Mode ───────────────
+  function buildFabRocketWalk(shell) {
+    var existing = shell.querySelector('#fabContainerEl');
+    if (existing) shell.removeChild(existing);
+    var R = 160;
+    var items = [
+      { id: 'fab-r-pause', angle: 195, iconKey: 'iconCancel', label: 'Pausa' },
+      { id: 'fab-r-undo',  angle: 220, iconKey: 'iconUndo',   label: 'Deshacer' },
+      { id: 'fab-r-done',  angle: 245, iconKey: 'iconDone',   label: 'Guardar' }
+    ];
+    var cont = document.createElement('div');
+    cont.className = 'fabContainer';
+    cont.id = 'fabContainerEl';
+    var rocketBtn = document.createElement('button');
+    rocketBtn.className = 'fabRocket';
+    rocketBtn.id = 'fabRocketBtn';
+    rocketBtn.setAttribute('aria-label', 'Acciones');
+    rocketBtn.innerHTML = svgIcon('iconBurger');
+    cont.appendChild(rocketBtn);
+    items.forEach(function (item, idx) {
+      var rad = item.angle * Math.PI / 180;
+      var el = document.createElement('button');
+      el.className = 'fabItem';
+      el.id = item.id;
+      el.setAttribute('aria-label', item.label);
+      el.setAttribute('title', item.label);
+      el.style.left = (24 + Math.cos(rad) * R - 24) + 'px';
+      el.style.top  = (24 - Math.sin(rad) * R - 24) + 'px';
+      el.style.transitionDelay = (idx * 25) + 'ms';
+      el.innerHTML = svgIcon(item.iconKey);
+      cont.appendChild(el);
+      var chip = document.createElement('span');
+      chip.className = 'fabItemLabel';
+      var cssAngle = ((-item.angle) % 360 + 360) % 360;
+      chip.innerHTML = (cssAngle >= 90 && cssAngle <= 270)
+        ? '<span style="display:inline-block;transform:scale(-1,-1)">' + item.label + '</span>'
+        : item.label;
+      var exitDist = R + 32;
+      chip.style.left = (24 + Math.cos(rad) * exitDist) + 'px';
+      chip.style.top  = (24 - Math.sin(rad) * exitDist - 10) + 'px';
+      chip.style.transformOrigin = '0 50%';
+      chip.style.transform = 'rotate(' + (-item.angle) + 'deg)';
+      cont.appendChild(chip);
+      (function(b, ch) {
+        b.addEventListener('mouseenter', function () { ch.classList.add('visible'); });
+        b.addEventListener('mouseleave', function () { ch.classList.remove('visible'); });
+      })(el, chip);
+    });
+    shell.appendChild(cont);
+    rocketBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!cont.classList.contains('open')) cont.classList.add('open');
+      else if (!cont.classList.contains('labelsVisible')) cont.classList.add('labelsVisible');
+      else cont.classList.remove('open', 'labelsVisible');
+    });
+    document.addEventListener('click', function (e) {
+      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
+    }, true);
+    function closeMenu() { cont.classList.remove('open', 'labelsVisible'); }
+    var fabPause = document.getElementById('fab-r-pause');
+    if (fabPause) fabPause.addEventListener('click', function () { closeMenu(); var b = document.getElementById('r-pause'); if (b) b.click(); });
+    var fabUndo = document.getElementById('fab-r-undo');
+    if (fabUndo) fabUndo.addEventListener('click', function () { closeMenu(); var b = document.getElementById('r-undo'); if (b) b.click(); });
+    var fabDone = document.getElementById('fab-r-done');
+    if (fabDone) fabDone.addEventListener('click', function () { closeMenu(); var b = document.getElementById('r-done'); if (b) b.click(); });
+    return cont;
+  }
+
+  // ── buildFabRocketTrace · fijar/undo/guardar para Trace Mode ─────────────
+  function buildFabRocketTrace(shell) {
+    var existing = shell.querySelector('#fabContainerEl');
+    if (existing) shell.removeChild(existing);
+    var R = 160;
+    var items = [
+      { id: 'fab-t-fix',  angle: 195, iconKey: 'iconDone',  label: 'Fijar' },
+      { id: 'fab-t-undo', angle: 220, iconKey: 'iconUndo',  label: 'Deshacer' },
+      { id: 'fab-t-done', angle: 245, iconKey: 'iconDone',  label: 'Guardar' }
+    ];
+    var cont = document.createElement('div');
+    cont.className = 'fabContainer';
+    cont.id = 'fabContainerEl';
+    var rocketBtn = document.createElement('button');
+    rocketBtn.className = 'fabRocket';
+    rocketBtn.id = 'fabRocketBtn';
+    rocketBtn.setAttribute('aria-label', 'Acciones');
+    rocketBtn.innerHTML = svgIcon('iconBurger');
+    cont.appendChild(rocketBtn);
+    items.forEach(function (item, idx) {
+      var rad = item.angle * Math.PI / 180;
+      var el = document.createElement('button');
+      el.className = 'fabItem';
+      el.id = item.id;
+      el.setAttribute('aria-label', item.label);
+      el.setAttribute('title', item.label);
+      el.style.left = (24 + Math.cos(rad) * R - 24) + 'px';
+      el.style.top  = (24 - Math.sin(rad) * R - 24) + 'px';
+      el.style.transitionDelay = (idx * 25) + 'ms';
+      el.innerHTML = svgIcon(item.iconKey);
+      cont.appendChild(el);
+      var chip = document.createElement('span');
+      chip.className = 'fabItemLabel';
+      var cssAngle = ((-item.angle) % 360 + 360) % 360;
+      chip.innerHTML = (cssAngle >= 90 && cssAngle <= 270)
+        ? '<span style="display:inline-block;transform:scale(-1,-1)">' + item.label + '</span>'
+        : item.label;
+      var exitDist = R + 32;
+      chip.style.left = (24 + Math.cos(rad) * exitDist) + 'px';
+      chip.style.top  = (24 - Math.sin(rad) * exitDist - 10) + 'px';
+      chip.style.transformOrigin = '0 50%';
+      chip.style.transform = 'rotate(' + (-item.angle) + 'deg)';
+      cont.appendChild(chip);
+      (function(b, ch) {
+        b.addEventListener('mouseenter', function () { ch.classList.add('visible'); });
+        b.addEventListener('mouseleave', function () { ch.classList.remove('visible'); });
+      })(el, chip);
+    });
+    shell.appendChild(cont);
+    rocketBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!cont.classList.contains('open')) cont.classList.add('open');
+      else if (!cont.classList.contains('labelsVisible')) cont.classList.add('labelsVisible');
+      else cont.classList.remove('open', 'labelsVisible');
+    });
+    document.addEventListener('click', function (e) {
+      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
+    }, true);
+    function closeMenu() { cont.classList.remove('open', 'labelsVisible'); }
+    var fabFix = document.getElementById('fab-t-fix');
+    if (fabFix) fabFix.addEventListener('click', function () { closeMenu(); var b = document.getElementById('t-fix'); if (b) b.click(); });
+    var fabUndo = document.getElementById('fab-t-undo');
+    if (fabUndo) fabUndo.addEventListener('click', function () { closeMenu(); var b = document.getElementById('t-undo'); if (b) b.click(); });
+    var fabDone = document.getElementById('fab-t-done');
+    if (fabDone) fabDone.addEventListener('click', function () { closeMenu(); var b = document.getElementById('t-done'); if (b) b.click(); });
+    return cont;
+  }
+
   // showMapBar · RD-13: ubicada en la DERECHA (intercambio respecto al padre)
   function showMapBar(parentEl) {
     if (!parentEl) return;
@@ -1887,7 +2199,7 @@
     });
     initMap('map-test');
     var shell = $view().querySelector('.track-shell');
-    showMapBar(shell);
+    buildFabLupa(shell);
     shouldShowOfflineBanner().then(function (need) { if (need) showOfflineMapBanner(shell); });
   }
 
@@ -1932,7 +2244,7 @@
 
     initMap('map-walk', { skipInitialView: true });
     var shell = $view().querySelector('.track-shell');
-    showMapBar(shell);
+    buildFabLupa(shell); buildFabRocketWalk(shell);
 
     var trackLayer = L.layerGroup().addTo(state.map);
     var liveMarker = null;
@@ -2280,7 +2592,7 @@
 
     initMap('map-trace', { skipInitialView: true });
     var shell = $view().querySelector('.track-shell');
-    showMapBar(shell);
+    buildFabLupa(shell); buildFabRocketTrace(shell);
 
     var trackLayer = L.layerGroup().addTo(state.map);
     var pinMarker = null;
