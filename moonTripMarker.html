@@ -1674,7 +1674,8 @@
     var lupaItems = [
       { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
       { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
-      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' }
+      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' },
+      { id: 'fabTiles',     angle:  85, iconKey: 'iconCollapse',                                                label: 'Tiles' }
     ];
 
     var cont = document.createElement('div');
@@ -1701,6 +1702,7 @@
       el.style.bottom = (24 + dy - 24) + 'px';
       el.style.transitionDelay = (idx * 25) + 'ms';
       var iconHtml = item.html ? item.html
+        : item.iconKey ? svgGlifo(item.iconKey)
         : svgGlifo(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
       el.innerHTML = iconHtml;
       cont.appendChild(el);
@@ -1745,6 +1747,9 @@
     var lupaZoomOut = document.getElementById('lupaZoomOut');
     if (lupaZoomOut) lupaZoomOut.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomOut(); });
 
+    var fabTiles = document.getElementById('fabTiles');
+    if (fabTiles) fabTiles.addEventListener('click', function () { closeLupa(); handleDownloadTilesClick(); });
+
     var lupaProvider = document.getElementById('lupaProvider');
     if (lupaProvider) lupaProvider.addEventListener('click', function () {
       closeLupa();
@@ -1764,10 +1769,9 @@
     var R = 160;
     var items = [
       { id: 'fabCaptura', angle: 195, iconKey: 'iconCamera',  label: 'Captura' },
-      { id: 'fabUndo',    angle: 215, iconKey: 'iconUndo',    label: 'Deshacer' },
-      { id: 'fabExport',  angle: 235, iconKey: 'iconExport',  label: 'Exportar' },
-      { id: 'fabDelete',  angle: 255, iconKey: 'iconCancel',  label: 'Borrar' },
-      { id: 'fabTiles',   angle: 275, iconKey: 'iconCollapse',    label: 'Tiles' }
+      { id: 'fabUndo',    angle: 220, iconKey: 'iconUndo',    label: 'Deshacer' },
+      { id: 'fabExport',  angle: 245, iconKey: 'iconExport',  label: 'Exportar' },
+      { id: 'fabDelete',  angle: 270, iconKey: 'iconCancel',  label: 'Borrar' }
     ];
 
     var cont = document.createElement('div');
@@ -1864,8 +1868,6 @@
       } catch (e) { toast(t('saveFailed')); }
     });
 
-    var fabTiles = document.getElementById('fabTiles');
-    if (fabTiles) fabTiles.addEventListener('click', function () { closeMenu(); handleDownloadTilesClick(); });
 
     // actualizar disabled según puntos
     function updateFabDisabled() {
