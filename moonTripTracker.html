@@ -932,11 +932,11 @@
       appTitle: 'moonTripTracker',
       appSubtitle: 'GPS tracks · linea Moon Trip',
       backLink: '← Moon Trip',
-      bandejaKicker: 'Bandeja',
-      bandejaTitle: 'Tracks capturados',
-      bandejaEmpty: 'Aun no hay tracks. Toca « + Nuevo track » para empezar.',
+      bandejaKicker: 'Biblioteca',
+      bandejaTitle: 'Biblioteca de tracks',
+      bandejaEmpty: 'Aun no hay tracks. Inicia una grabación desde el mapa.',
       bandejaPlural: function (n) { return 'Hay ' + n + ' track' + (n > 1 ? 's' : '') + ' guardado' + (n > 1 ? 's' : '') + '.'; },
-      newTrack: '+ Nuevo track',
+      newTrack: '← Volver al mapa',
       exportAll: 'Exportar todos',
       emptyTitle: 'Sin tracks todavia',
       emptySub: 'Cada track capturado se guarda automaticamente aqui. Puedes exportarlos uno por uno cuando lo necesites.',
@@ -987,7 +987,7 @@
       geoRetry: 'Reintentar',
       qrPending: 'QR pend',
       loading: 'Cargando...',
-      mapTestBack: 'Volver a bandeja',
+      mapTestBack: 'Biblioteca',
       walkLabel: 'caminar',
       traceLabel: 'trazar',
       pointsOutsideBbox: 'Punto fuera de Peru'
@@ -996,11 +996,11 @@
       appTitle: 'moonTripTracker',
       appSubtitle: 'GPS tracks · Moon Trip line',
       backLink: '← Moon Trip',
-      bandejaKicker: 'Inbox',
-      bandejaTitle: 'Captured tracks',
-      bandejaEmpty: 'No tracks yet. Tap « + New track » to start.',
+      bandejaKicker: 'Library',
+      bandejaTitle: 'Track library',
+      bandejaEmpty: 'No tracks yet. Start a recording from the map.',
       bandejaPlural: function (n) { return 'You have ' + n + ' saved track' + (n > 1 ? 's' : '') + '.'; },
-      newTrack: '+ New track',
+      newTrack: '← Back to map',
       exportAll: 'Export all',
       emptyTitle: 'No tracks yet',
       emptySub: 'Each captured track is saved here automatically. Export them one by one whenever you need.',
@@ -1051,7 +1051,7 @@
       geoRetry: 'Retry',
       qrPending: 'QR tbd',
       loading: 'Loading...',
-      mapTestBack: 'Back to inbox',
+      mapTestBack: 'Library',
       walkLabel: 'walk',
       traceLabel: 'trace',
       pointsOutsideBbox: 'Point outside Peru'
@@ -1578,7 +1578,7 @@
     }
     $view().innerHTML = html;
 
-    var bar = '<button class="btn btn-success btn-lg btn-block" id="new-track">' + t('newTrack') + '</button>';
+    var bar = '<button class="btn btn-secondary btn-lg btn-block" id="new-track">' + t('newTrack') + '</button>';
     if (!empty) {
       bar = '<button class="btn btn-secondary flex-0" id="export-all" title="' + t('exportAll') + '">' +
               svgIcon('iconExport', { size: 22 }) +
@@ -1586,7 +1586,7 @@
     }
     setActionBar(bar);
 
-    $('#new-track').addEventListener('click', startNewTrack);
+    $('#new-track').addEventListener('click', function () { setView('mapTest'); });
     if ($('#export-all')) { $('#export-all').addEventListener('click', exportAll); }
     var rows = $view().querySelectorAll('.track-row');
     for (var k = 0; k < rows.length; k++) {
@@ -1691,7 +1691,7 @@
       schedHide();
     })();
     loadTracksOnInit().then(function () {
-      var initialView = 'inbox';
+      var initialView = 'mapTest';
       if (location.hash === '#mapTest') initialView = 'mapTest';
       else if (location.hash === '#walk')  { state.draft = { points: [], mode: 'walk' };  initialView = 'walk'; }
       else if (location.hash === '#trace') { state.draft = { points: [], mode: 'trace' }; initialView = 'trace'; }
@@ -1913,7 +1913,10 @@
       { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',       label: 'Zoom in' },
       { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>', label: 'Zoom out' },
       { id: 'lupaProvider', angle: 160, html: null,                                                              label: 'Mapa' },
-      { id: 'fabTilesBtn',  angle:  85, iconKey: 'iconCollapse',                                                 label: 'Tiles' }
+      { id: 'fabTilesBtn',    angle:  85, iconKey: 'iconCollapse',  label: 'Tiles' },
+      { id: 'lupaBiblioteca', angle: 185, iconKey: 'iconInfo',      label: 'Biblioteca' },
+      { id: 'lupaCaminar',    angle: 210, iconKey: 'iconWalkMode',   label: 'Caminar' },
+      { id: 'lupaTrazo',      angle: 235, iconKey: 'iconTraceMode',  label: 'Trazar' }
     ];
     var cont = document.createElement('div');
     cont.className = 'fabLupaContainer';
@@ -1980,6 +1983,12 @@
       setProvider(next);
       elProvider.innerHTML = svgIcon(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
     });
+    var elBiblioteca = document.getElementById('lupaBiblioteca');
+    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); setView('inbox'); });
+    var elCaminar = document.getElementById('lupaCaminar');
+    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { points: [], mode: 'walk' }; setView('walk'); });
+    var elTrazo = document.getElementById('lupaTrazo');
+    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); state.draft = { points: [], mode: 'trace' }; setView('trace'); });
     return cont;
   }
 
