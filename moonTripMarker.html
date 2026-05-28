@@ -371,8 +371,10 @@
       box-shadow: 0 2px 8px rgba(39,43,46,0.3);
       cursor: pointer;
       color: var(--grisCarbon);
+      overflow: hidden;
     }
     .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; }
+    #fabCaptura img { width: 44px; height: 44px; object-fit: cover; }
     .fabItem span { line-height: 1; font-family: sans-serif; color: var(--grisCarbon); }
     .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
     .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
@@ -410,14 +412,9 @@
     .fabContainer.open.labelsVisible .fabRocket:hover { transform: rotate(90deg) scale(1.04); }
     .fabLupaContainer.open.labelsVisible .fabLupaBtn { transform: rotate(90deg); }
     .fabLupaContainer.open.labelsVisible .fabLupaBtn:hover { transform: rotate(90deg) scale(1.04); }
-    /* ── fabItemLabel · chip externo A2 ── */
+    /* ── fabItemLabel · chip radial · sibling en container ── */
     .fabItemLabel {
       position: absolute;
-      right: calc(100% + 8px);
-      top: 50%;
-      transform: translateY(-50%);
-      max-width: 0;
-      overflow: hidden;
       opacity: 0;
       white-space: nowrap;
       background: var(--blancoNeutro);
@@ -430,11 +427,11 @@
       letter-spacing: 0.04em;
       pointer-events: none;
       box-shadow: 0 1px 4px rgba(39,43,46,0.2);
-      transition: max-width 0.22s cubic-bezier(.4,0,.2,1), opacity 0.18s;
+      transition: opacity 0.18s;
     }
-    .fabItem:hover .fabItemLabel { max-width: 120px; opacity: 1; }
+    .fabItemLabel.visible { opacity: 1; }
     .fabContainer.open.labelsVisible .fabItemLabel,
-    .fabLupaContainer.open.labelsVisible .fabItemLabel { max-width: 120px; opacity: 1; }
+    .fabLupaContainer.open.labelsVisible .fabItemLabel { opacity: 1; }
 
 
 
@@ -1705,10 +1702,20 @@
       el.style.transitionDelay = (idx * 25) + 'ms';
       var iconHtml = item.html ? item.html
         : svgGlifo(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
-      var lupaRot = -(item.angle + 180);
-      var lupaCr = (item.angle + 180);
-      el.innerHTML = iconHtml + '<span class="fabItemLabel" style="transform-origin:right center;transform:translateY(-50%) rotate(' + lupaRot + 'deg)"><span style="display:inline-block;transform:rotate(' + lupaCr + 'deg)">' + item.label + '</span></span>';
+      el.innerHTML = iconHtml;
       cont.appendChild(el);
+      var lupaChip = document.createElement('span');
+      lupaChip.className = 'fabItemLabel';
+      lupaChip.textContent = item.label;
+      var lupaChipR = R + 32;
+      lupaChip.style.right = (-Math.cos(rad) * lupaChipR) + 'px';
+      lupaChip.style.bottom = (Math.sin(rad) * lupaChipR) + 'px';
+      lupaChip.style.transform = 'translate(50%, 50%)';
+      cont.appendChild(lupaChip);
+      (function(b, c) {
+        b.addEventListener('mouseenter', function() { c.classList.add('visible'); });
+        b.addEventListener('mouseleave', function() { c.classList.remove('visible'); });
+      })(el, lupaChip);
     });
 
     shell.appendChild(cont);
@@ -1783,10 +1790,20 @@
       el.style.left = (24 + dx - 24) + 'px';
       el.style.top  = (24 - dy - 24) + 'px';
       el.style.transitionDelay = (idx * 25) + 'ms';
-      var fabRot = -(item.angle + 180);
-      var fabCr = (item.angle + 180);
-      el.innerHTML = svgGlifo(item.iconKey) + '<span class="fabItemLabel" style="transform-origin:right center;transform:translateY(-50%) rotate(' + fabRot + 'deg)"><span style="display:inline-block;transform:rotate(' + fabCr + 'deg)">' + item.label + '</span></span>';
+      el.innerHTML = svgGlifo(item.iconKey);
       cont.appendChild(el);
+      var radChip = document.createElement('span');
+      radChip.className = 'fabItemLabel';
+      radChip.textContent = item.label;
+      var radChipR = R + 32;
+      radChip.style.left = (24 + Math.cos(rad) * radChipR) + 'px';
+      radChip.style.top  = (24 - Math.sin(rad) * radChipR) + 'px';
+      radChip.style.transform = 'translate(-50%, -50%)';
+      cont.appendChild(radChip);
+      (function(b, c) {
+        b.addEventListener('mouseenter', function() { c.classList.add('visible'); });
+        b.addEventListener('mouseleave', function() { c.classList.remove('visible'); });
+      })(el, radChip);
     });
 
     // Reemplazar placeholder
