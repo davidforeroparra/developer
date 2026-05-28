@@ -1176,7 +1176,7 @@
       langToggleLabel: 'ES/EN',
       inboxTituloKicker: 'Bandeja',
       inboxTituloMain: 'Polígonos capturados',
-      newPolyBtn: '+ Nuevo polígono',
+      newPolyBtn: '← Volver al mapa',
       exportAllBtn: 'Exportar todos',
       modeSelectorTitulo: '¿Cómo capturar el polígono?',
       modeSelectorWalk: 'Caminar',
@@ -1198,7 +1198,7 @@
       langToggleLabel: 'EN/ES',
       inboxTituloKicker: 'Inbox',
       inboxTituloMain: 'Captured polygons',
-      newPolyBtn: '+ New polygon',
+      newPolyBtn: '← Back to map',
       exportAllBtn: 'Export all',
       modeSelectorTitulo: 'How to capture the polygon?',
       modeSelectorWalk: 'Walk',
@@ -1695,9 +1695,9 @@
     const items = state.poligonos.slice().sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
     const empty = items.length === 0;
     let html = `
-      <p class="h-kicker">Bandeja</p>
-      <h1 class="h-title">Polígonos capturados</h1>
-      <p class="h-sub">${empty ? 'Aún no hay polígonos. Toca «Nuevo polígono» para empezar.' : `Hay <b>${items.length}</b> polígono${items.length>1?'s':''} guardado${items.length>1?'s':''}.`}</p>
+      <p class="h-kicker">Biblioteca</p>
+      <h1 class="h-title">Biblioteca de polígonos</h1>
+      <p class="h-sub">${empty ? 'Aún no hay polígonos. Inicia una grabación desde el mapa.' : `Hay <b>${items.length}</b> polígono${items.length>1?'s':''} guardado${items.length>1?'s':''}.`}</p>
     `;
     if (!empty) {
       html += `
@@ -1752,7 +1752,7 @@
     $view().innerHTML = html;
 
     // Action bar
-    let bar = `<button class="btn btn-success btn-lg" id="new-poly" style="flex:1" data-i18n="newPolyBtn">+ Nuevo polígono</button>`;
+    let bar = `<button class="btn btn-secondary btn-lg" id="new-poly" style="flex:1" data-i18n="newPolyBtn">← Volver al mapa</button>`;
     if (!empty) {
       bar = `<button class="btn btn-secondary flex-0" id="export-all" title="Exportar todos">
         ${renderPixelGlyph('iconExport', 'currentColor')}
@@ -1760,7 +1760,7 @@
     }
     setActionBar(bar);
 
-    $('#new-poly').addEventListener('click', startNewPolygon);
+    $('#new-poly').addEventListener('click', function () { setView('mapTest'); });
     if ($('#export-all')) {
       $('#export-all').addEventListener('click', exportAll);
     }
@@ -1868,7 +1868,7 @@
     try {
       await loadPoligonosOnInit();
       // M3 · permite validación empírica de fase 1 vía #mapTest sin tocar viewInbox (zone Agente D)
-      let initialView = 'inbox';
+      let initialView = 'mapTest';
       if (location.hash === '#mapTest') initialView = 'mapTest';
       else if (location.hash === '#walk')  { state.draft = { poligono: [], mode: 'walk' };  initialView = 'walk'; }
       else if (location.hash === '#trace') { state.draft = { poligono: [], mode: 'trace' }; initialView = 'trace'; }
@@ -2128,7 +2128,10 @@
       { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',       label: 'Zoom in' },
       { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>', label: 'Zoom out' },
       { id: 'lupaProvider', angle: 160, html: null,                                                              label: 'Mapa' },
-      { id: 'fabTilesBtn',  angle:  85, iconKey: 'iconCollapse',                                                 label: 'Tiles' }
+      { id: 'fabTilesBtn',    angle:  85, iconKey: 'iconCollapse',  label: 'Tiles' },
+      { id: 'lupaBiblioteca', angle: 185, iconKey: 'iconInfo',      label: 'Biblioteca' },
+      { id: 'lupaCaminar',    angle: 210, iconKey: 'iconWalkMode',   label: 'Caminar' },
+      { id: 'lupaTrazo',      angle: 235, iconKey: 'iconTraceMode',  label: 'Trazar' }
     ];
     var cont = document.createElement('div');
     cont.className = 'fabLupaContainer';
@@ -2195,6 +2198,12 @@
       setProvider(next);
       elProvider.innerHTML = renderPixelGlyph(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
     });
+    var elBiblioteca = document.getElementById('lupaBiblioteca');
+    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); setView('inbox'); });
+    var elCaminar = document.getElementById('lupaCaminar');
+    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { poligono: [], mode: 'walk' }; state.mode = 'walk'; setView('walk'); });
+    var elTrazo = document.getElementById('lupaTrazo');
+    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); state.draft = { poligono: [], mode: 'trace' }; state.mode = 'trace'; setView('trace'); });
     return cont;
   }
 
@@ -2427,7 +2436,7 @@
     $view().className = 'view no-pad';
     $view().innerHTML = '<div class="poly-shell"><div class="map-container" id="map-test"></div></div>';
     clearActionBar();
-    setActionBar(`<button class="btn btn-secondary" id="map-test-back" style="flex:1">← Volver a bandeja</button>`);
+    setActionBar(`<button class="btn btn-secondary" id="map-test-back" style="flex:1">← Biblioteca</button>`);
     $('#map-test-back').addEventListener('click', () => {
       if (state.map) { state.map.remove(); state.map = null; }
       $view().className = 'view';
