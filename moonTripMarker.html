@@ -1674,7 +1674,8 @@
     var lupaItems = [
       { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
       { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
-      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' }
+      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' },
+      { id: 'fabTiles',     angle:  85, iconKey: 'iconCollapse',                                                label: 'Tiles' }
     ];
 
     var cont = document.createElement('div');
@@ -1701,16 +1702,20 @@
       el.style.bottom = (24 + dy - 24) + 'px';
       el.style.transitionDelay = (idx * 25) + 'ms';
       var iconHtml = item.html ? item.html
+        : item.iconKey ? svgGlifo(item.iconKey)
         : svgGlifo(state.mapProvider === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
       el.innerHTML = iconHtml;
       cont.appendChild(el);
       var lupaChip = document.createElement('span');
       lupaChip.className = 'fabItemLabel';
       lupaChip.textContent = item.label;
-      var lupaChipR = R + 32;
-      lupaChip.style.right = (-Math.cos(rad) * lupaChipR) + 'px';
-      lupaChip.style.bottom = (Math.sin(rad) * lupaChipR) + 'px';
-      lupaChip.style.transform = 'translate(50%, 50%)';
+      var lupaExitDist = R + 32;
+      var lupaExitX = 24 + Math.cos(rad) * lupaExitDist;
+      var lupaExitY = 24 - Math.sin(rad) * lupaExitDist;
+      lupaChip.style.left = lupaExitX + 'px';
+      lupaChip.style.top  = (lupaExitY - 10) + 'px';
+      lupaChip.style.transformOrigin = '0 50%';
+      lupaChip.style.transform = 'rotate(' + (-item.angle) + 'deg)';
       cont.appendChild(lupaChip);
       (function(b, c) {
         b.addEventListener('mouseenter', function() { c.classList.add('visible'); });
@@ -1742,6 +1747,9 @@
     var lupaZoomOut = document.getElementById('lupaZoomOut');
     if (lupaZoomOut) lupaZoomOut.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomOut(); });
 
+    var fabTiles = document.getElementById('fabTiles');
+    if (fabTiles) fabTiles.addEventListener('click', function () { closeLupa(); handleDownloadTilesClick(); });
+
     var lupaProvider = document.getElementById('lupaProvider');
     if (lupaProvider) lupaProvider.addEventListener('click', function () {
       closeLupa();
@@ -1761,10 +1769,9 @@
     var R = 160;
     var items = [
       { id: 'fabCaptura', angle: 195, iconKey: 'iconCamera',  label: 'Captura' },
-      { id: 'fabUndo',    angle: 215, iconKey: 'iconUndo',    label: 'Deshacer' },
-      { id: 'fabExport',  angle: 235, iconKey: 'iconExport',  label: 'Exportar' },
-      { id: 'fabDelete',  angle: 255, iconKey: 'iconCancel',  label: 'Borrar' },
-      { id: 'fabTiles',   angle: 275, iconKey: 'iconCollapse',    label: 'Tiles' }
+      { id: 'fabUndo',    angle: 220, iconKey: 'iconUndo',    label: 'Deshacer' },
+      { id: 'fabExport',  angle: 245, iconKey: 'iconExport',  label: 'Exportar' },
+      { id: 'fabDelete',  angle: 270, iconKey: 'iconCancel',  label: 'Borrar' }
     ];
 
     var cont = document.createElement('div');
@@ -1795,10 +1802,13 @@
       var radChip = document.createElement('span');
       radChip.className = 'fabItemLabel';
       radChip.textContent = item.label;
-      var radChipR = R + 32;
-      radChip.style.left = (24 + Math.cos(rad) * radChipR) + 'px';
-      radChip.style.top  = (24 - Math.sin(rad) * radChipR) + 'px';
-      radChip.style.transform = 'translate(-50%, -50%)';
+      var radExitDist = R + 32;
+      var radExitX = 24 + Math.cos(rad) * radExitDist;
+      var radExitY = 24 - Math.sin(rad) * radExitDist;
+      radChip.style.left = radExitX + 'px';
+      radChip.style.top  = (radExitY - 10) + 'px';
+      radChip.style.transformOrigin = '0 50%';
+      radChip.style.transform = 'rotate(' + (-item.angle) + 'deg)';
       cont.appendChild(radChip);
       (function(b, c) {
         b.addEventListener('mouseenter', function() { c.classList.add('visible'); });
@@ -1858,8 +1868,6 @@
       } catch (e) { toast(t('saveFailed')); }
     });
 
-    var fabTiles = document.getElementById('fabTiles');
-    if (fabTiles) fabTiles.addEventListener('click', function () { closeMenu(); handleDownloadTilesClick(); });
 
     // actualizar disabled según puntos
     function updateFabDisabled() {
