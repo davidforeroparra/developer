@@ -1708,7 +1708,11 @@
       cont.appendChild(el);
       var lupaChip = document.createElement('span');
       lupaChip.className = 'fabItemLabel';
-      lupaChip.textContent = item.label;
+      var lupaCssAngle = ((-item.angle) % 360 + 360) % 360;
+      var lupaNeedsFlip = lupaCssAngle >= 90 && lupaCssAngle <= 270;
+      lupaChip.innerHTML = lupaNeedsFlip
+        ? '<span style="display:inline-block;transform:scale(-1,-1)">' + item.label + '</span>'
+        : item.label;
       var lupaExitDist = R + 32;
       var lupaExitX = 24 + Math.cos(rad) * lupaExitDist;
       var lupaExitY = 24 - Math.sin(rad) * lupaExitDist;
@@ -1801,7 +1805,11 @@
       cont.appendChild(el);
       var radChip = document.createElement('span');
       radChip.className = 'fabItemLabel';
-      radChip.textContent = item.label;
+      var radCssAngle = ((-item.angle) % 360 + 360) % 360;
+      var radNeedsFlip = radCssAngle >= 90 && radCssAngle <= 270;
+      radChip.innerHTML = radNeedsFlip
+        ? '<span style="display:inline-block;transform:scale(-1,-1)">' + item.label + '</span>'
+        : item.label;
       var radExitDist = R + 32;
       var radExitX = 24 + Math.cos(rad) * radExitDist;
       var radExitY = 24 - Math.sin(rad) * radExitDist;
