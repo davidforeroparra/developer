@@ -1241,6 +1241,7 @@
             }
             // Sin tracks → intentar copia desde legacy
             var legacyReq = indexedDB.open(DB_LEGACY_NAME);
+            legacyReq.onupgradeneeded = function (e) { if (e.oldVersion === 0) { e.target.transaction.abort(); } };
             legacyReq.onerror = function () { resolve(false); };
             legacyReq.onsuccess = function () {
               var legacyDb = legacyReq.result;
