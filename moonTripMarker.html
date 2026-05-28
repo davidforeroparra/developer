@@ -1048,7 +1048,7 @@
   //   migrar manualmente vía export/import.
   // ============================================================
   const DB_NAME = 'moontrip-marker-v1';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   let _db = null;
 
   function openDB() {
@@ -1066,6 +1066,7 @@
         const db = e.target.result;
         if (!db.objectStoreNames.contains('puntos')) db.createObjectStore('puntos', { keyPath: 'uuid' });
         if (!db.objectStoreNames.contains('tiles')) db.createObjectStore('tiles');
+        if (!db.objectStoreNames.contains('tileBatches')) db.createObjectStore('tileBatches', { keyPath: 'batchId' });
       };
       req.onsuccess = function () {
         _db = req.result;
@@ -1130,6 +1131,24 @@
     return new Promise(function (res, rej) {
       const tx = db.transaction(store, 'readwrite').objectStore(store).clear();
       tx.onsuccess = function () { res(true); };
+      tx.onerror = function () { rej(tx.error); };
+    });
+  }
+  async function dbAllKeys(store) {
+    const db = await openDB();
+    return new Promise(function (res, rej) {
+      const tx = db.transaction(store, 'readonly').objectStore(store).getAllKeys();
+      tx.onsuccess = function () { res(tx.result || []); };
+      tx.onerror = function () { rej(tx.error); };
+    });
+  }
+  async function dbDelMany(store, keys) {
+    const db = await openDB();
+    return new Promise(function (res, rej) {
+      const tx = db.transaction(store, 'readwrite');
+      const os = tx.objectStore(store);
+      for (let i = 0; i < keys.length; i++) os.delete(keys[i]);
+      tx.oncomplete = function () { res(true); };
       tx.onerror = function () { rej(tx.error); };
     });
   }
@@ -1396,8 +1415,9 @@
     if (!v) return;
     v.className = 'view noPad';
     if (state.view === 'loading') { v.innerHTML = '<div class="loading">' + t('loading') + '</div>'; return; }
-    if (state.view === 'marker')  return viewMarkerMode();
-    if (state.view === 'mapTest') return viewMapTest();
+    if (state.view === 'marker')     return viewMarkerMode();
+    if (state.view === 'mapTest')    return viewMapTest();
+    if (state.view === 'biblioteca') return viewBiblioteca();
     v.innerHTML = '<div class="loading">View desconocida: ' + state.view + '</div>';
   }
 
@@ -1561,6 +1581,7 @@
     }
     const total = tileList.length;
     let done = 0, errors = 0;
+    const newKeys = [];
     for (const tile of tileList) {
       const key = provider + '/' + tile.z + '/' + tile.x + '/' + tile.y;
       try {
@@ -1571,13 +1592,14 @@
         if (!response.ok) { errors++; continue; }
         const blob = await response.blob();
         await dbPutKeyed('tiles', blob, key);
+        newKeys.push(key);
         done++;
       } catch (_) { errors++; }
       window.dispatchEvent(new CustomEvent('marker:tilesDownloadProgress', { detail: { done: done, total: total } }));
       // P-07 · política OSM 80ms preservada del padre
       if (provider === 'osm') await new Promise(function (resolve) { setTimeout(resolve, 80); });
     }
-    return { done: done, total: total, errors: errors };
+    return { done: done, total: total, errors: errors, keys: newKeys };
   }
   async function clearTilesCache() {
     await dbClearStore('tiles');
@@ -1628,6 +1650,9 @@
     toast(t('tilesDownloading') + ' (' + totalTiles + ')…');
     const result = await cacheTilesForBbox(bbox, { zMin: zMin, zMax: zMax });
     toast(t('tilesDone') + ' (' + result.done + ')');
+    if (result.keys && result.keys.length > 0) {
+      dbPut('tileBatches', { batchId: Date.now(), provider: state.mapProvider, zMin: zMin, zMax: zMax, bbox: bbox, timestamp: new Date().toISOString(), count: result.keys.length, estBytes: result.keys.length * 15360, keys: result.keys }).catch(function () {});
+    }
   }
   async function viewMapTest() {
     $view().className = 'view noPad';
@@ -1635,6 +1660,125 @@
     initMap('mapTestEl');
     const shell = $view().querySelector('.markerShell');
     buildFabLupa(shell);
+    const backBtn = document.createElement('button');
+    backBtn.id = 'map-test-back';
+    backBtn.className = 'btn btn-secondary';
+    backBtn.style.cssText = 'position:absolute;bottom:16px;left:16px;z-index:500;pointer-events:auto;';
+    backBtn.textContent = '← Biblioteca';
+    shell.appendChild(backBtn);
+    backBtn.addEventListener('click', function () { setView('biblioteca'); });
+  }
+  async function viewBiblioteca() {
+    $view().className = 'view';
+    const puntos = state.puntos.slice().sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+    let html = '<p class="h-kicker">Biblioteca</p>' +
+      '<h1 class="h-title">Puntos capturados</h1>';
+    if (puntos.length === 0) {
+      html += '<div class="empty"><h2 class="empty-title">Sin puntos todavía</h2><p class="empty-sub">Captura puntos GPS desde el mapa.</p></div>';
+    } else {
+      html += '<p class="h-sub">Hay <b>' + puntos.length + '</b> punto' + (puntos.length !== 1 ? 's' : '') + ' guardado' + (puntos.length !== 1 ? 's' : '') + '.</p><div>';
+      for (let i = 0; i < puntos.length; i++) {
+        const p = puntos[i];
+        const fecha = new Date(p.timestamp || 0);
+        const fechaStr = fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+        const coordStr = p.lat != null ? p.lat.toFixed(5) + ', ' + p.lon.toFixed(5) : '—';
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--grisOscuro)" data-uuid="' + p.uuid + '">' +
+          '<div style="width:36px;height:36px;background:var(--grisOscuro);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;flex-shrink:0">' + (p.name || 'P')[0].toUpperCase() + '</div>' +
+          '<div style="flex:1;min-width:0"><p style="margin:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (p.name || 'Sin nombre') + '</p>' +
+          '<p style="margin:0;font-size:11px;opacity:0.7">' + fechaStr + ' · ' + coordStr + '</p></div>' +
+          '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button class="track-action-btn" data-action="export" data-uuid="' + p.uuid + '" title="Exportar GeoJSON" style="background:transparent;border:none;cursor:pointer;padding:4px;color:var(--blancoNeutro)">' + svgGlifo('iconExport') + '</button>' +
+          '<button class="track-action-btn" data-action="delete" data-uuid="' + p.uuid + '" title="Eliminar" style="background:transparent;border:none;cursor:pointer;padding:4px;color:var(--blancoNeutro)">' + svgGlifo('iconDelete') + '</button>' +
+          '</div></div>';
+      }
+      html += '</div>';
+    }
+    html += '<div id="tiles-section"><p class="h-kicker" style="margin-top:16px">Tiles offline</p><p class="h-sub" style="opacity:0.6">Cargando…</p></div>';
+    html += '<div style="padding:16px 0 32px"><button class="btn btn-secondary btn-lg btn-block" id="bibl-back">← Volver al mapa</button></div>';
+    $view().innerHTML = html;
+    $view().querySelectorAll('[data-action]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (btn.dataset.action === 'export') exportPunto(btn.dataset.uuid);
+        if (btn.dataset.action === 'delete') deletePunto(btn.dataset.uuid);
+      });
+    });
+    document.getElementById('bibl-back').addEventListener('click', function () { setView('mapTest'); });
+    try {
+      const batches = (await dbAll('tileBatches')).sort(function (a, b) { return (b.batchId || 0) - (a.batchId || 0); });
+      const totalTiles = await dbCount('tiles');
+      const cataloguedCount = batches.reduce(function (s, b) { return s + (b.count || 0); }, 0);
+      const uncatalogued = Math.max(0, totalTiles - cataloguedCount);
+      let tilesHtml = '<p class="h-kicker" style="margin-top:16px">Tiles offline</p>';
+      if (batches.length === 0 && totalTiles === 0) {
+        tilesHtml += '<p class="h-sub">No hay tiles descargados.</p>';
+      } else {
+        tilesHtml += '<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">';
+        for (const b of batches) {
+          const bFecha = new Date(b.batchId).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          const bMB = (b.estBytes / 1048576).toFixed(1);
+          tilesHtml += '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--grisOscuro);border-radius:4px">' +
+            '<div style="flex:1;min-width:0"><p style="margin:0;font-size:13px;font-weight:600">' + b.provider + ' · z' + b.zMin + '–' + b.zMax + ' · ' + b.count + ' tiles · ~' + bMB + ' MB</p>' +
+            '<p style="margin:0;font-size:11px;opacity:0.7">' + bFecha + '</p></div>' +
+            '<button class="tile-del-btn" data-batchid="' + b.batchId + '" style="flex-shrink:0;padding:4px 10px;background:transparent;border:1.5px solid var(--blancoNeutro);border-radius:4px;color:var(--blancoNeutro);cursor:pointer;font-family:inherit;font-size:12px">Limpiar</button></div>';
+        }
+        if (uncatalogued > 0) {
+          const unMB = (uncatalogued * 15360 / 1048576).toFixed(1);
+          tilesHtml += '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--grisOscuro);border-radius:4px">' +
+            '<div style="flex:1;min-width:0"><p style="margin:0;font-size:13px;font-weight:600">Sin catalogar · ' + uncatalogued + ' tiles · ~' + unMB + ' MB</p>' +
+            '<p style="margin:0;font-size:11px;opacity:0.7">Descargados antes de esta versión</p></div>' +
+            '<button id="clear-uncatalogued" style="flex-shrink:0;padding:4px 10px;background:transparent;border:1.5px solid var(--blancoNeutro);border-radius:4px;color:var(--blancoNeutro);cursor:pointer;font-family:inherit;font-size:12px">Limpiar</button></div>';
+        }
+        tilesHtml += '</div>';
+      }
+      const sec = document.getElementById('tiles-section');
+      if (sec) sec.innerHTML = tilesHtml;
+      $view().querySelectorAll('.tile-del-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { deleteTileBatch(parseInt(btn.dataset.batchid)); });
+      });
+      const clearUncatBtn = document.getElementById('clear-uncatalogued');
+      if (clearUncatBtn) clearUncatBtn.addEventListener('click', clearUncataloguedTiles);
+    } catch (_) {}
+  }
+  function exportPunto(uuid) {
+    const p = state.puntos.find(function (x) { return x.uuid === uuid; });
+    if (!p) return;
+    const geo = buildGeoJsonPoints([p]);
+    if (!geo) { toast(t('noExportYet')); return; }
+    downloadBlob(slugify(p.name || 'punto') + '.geojson', JSON.stringify(geo, null, 2), 'application/geo+json');
+    toast(t('exportDone'));
+  }
+  async function deletePunto(uuid) {
+    const p = state.puntos.find(function (x) { return x.uuid === uuid; });
+    if (!p) return;
+    const ok = await confirmDialog({ title: '¿Eliminar punto?', message: 'Se eliminará <b>' + (p.name || 'este punto') + '</b>. Esta acción no se puede deshacer.', confirm: 'Eliminar', cancel: 'Cancelar', danger: true });
+    if (!ok) return;
+    await dbDel('puntos', uuid);
+    state.puntos = state.puntos.filter(function (x) { return x.uuid !== uuid; });
+    toast('Punto eliminado');
+    setView('biblioteca');
+  }
+  async function deleteTileBatch(batchId) {
+    const b = await dbGet('tileBatches', batchId);
+    if (!b) return;
+    const ok = await confirmDialog({ title: '¿Limpiar tanda?', message: 'Se eliminarán <b>' + b.count + '</b> tiles descargados el ' + new Date(b.batchId).toLocaleDateString('es-PE') + '.', confirm: 'Limpiar', cancel: 'Cancelar', danger: true });
+    if (!ok) return;
+    if (b.keys && b.keys.length) await dbDelMany('tiles', b.keys);
+    await dbDel('tileBatches', batchId);
+    toast('Tanda eliminada');
+    setView('biblioteca');
+  }
+  async function clearUncataloguedTiles() {
+    const ok = await confirmDialog({ title: '¿Limpiar tiles sin catalogar?', message: 'Se eliminarán los tiles descargados antes de esta versión. Esta acción no se puede deshacer.', confirm: 'Limpiar', cancel: 'Cancelar', danger: true });
+    if (!ok) return;
+    const allKeys = await dbAllKeys('tiles');
+    const batches = await dbAll('tileBatches');
+    const cataloguedSet = new Set();
+    batches.forEach(function (b) { (b.keys || []).forEach(function (k) { cataloguedSet.add(k); }); });
+    const toDelete = allKeys.filter(function (k) { return !cataloguedSet.has(k); });
+    if (toDelete.length) await dbDelMany('tiles', toDelete);
+    toast('Tiles eliminados (' + toDelete.length + ')');
+    setView('biblioteca');
   }
   // OWNERSHIP ZONE · Agente A — MAP INIT · close
 
@@ -1672,10 +1816,11 @@
     if (shell.querySelector('#fabLupaEl')) { return; }
     var R = 120;
     var lupaItems = [
-      { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
-      { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
-      { id: 'lupaProvider', angle: 160, html: null,                                                             label: 'Mapa' },
-      { id: 'fabTiles',     angle:  85, iconKey: 'iconCollapse',                                                label: 'Tiles' }
+      { id: 'lupaZoomIn',    angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
+      { id: 'lupaZoomOut',   angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
+      { id: 'lupaProvider',  angle: 160, html: null,                                                             label: 'Mapa' },
+      { id: 'fabTiles',      angle:  85, iconKey: 'iconCollapse',                                                label: 'Tiles' },
+      { id: 'lupaBiblioteca',angle: 185, iconKey: 'iconInfo',                                                    label: 'Biblioteca' }
     ];
 
     var cont = document.createElement('div');
@@ -1764,6 +1909,9 @@
       if (labelNode) lupaProvider.appendChild(labelNode);
       toast(t('providerSwitched'));
     });
+
+    var lupaBibliotecaBtn = document.getElementById('lupaBiblioteca');
+    if (lupaBibliotecaBtn) lupaBibliotecaBtn.addEventListener('click', function () { closeLupa(); setView('biblioteca'); });
 
     return cont;
   }

@@ -1174,7 +1174,7 @@
   // no repetir.
   // ============================================================
   var DB_NAME = 'moontrip-tracker-v1';
-  var DB_VERSION = 1;
+  var DB_VERSION = 2;
   var DB_LEGACY_NAME = 'geoplacer-recorder';
   var MIGRATION_MARKER_UUID = '__migration_legacy_marker__';
   var _db = null;
@@ -1197,6 +1197,7 @@
         var db = e.target.result;
         if (!db.objectStoreNames.contains('tracks')) db.createObjectStore('tracks', { keyPath: 'uuid' });
         if (!db.objectStoreNames.contains('tiles')) db.createObjectStore('tiles');
+        if (!db.objectStoreNames.contains('tileBatches')) db.createObjectStore('tileBatches', { keyPath: 'batchId' });
       };
       req.onsuccess = function () {
         if (settled) return;
@@ -1332,6 +1333,26 @@
       return new Promise(function (res, rej) {
         var tx = db.transaction(store, 'readonly').objectStore(store).count();
         tx.onsuccess = function () { res(tx.result || 0); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbAllKeys(store) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readonly').objectStore(store).getAllKeys();
+        tx.onsuccess = function () { res(tx.result || []); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbDelMany(store, keys) {
+    return openDB().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(store, 'readwrite');
+        var os = tx.objectStore(store);
+        for (var i = 0; i < keys.length; i++) os.delete(keys[i]);
+        tx.oncomplete = function () { res(true); };
         tx.onerror = function () { rej(tx.error); };
       });
     });
@@ -1576,7 +1597,7 @@
       }
       html += '</div>';
     }
-    $view().innerHTML = html;
+    $view().innerHTML = html + '<div id="tiles-section"><p class="h-sub" style="opacity:0.6">Cargando tiles…</p></div>';
 
     var bar = '<button class="btn btn-secondary btn-lg btn-block" id="new-track">' + t('newTrack') + '</button>';
     if (!empty) {
@@ -1599,6 +1620,7 @@
         if (action === 'delete') deleteTrack(uuid);
       });
     }
+    loadTilesSection();
   }
 
   function startNewTrack() {
@@ -1651,6 +1673,79 @@
     });
   }
 
+  function loadTilesSection() {
+    Promise.all([dbAll('tileBatches'), dbCount('tiles')]).then(function (res) {
+      var batches = (res[0] || []).sort(function (a, b) { return (b.batchId || 0) - (a.batchId || 0); });
+      var totalTiles = res[1] || 0;
+      var cataloguedCount = batches.reduce(function (s, b) { return s + (b.count || 0); }, 0);
+      var uncatalogued = Math.max(0, totalTiles - cataloguedCount);
+      var tilesHtml = '<p class="h-kicker" style="margin-top:16px">Tiles offline</p>';
+      if (batches.length === 0 && totalTiles === 0) {
+        tilesHtml += '<p class="h-sub">No hay tiles descargados.</p>';
+      } else {
+        tilesHtml += '<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">';
+        for (var i = 0; i < batches.length; i++) {
+          var b = batches[i];
+          var bFecha = new Date(b.batchId).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          var bMB = (b.estBytes / 1048576).toFixed(1);
+          tilesHtml += '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--grisOscuro);border-radius:4px">' +
+            '<div style="flex:1;min-width:0"><p style="margin:0;font-size:13px;font-weight:600">' + b.provider + ' · z' + b.zMin + '-' + b.zMax + ' · ' + b.count + ' tiles · ~' + bMB + ' MB</p>' +
+            '<p style="margin:0;font-size:11px;opacity:0.7">' + bFecha + '</p></div>' +
+            '<button class="tile-del-btn" data-batchid="' + b.batchId + '" style="flex-shrink:0;padding:4px 10px;background:transparent;border:1.5px solid var(--blancoNeutro);border-radius:4px;color:var(--blancoNeutro);cursor:pointer;font-family:inherit;font-size:12px">Limpiar</button></div>';
+        }
+        if (uncatalogued > 0) {
+          var unMB = (uncatalogued * 15360 / 1048576).toFixed(1);
+          tilesHtml += '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--grisOscuro);border-radius:4px">' +
+            '<div style="flex:1;min-width:0"><p style="margin:0;font-size:13px;font-weight:600">Sin catalogar · ' + uncatalogued + ' tiles · ~' + unMB + ' MB</p>' +
+            '<p style="margin:0;font-size:11px;opacity:0.7">Descargados antes de esta version</p></div>' +
+            '<button id="clear-uncatalogued" style="flex-shrink:0;padding:4px 10px;background:transparent;border:1.5px solid var(--blancoNeutro);border-radius:4px;color:var(--blancoNeutro);cursor:pointer;font-family:inherit;font-size:12px">Limpiar</button></div>';
+        }
+        tilesHtml += '</div>';
+      }
+      tilesHtml += '<div style="height:32px"></div>';
+      var sec = document.getElementById('tiles-section');
+      if (!sec) return;
+      sec.innerHTML = tilesHtml;
+      var delBtns = sec.querySelectorAll('.tile-del-btn');
+      for (var j = 0; j < delBtns.length; j++) {
+        (function(btn) {
+          btn.addEventListener('click', function () { deleteTileBatch(parseInt(btn.dataset.batchid)); });
+        })(delBtns[j]);
+      }
+      var clearUncatBtn = document.getElementById('clear-uncatalogued');
+      if (clearUncatBtn) clearUncatBtn.addEventListener('click', clearUncataloguedTiles);
+    }).catch(function () {});
+  }
+  function deleteTileBatch(batchId) {
+    dbGet('tileBatches', batchId).then(function (b) {
+      if (!b) return;
+      confirmDialog({ title: 'Limpiar tanda?', message: 'Se eliminaran <b>' + b.count + '</b> tiles del ' + new Date(b.batchId).toLocaleDateString('es-PE') + '.', confirm: 'Limpiar', cancel: t('cancel'), danger: true }).then(function (ok) {
+        if (!ok) return;
+        (b.keys && b.keys.length ? dbDelMany('tiles', b.keys) : Promise.resolve()).then(function () {
+          return dbDel('tileBatches', batchId);
+        }).then(function () {
+          toast('Tanda eliminada');
+          setView('inbox');
+        });
+      });
+    });
+  }
+  function clearUncataloguedTiles() {
+    confirmDialog({ title: 'Limpiar tiles sin catalogar?', message: 'Se eliminaran tiles descargados antes de esta version. Esta accion no se puede deshacer.', confirm: 'Limpiar', cancel: t('cancel'), danger: true }).then(function (ok) {
+      if (!ok) return;
+      Promise.all([dbAllKeys('tiles'), dbAll('tileBatches')]).then(function (res) {
+        var allKeys = res[0];
+        var batches = res[1];
+        var cataloguedSet = {};
+        batches.forEach(function (b) { (b.keys || []).forEach(function (k) { cataloguedSet[k] = true; }); });
+        var toDelete = allKeys.filter(function (k) { return !cataloguedSet[k]; });
+        return (toDelete.length ? dbDelMany('tiles', toDelete) : Promise.resolve()).then(function () {
+          toast('Tiles eliminados (' + toDelete.length + ')');
+          setView('inbox');
+        });
+      });
+    });
+  }
   // ============================================================
   // SET VIEW + ROUTER
   // ============================================================
@@ -1869,11 +1964,11 @@
       }
     }
     var total = tileList.length;
-    var done = 0, errors = 0;
+    var done = 0, errors = 0, newKeys = [];
     return new Promise(function (resolve) {
       var i = 0;
       function nextTile() {
-        if (i >= tileList.length) return resolve({ done: done, total: total, errors: errors });
+        if (i >= tileList.length) return resolve({ done: done, total: total, errors: errors, keys: newKeys });
         var tile = tileList[i++];
         var key = provider + '/' + tile.z + '/' + tile.x + '/' + tile.y;
         dbGet('tiles', key).then(function (existing) {
@@ -1882,7 +1977,7 @@
           fetch(url, { mode: 'cors' }).then(function (r) {
             if (!r.ok) { errors++; window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); return; }
             return r.blob().then(function (b) {
-              dbPutKeyed('tiles', b, key).then(function () { done++; window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); }).catch(function () { errors++; scheduleNext(); });
+              dbPutKeyed('tiles', b, key).then(function () { done++; newKeys.push(key); window.dispatchEvent(new CustomEvent('tracker:tilesDownloadProgress', { detail: { done: done, total: total } })); scheduleNext(); }).catch(function () { errors++; scheduleNext(); });
             });
           }).catch(function () { errors++; scheduleNext(); });
         }).catch(function () { errors++; scheduleNext(); });
@@ -2180,6 +2275,9 @@
       toast('Descargando ' + totalTiles + ' tiles...');
       cacheTilesForBbox(bbox, { zMin: zMin, zMax: zMax }).then(function (result) {
         toast('Listo · ' + result.done + ' tiles' + (result.errors ? ' · ' + result.errors + ' errores' : ''));
+        if (result.keys && result.keys.length > 0) {
+          dbPut('tileBatches', { batchId: Date.now(), provider: state.mapProvider, zMin: zMin, zMax: zMax, bbox: bbox, timestamp: new Date().toISOString(), count: result.keys.length, estBytes: result.keys.length * 15360, keys: result.keys }).catch(function () {});
+        }
       });
     });
   }
