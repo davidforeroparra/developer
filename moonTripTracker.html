@@ -2000,6 +2000,13 @@
     return [c.lat, c.lng];
   }
 
+  function teardownActiveMap() {
+    var w = state.walkRecording && state.walkRecording.watchId;
+    if (w != null && navigator.geolocation && navigator.geolocation.clearWatch) navigator.geolocation.clearWatch(w);
+    if (state.walkRecording) state.walkRecording.watchId = null;
+    if (state.map) { state.map.remove(); state.map = null; }
+  }
+
   // ── buildFabLupa · zoom + proveedor · despliegue radial (patchTracerFab01) ──
   function buildFabLupa(shell) {
     if (shell.querySelector('#fabLupaEl')) return;
@@ -2061,9 +2068,9 @@
       else if (!cont.classList.contains('labelsVisible')) cont.classList.add('labelsVisible');
       else cont.classList.remove('open', 'labelsVisible');
     });
-    document.addEventListener('click', function (e) {
-      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
-    }, true);
+    if (state.fabLupaOutsideClick) document.removeEventListener('click', state.fabLupaOutsideClick, true);
+    state.fabLupaOutsideClick = function (e) { if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible'); };
+    document.addEventListener('click', state.fabLupaOutsideClick, true);
     function closeLupa() { cont.classList.remove('open', 'labelsVisible'); }
     var elZoomIn = document.getElementById('lupaZoomIn');
     if (elZoomIn) elZoomIn.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomIn(); });
@@ -2079,7 +2086,7 @@
       elProvider.innerHTML = svgIcon(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
     });
     var elBiblioteca = document.getElementById('lupaBiblioteca');
-    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); setView('inbox'); });
+    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); teardownActiveMap(); setView('inbox'); });
     var elCaminar = document.getElementById('lupaCaminar');
     if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { points: [], mode: 'walk' }; setView('walk'); });
     var elTrazo = document.getElementById('lupaTrazo');
@@ -2296,6 +2303,7 @@
 
   // viewMapTest (#mapTest dev shortcut, RD-17)
   function viewMapTest() {
+    teardownActiveMap();
     $view().className = 'view no-pad';
     $view().innerHTML = '<div class="track-shell"><div class="map-container" id="map-test"></div></div>';
     clearActionBar();

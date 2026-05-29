@@ -1655,6 +1655,7 @@
     }
   }
   async function viewMapTest() {
+    teardownActiveMap();
     $view().className = 'view noPad';
     $view().innerHTML = '<div class="markerShell"><div class="mapContainer" id="mapTestEl"></div></div>';
     initMap('mapTestEl');
@@ -1811,6 +1812,11 @@
 
 
 
+  function teardownActiveMap() {
+    if (state._teardownMarker) state._teardownMarker();
+    if (state.map) { state.map.remove(); state.map = null; }
+  }
+
   // ── buildFabLupa · zoom in/out + proveedor · despliegue radial ──────────
   function buildFabLupa(shell) {
     if (shell.querySelector('#fabLupaEl')) { return; }
@@ -1884,9 +1890,9 @@
         cont.classList.remove('open', 'labelsVisible');
       }
     });
-    document.addEventListener('click', function (e) {
-      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
-    }, true);
+    if (state.fabLupaOutsideClick) document.removeEventListener('click', state.fabLupaOutsideClick, true);
+    state.fabLupaOutsideClick = function (e) { if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible'); };
+    document.addEventListener('click', state.fabLupaOutsideClick, true);
 
     function closeLupa() { cont.classList.remove('open', 'labelsVisible'); }
 
@@ -1911,7 +1917,7 @@
     });
 
     var lupaBibliotecaBtn = document.getElementById('lupaBiblioteca');
-    if (lupaBibliotecaBtn) lupaBibliotecaBtn.addEventListener('click', function () { closeLupa(); setView('biblioteca'); });
+    if (lupaBibliotecaBtn) lupaBibliotecaBtn.addEventListener('click', function () { closeLupa(); teardownActiveMap(); setView('biblioteca'); });
 
     return cont;
   }
