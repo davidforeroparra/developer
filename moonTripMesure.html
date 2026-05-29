@@ -2197,6 +2197,13 @@
     return [c.lat, c.lng];
   }
 
+  function teardownActiveMap() {
+    const w = state.polygonRecording && state.polygonRecording.watchId;
+    if (w != null && navigator.geolocation && navigator.geolocation.clearWatch) navigator.geolocation.clearWatch(w);
+    if (state.polygonRecording) state.polygonRecording.watchId = null;
+    if (state.map) { state.map.remove(); state.map = null; }
+  }
+
   // ── buildFabLupa · zoom + proveedor · despliegue radial (patchMesureFab01) ──
   function buildFabLupa(shell) {
     if (shell.querySelector('#fabLupaEl')) return;
@@ -2258,9 +2265,9 @@
       else if (!cont.classList.contains('labelsVisible')) cont.classList.add('labelsVisible');
       else cont.classList.remove('open', 'labelsVisible');
     });
-    document.addEventListener('click', function (e) {
-      if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible');
-    }, true);
+    if (state.fabLupaOutsideClick) document.removeEventListener('click', state.fabLupaOutsideClick, true);
+    state.fabLupaOutsideClick = function (e) { if (!cont.contains(e.target)) cont.classList.remove('open', 'labelsVisible'); };
+    document.addEventListener('click', state.fabLupaOutsideClick, true);
     function closeLupa() { cont.classList.remove('open', 'labelsVisible'); }
     var elZoomIn = document.getElementById('lupaZoomIn');
     if (elZoomIn) elZoomIn.addEventListener('click', function () { closeLupa(); if (state.map) state.map.zoomIn(); });
@@ -2276,7 +2283,7 @@
       elProvider.innerHTML = renderPixelGlyph(next === 'osm' ? 'iconProviderSat' : 'iconProviderOsm');
     });
     var elBiblioteca = document.getElementById('lupaBiblioteca');
-    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); setView('inbox'); });
+    if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); teardownActiveMap(); setView('inbox'); });
     var elCaminar = document.getElementById('lupaCaminar');
     if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { poligono: [], mode: 'walk' }; state.mode = 'walk'; setView('walk'); });
     var elTrazo = document.getElementById('lupaTrazo');
@@ -2513,6 +2520,7 @@
   //   [ ] Denegar permiso de ubicación → banner persistente con botón "Reintentar"
   // -----------------------------------------------------------------
   async function viewMapTest() {
+    teardownActiveMap();
     $view().className = 'view no-pad';
     $view().innerHTML = '<div class="poly-shell"><div class="map-container" id="map-test"></div></div>';
     clearActionBar();
