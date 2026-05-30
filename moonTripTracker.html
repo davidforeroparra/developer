@@ -2088,9 +2088,9 @@
     var elBiblioteca = document.getElementById('lupaBiblioteca');
     if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); teardownActiveMap(); setView('inbox'); });
     var elCaminar = document.getElementById('lupaCaminar');
-    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { points: [], mode: 'walk' }; setView('walk'); });
+    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); teardownActiveMap(); state.draft = { points: [], mode: 'walk' }; setView('walk'); });
     var elTrazo = document.getElementById('lupaTrazo');
-    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); state.draft = { points: [], mode: 'trace' }; setView('trace'); });
+    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); teardownActiveMap(); state.draft = { points: [], mode: 'trace' }; setView('trace'); });
     return cont;
   }
 
@@ -2326,6 +2326,7 @@
   // coloreados por accuracyToQualityLabel. 5 chips KPI VT323. RD-03/06/07/10/16.
   // ============================================================
   function viewWalkMode() {
+    teardownActiveMap();
     if (!state.draft) state.draft = { points: [], mode: 'walk' };
     if (!state.draft.points) state.draft.points = [];
     state.draft.mode = 'walk';
@@ -2678,6 +2679,7 @@
   }
 
   function viewTraceMode() {
+    teardownActiveMap();
     if (!state.draft) state.draft = { points: [], mode: 'trace' };
     if (!state.draft.points) state.draft.points = [];
     state.draft.mode = 'trace';
