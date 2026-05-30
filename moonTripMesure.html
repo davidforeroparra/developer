@@ -2524,12 +2524,6 @@
     $view().className = 'view no-pad';
     $view().innerHTML = '<div class="poly-shell"><div class="map-container" id="map-test"></div></div>';
     clearActionBar();
-    setActionBar(`<button class="btn btn-secondary" id="map-test-back" style="flex:1">← Biblioteca</button>`);
-    $('#map-test-back').addEventListener('click', () => {
-      if (state.map) { state.map.remove(); state.map = null; }
-      $view().className = 'view';
-      setView('inbox');
-    });
     // Inicializar mapa
     initMap('map-test');
     // Barra controles + banner offline si aplica
