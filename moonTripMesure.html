@@ -2285,9 +2285,9 @@
     var elBiblioteca = document.getElementById('lupaBiblioteca');
     if (elBiblioteca) elBiblioteca.addEventListener('click', function () { closeLupa(); teardownActiveMap(); setView('inbox'); });
     var elCaminar = document.getElementById('lupaCaminar');
-    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); state.draft = { poligono: [], mode: 'walk' }; state.mode = 'walk'; setView('walk'); });
+    if (elCaminar) elCaminar.addEventListener('click', function () { closeLupa(); teardownActiveMap(); state.draft = { poligono: [], mode: 'walk' }; state.mode = 'walk'; setView('walk'); });
     var elTrazo = document.getElementById('lupaTrazo');
-    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); state.draft = { poligono: [], mode: 'trace' }; state.mode = 'trace'; setView('trace'); });
+    if (elTrazo) elTrazo.addEventListener('click', function () { closeLupa(); teardownActiveMap(); state.draft = { poligono: [], mode: 'trace' }; state.mode = 'trace'; setView('trace'); });
     return cont;
   }
 
@@ -2544,6 +2544,7 @@
   // viewWalkMode() · refactor de viewPolygon M1 sobre Leaflet (M3) + F4+F5+F6+F7+T-18.
   // ============================================================
   function viewWalkMode() {
+    teardownActiveMap();
     if (!state.draft) state.draft = { poligono: [], mode: 'walk' };
     if (!state.draft.poligono) state.draft.poligono = [];
     state.draft.mode = 'walk';
@@ -2902,6 +2903,7 @@
   }
 
   function viewTraceMode() {
+    teardownActiveMap();
     if (!state.draft) state.draft = { poligono: [], mode: 'trace' };
     if (!state.draft.poligono) state.draft.poligono = [];
     state.draft.mode = 'trace';
