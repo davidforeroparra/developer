@@ -961,7 +961,7 @@
     .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
     .fabLupaContainer {
       position: absolute;
-      bottom: 28px;
+      bottom: calc(28px + max(16px, env(safe-area-inset-bottom, 0px)));
       right: 28px;
       z-index: 20;
     }
@@ -2207,15 +2207,15 @@
   // ── buildFabLupa · zoom + proveedor · despliegue radial (patchMesureFab01) ──
   function buildFabLupa(shell) {
     if (shell.querySelector('#fabLupaEl')) return;
-    var R = 120;
+    var R = 140;
     var lupaItems = [
-      { id: 'lupaZoomIn',   angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',       label: 'Zoom in' },
-      { id: 'lupaZoomOut',  angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>', label: 'Zoom out' },
-      { id: 'lupaProvider', angle: 160, html: null,                                                              label: 'Mapa' },
-      { id: 'fabTilesBtn',    angle:  85, iconKey: 'iconCollapse',  label: 'Tiles' },
-      { id: 'lupaBiblioteca', angle: 185, iconKey: 'iconInfo',      label: 'Biblioteca' },
-      { id: 'lupaCaminar',    angle: 210, iconKey: 'iconWalkMode',   label: 'Caminar' },
-      { id: 'lupaTrazo',      angle: 235, iconKey: 'iconTraceMode',  label: 'Trazar' }
+      { id: 'lupaZoomIn',    angle: 105, html: '<span style="font-size:20px;font-weight:bold;">+</span>',       label: 'Zoom in' },
+      { id: 'lupaZoomOut',   angle: 123, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>', label: 'Zoom out' },
+      { id: 'lupaProvider',  angle: 141, html: null,                                                              label: 'Mapa' },
+      { id: 'fabTilesBtn',    angle:  87, iconKey: 'iconCollapse',  label: 'Tiles' },
+      { id: 'lupaBiblioteca', angle: 159, iconKey: 'iconInfo',      label: 'Biblioteca' },
+      { id: 'lupaCaminar',    angle: 177, iconKey: 'iconWalkMode',   label: 'Caminar' },
+      { id: 'lupaTrazo',      angle: 195, iconKey: 'iconTraceMode',  label: 'Trazar' }
     ];
     var cont = document.createElement('div');
     cont.className = 'fabLupaContainer';
