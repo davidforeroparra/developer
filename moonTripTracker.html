@@ -447,9 +447,9 @@
     .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
     .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
     .fabLupaContainer {
-      position: absolute;
+      position: fixed;
       bottom: calc(28px + max(16px, env(safe-area-inset-bottom, 0px)));
-      right: 28px;
+      right: calc(max(0px, (100vw - 480px) / 2) + 28px);
       z-index: 20;
     }
     .fabLupaBtn {
