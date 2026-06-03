@@ -401,9 +401,9 @@
 
     /* ── FAB Dual · Rocket (acciones) + Lupa (mapa) ── */
     .fabContainer {
-      position: absolute;
-      top: 76px;
-      right: 16px;
+      position: fixed;
+      bottom: calc(28px + max(16px, env(safe-area-inset-bottom, 0px)));
+      left: calc(max(0px, (100vw - 480px) / 2) + 28px);
       z-index: 20;
     }
     .fabRocket {
@@ -2100,9 +2100,9 @@
     if (existing) shell.removeChild(existing);
     var R = 160;
     var items = [
-      { id: 'fab-r-pause', angle: 195, iconKey: 'iconCancel', label: 'Pausa' },
-      { id: 'fab-r-undo',  angle: 220, iconKey: 'iconUndo',   label: 'Deshacer' },
-      { id: 'fab-r-done',  angle: 245, iconKey: 'iconDone',   label: 'Guardar' }
+      { id: 'fab-r-pause', angle: 75, iconKey: 'iconCancel', label: 'Pausa' },
+      { id: 'fab-r-undo',  angle: 50, iconKey: 'iconUndo',   label: 'Deshacer' },
+      { id: 'fab-r-done',  angle: 25, iconKey: 'iconDone',   label: 'Guardar' }
     ];
     var cont = document.createElement('div');
     cont.className = 'fabContainer';
@@ -2111,7 +2111,7 @@
     rocketBtn.className = 'fabRocket';
     rocketBtn.id = 'fabRocketBtn';
     rocketBtn.setAttribute('aria-label', 'Acciones');
-    rocketBtn.innerHTML = svgIcon('iconBurger');
+    rocketBtn.innerHTML = '<img src="' + MOON_INLINE.moon56 + '" style="width:34px;height:34px;object-fit:contain;display:block;pointer-events:none;" alt="">';
     cont.appendChild(rocketBtn);
     items.forEach(function (item, idx) {
       var rad = item.angle * Math.PI / 180;
@@ -2168,9 +2168,9 @@
     if (existing) shell.removeChild(existing);
     var R = 160;
     var items = [
-      { id: 'fab-t-fix',  angle: 195, iconKey: 'iconDone',  label: 'Fijar' },
-      { id: 'fab-t-undo', angle: 220, iconKey: 'iconUndo',  label: 'Deshacer' },
-      { id: 'fab-t-done', angle: 245, iconKey: 'iconDone',  label: 'Guardar' }
+      { id: 'fab-t-fix',  angle: 75, iconKey: 'iconDone',  label: 'Fijar' },
+      { id: 'fab-t-undo', angle: 50, iconKey: 'iconUndo',  label: 'Deshacer' },
+      { id: 'fab-t-done', angle: 25, iconKey: 'iconDone',  label: 'Guardar' }
     ];
     var cont = document.createElement('div');
     cont.className = 'fabContainer';
@@ -2179,7 +2179,7 @@
     rocketBtn.className = 'fabRocket';
     rocketBtn.id = 'fabRocketBtn';
     rocketBtn.setAttribute('aria-label', 'Acciones');
-    rocketBtn.innerHTML = svgIcon('iconBurger');
+    rocketBtn.innerHTML = '<img src="' + MOON_INLINE.moon56 + '" style="width:34px;height:34px;object-fit:contain;display:block;pointer-events:none;" alt="">';
     cont.appendChild(rocketBtn);
     items.forEach(function (item, idx) {
       var rad = item.angle * Math.PI / 180;
