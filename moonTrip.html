@@ -1549,12 +1549,6 @@
             <line x1="22" y1="14" x2="22" y2="20" stroke="#272B2E" stroke-width="2" />
             <line x1="28" y1="14" x2="28" y2="22" stroke="#272B2E" stroke-width="2" />
           </svg></template>
-        <template id="tplIconoTabHoarderZen"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
-            <rect x="8" y="14" width="26" height="19" fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5" rx="2"/>
-            <rect x="10" y="10" width="24" height="19" fill="#E39F43" stroke="#272B2E" stroke-width="2" rx="2"/>
-            <rect x="12" y="6" width="22" height="19" fill="#9B1B18" stroke="#272B2E" stroke-width="2" rx="2"/>
-            <path d="M16 14 L19 18 L24 11" stroke="#F7F3A1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg></template>
         <template id="tplIconoCompass"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="15" fill="#F7F3A1" stroke="#272B2E" stroke-width="2.5" />
             <polygon points="20,7 17,21 23,21" fill="#9B1B18" stroke="#272B2E" stroke-width="1.2" />
@@ -1832,8 +1826,6 @@
           "tarjetaTrackerDescripcion": "Trazar recorridos a pie, en bici o en órbita doméstica: registro de trayectoria mínimo, autocontenido y revisable.",
           "tarjetaMesureTitulo": "moonTripMesure",
           "tarjetaMesureDescripcion": "Medir distancias, áreas y desniveles con instrumentos que pesan lo que pesa la idea: nada más.",
-          "tarjetaTabHoarderZenTitulo": "tabHoarderZen",
-          "tarjetaTabHoarderZenDescripcion": "Guarda tus pestañas, suéltalas con confianza. Backup descargable en HTML, gestor de links offline y una narrativa terapéutica para llegar al estado zen.",
           "tarjetaCompassTitulo": "moonTripCompass",
           "tarjetaCompassDescripcion": "Encontrar el norte con el bolsillo de la Luna: brújula vintage sin agujas mecánicas, magnetómetro del dispositivo y declinación calculada en local.",
           "tarjetaDiarioTitulo": "moonTripDiario",
@@ -1844,7 +1836,6 @@
           "iconoMarkerAlt": "Icono Moon Trip Marker",
           "iconoTrackerAlt": "Icono Moon Trip Tracker",
           "iconoMesureAlt": "Icono Moon Trip Mesure",
-          "iconoTabHoarderZenAlt": "Icono tabHoarderZen",
           "iconoCompassAlt": "Icono Moon Trip Compass",
           "iconoDiarioAlt": "Icono Moon Trip Diario",
           "iconoDeveloperAlt": "Cohete Moon Trip Developer",
@@ -1905,8 +1896,6 @@
           "tarjetaTrackerDescripcion": "Trace routes on foot, by bike or in domestic orbit: minimal, self-contained and reviewable path recording.",
           "tarjetaMesureTitulo": "moonTripMesure",
           "tarjetaMesureDescripcion": "Measure distances, areas and elevations with instruments that weigh what the idea weighs: nothing more.",
-          "tarjetaTabHoarderZenTitulo": "tabHoarderZen",
-          "tarjetaTabHoarderZenDescripcion": "Save your tabs, release them with confidence. A downloadable HTML backup, offline link manager and a therapeutic narrative to reach the zen state.",
           "tarjetaCompassTitulo": "moonTripCompass",
           "tarjetaCompassDescripcion": "Find north from the Moon's pocket: vintage compass without mechanical needles, device magnetometer and locally-computed declination.",
           "tarjetaDiarioTitulo": "moonTripDiario",
@@ -1917,7 +1906,6 @@
           "iconoMarkerAlt": "Moon Trip Marker icon",
           "iconoTrackerAlt": "Moon Trip Tracker icon",
           "iconoMesureAlt": "Moon Trip Mesure icon",
-          "iconoTabHoarderZenAlt": "tabHoarderZen icon",
           "iconoCompassAlt": "Moon Trip Compass icon",
           "iconoDiarioAlt": "Moon Trip Diario icon",
           "iconoDeveloperAlt": "Moon Trip Developer rocket",
@@ -2718,8 +2706,7 @@
         { col: 'izq', tester: 'mesure', iconTpl: 'tplIconoMesure', iconAltKey: 'iconoMesureAlt', tituloKey: 'tarjetaMesureTitulo', descKey: 'tarjetaMesureDescripcion', linkHref: 'moonTripMesure.html', tieneBanderin: false, enConstruccion: false, qrDataUri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSAQAAAADvV742AAABVElEQVR4nK2SsWoCQRCG/3OuCeyxgVRCmkAg7YYt0pzsgVXAx7DNQ1il9QHyGILtyaZUVkhrExBsV+7AZo9JJfHG1qmGj5+Zf/7djHGu1QD/dbs+y7fVaHTMKsFdfOr8acx9fY5j1VH19ZyXggMa86mcnwPYLD42zb3cq+vT+NMi9XnGGRkA3dbNLjmYWbFZM3Pd54YChWhI8rCuQ1LRO8Gjt/CejdQ3ioIN7mqO9cpoo1V/zgB4b9UvFlHeNT9w+0D4rkUO3fBFxaIjmY/e/3SPZmIh7qVUBgPpP4d62xy1m7RhJfTrWJYqCf85uil2e6rupE+nKVbD5bL/7mAbLTVuXV7lrJJ3miHztKSojlB9fcZAcShKOuqZ/G/NKMxb1Ff/bbR7bdUWwo+xgGvk/AEAk2aFNtK/sUo5b7z075qU2HsrOUiZYJBkbgwA4bzrcu8t+j9xEaDXx4G/3AAAAABJRU5ErkJggg==' },
         { col: 'izq', tester: 'compass', iconTpl: 'tplIconoCompass', iconAltKey: 'iconoCompassAlt', tituloKey: 'tarjetaCompassTitulo', descKey: 'tarjetaCompassDescripcion', linkHref: null, tieneBanderin: true, enConstruccion: true },
         { col: 'der', tester: 'tracker', iconTpl: 'tplIconoTracker', iconAltKey: 'iconoTrackerAlt', tituloKey: 'tarjetaTrackerTitulo', descKey: 'tarjetaTrackerDescripcion', linkHref: 'moonTripTracker.html', tieneBanderin: false, enConstruccion: false, qrDataUri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSAQAAAADvV742AAABQUlEQVR4nK2SMWrDQBBFv7wqN8htwGUglWGNUm4YQdqAL5FjpMkBArlKwAdYk0AaiRXkEG5HrMDNmkkVYo1Seqrh8Wf+Z5hC8Fv7Bf7qcn1R3t/141A0ihN/tkP/IFo/NK7xCOWUlwDi6fvx5h+vTTnsArS+2nXGXR/y1LeQwjgAp55ezjlEJBr2IhKm3MOxzZUjxVmYLYuZ6hdYbfrmsBxPU18IvOPIPk31JcyxLb05Wii9a1nqkGd52joIJBnNs80t+2h0zho1UUI102fOgVJNKv/4ZXv7fvWm8xipE+UP6P3B+TaSjbO7RSHPeZbTJcvGB6v3eBuryuWk9QgCR/D6zkJXwbzScf5veO7GETo/JRL2pPKXGBrszW7p53/Vbddb+zbnEasOT5pXYT24W1a+hRTGo3NjFfZTXzmbxcX7H7S0qN+hJyTgAAAAAElFTkSuQmCC' },
-        { col: 'der', tester: 'diario', iconTpl: 'tplIconoDiario', iconAltKey: 'iconoDiarioAlt', tituloKey: 'tarjetaDiarioTitulo', descKey: 'tarjetaDiarioDescripcion', linkHref: null, tieneBanderin: true, enConstruccion: true },
-        { col: 'der', tester: 'tabHoarderZen', iconTpl: 'tplIconoTabHoarderZen', iconAltKey: 'iconoTabHoarderZenAlt', tituloKey: 'tarjetaTabHoarderZenTitulo', descKey: 'tarjetaTabHoarderZenDescripcion', linkHref: 'tabHoarderZen.html', tieneBanderin: false, enConstruccion: false }
+        { col: 'der', tester: 'diario', iconTpl: 'tplIconoDiario', iconAltKey: 'iconoDiarioAlt', tituloKey: 'tarjetaDiarioTitulo', descKey: 'tarjetaDiarioDescripcion', linkHref: null, tieneBanderin: true, enConstruccion: true }
       ];
 
       var portafolioState = {
