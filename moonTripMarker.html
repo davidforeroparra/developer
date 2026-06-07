@@ -610,6 +610,17 @@
     .langToggle .langActive { font-weight: bold; text-decoration: underline; }
     .langToggle .langDim    { opacity: 0.5; }
 
+    .headerReturnLink {
+      color: var(--blancoNeutro);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 3px 8px;
+      border: 1.5px solid var(--blancoNeutro);
+      border-radius: var(--rInput);
+      transition: background var(--tFast);
+    }
+    .headerReturnLink:hover { background: var(--grisOscuro); }
+
     .returnLink {
       color: var(--amarilloLuna);
       text-decoration: none;
@@ -659,10 +670,11 @@
     <div id="headerShowZone" style="position:fixed;top:0;left:0;right:0;height:12px;z-index:65;cursor:pointer;" aria-hidden="true"></div>
     <header class="headerMoon" id="headerMoon">
       <div class="headerTitle">
-        <span class="headerTitleMain" data-i18n="appName">moonTripMarker</span>
+        <span class="headerTitleMain" data-i18n="appName">moonTrip Marker</span>
         <span class="headerTitleSub" data-i18n="appTagline">Punto + Foto + Comentario</span>
       </div>
       <div class="headerRight">
+        <a class="headerReturnLink" href="moonTrip.html">← Moon Trip</a>
         <button class="langToggle" id="langToggleBtn" aria-label="Toggle ES/EN">
           <span id="langEs">ES</span> · <span id="langEn">EN</span>
         </button>

@@ -173,7 +173,8 @@
       transition: background 0.15s;
     }
     .headerReturnLink:hover { background: var(--grisOscuro); }
-    .headerSpacer { height: 52px; flex-shrink: 0; }
+    .headerSpacer { height: 52px; flex-shrink: 0; transition: height 280ms ease; }
+    .headerMoon.oculto ~ .headerSpacer { height: 0; }
 
     /* Main scroll area */
     .view {
@@ -436,22 +437,22 @@
       align-items: flex-start;                                                 /* F-05 RD-13 · era flex-end · sigue al intercambio derecha→izquierda */
     }
     .recorder-stats-line {
-      font-family: 'VT323', monospace;                                        /* F-05 RD-08 · pixel art monospace consistente */
-      font-size: 13px;
-      font-weight: 600;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      font-weight: 400;
       padding: 4px 10px;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.92);
-      color: var(--darkgray);
-      box-shadow: 0 1px 3px rgba(39, 43, 46, 0.18);
-      backdrop-filter: blur(4px);
+      background: var(--blancoNeutro);
+      color: var(--grisCarbon);
+      border: 1.5px solid var(--grisOscuro);
+      box-shadow: 0 1px 3px rgba(39,43,46,0.25);
       white-space: nowrap;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.02em;
     }
-    .recorder-stats-line.good { color: var(--darkgray); }
-    .recorder-stats-line.warn { color: var(--naranjaProfundo); background: rgba(247, 243, 161, 0.96); }   /* F-05 · accuracy warn · naranjaProfundo sobre amarilloLuna semi */
-    .recorder-stats-line.bad  { color: var(--rojoOtonal);     background: rgba(240, 240, 240, 0.96); }   /* F-05 · accuracy bad · rojoOtonal sobre blancoNeutro semi */
-    .recorder-stats-line .lbl { opacity: 0.65; font-weight: 500; margin-right: 4px; }
+    .recorder-stats-line.good { background: var(--blancoNeutro); color: var(--grisCarbon); border-color: var(--grisOscuro); }
+    .recorder-stats-line.warn { background: var(--grisMedio); color: var(--blancoNeutro); border-color: var(--grisMedio); }
+    .recorder-stats-line.bad  { background: var(--grisCarbon); color: var(--blancoNeutro); border-color: var(--grisCarbon); }
+    .recorder-stats-line .lbl { opacity: 0.75; font-weight: 400; margin-right: 4px; }
 
     /* M4/T-15 F4+F5 · live divIcon (triángulo direccional / círculo parpadeante) */
     .recorder-live-icon { background: transparent; border: none; }
@@ -1017,7 +1018,7 @@
     <div id="headerShowZone" style="position:fixed;top:0;left:0;right:0;height:12px;z-index:65;cursor:pointer;" aria-hidden="true"></div>
     <header class="headerMoon" id="headerMoon">
       <div class="headerTitle">
-        <span class="headerTitleMain" id="hdr-title">moonTripMesure</span>
+        <span class="headerTitleMain" id="hdr-title">moonTrip Mesure</span>
         <span class="headerTitleSub" id="hdr-subtitle">GPS polígonos · línea Moon Trip</span>
       </div>
       <div class="headerRight">
