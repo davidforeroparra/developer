@@ -847,7 +847,7 @@
   const LANG_KEY = 'moonTripMarker.lang.v1';
   const I18N = {
     es: {
-      appName: 'moonTripMarker',
+      appName: 'moonTrip Marker',
       appTagline: 'Punto + Foto + Comentario',
       loading: 'Cargando…',
       capture: 'Capturar punto',
@@ -906,7 +906,7 @@
       pointsCountSuffix: 'pts'
     },
     en: {
-      appName: 'moonTripMarker',
+      appName: 'moonTrip Marker',
       appTagline: 'Point + Photo + Comment',
       loading: 'Loading…',
       capture: 'Capture point',
@@ -1673,13 +1673,7 @@
     initMap('mapTestEl');
     const shell = $view().querySelector('.markerShell');
     buildFabLupa(shell);
-    const backBtn = document.createElement('button');
-    backBtn.id = 'map-test-back';
-    backBtn.className = 'btn btn-secondary';
-    backBtn.style.cssText = 'position:absolute;bottom:16px;left:16px;z-index:500;pointer-events:auto;';
-    backBtn.textContent = '← Biblioteca';
-    shell.appendChild(backBtn);
-    backBtn.addEventListener('click', function () { setView('biblioteca'); });
+    buildFabRadial(shell);
   }
   async function viewBiblioteca() {
     $view().className = 'view';
