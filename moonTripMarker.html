@@ -358,9 +358,6 @@
       position: absolute;
       width: 48px;
       height: 48px;
-      border-radius: 50%;
-      background: var(--blancoNeutro);
-      border: 2px solid var(--grisOscuro);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -368,15 +365,10 @@
       pointer-events: none;
       transform: scale(0);
       transition: opacity 0.2s ease, transform 0.25s ease;
-      box-shadow: 0 2px 8px rgba(39,43,46,0.3);
       cursor: pointer;
       color: var(--grisCarbon);
-      overflow: hidden;
     }
-    .fabItem img { width: 28px; height: 28px; object-fit: contain; display: block; }
-    /* try 20260616microRemanofacturaFabIconoSinCirculo: #fabCaptura sin marco — solo sprite */
-    #fabCaptura { background: transparent; border: none; box-shadow: none; border-radius: 0; overflow: visible; }
-    #fabCaptura img { width: 48px; height: 48px; object-fit: contain; }
+    .fabItem img { width: 48px; height: 48px; object-fit: contain; display: block; }
     .fabItem span { line-height: 1; font-family: sans-serif; color: var(--grisCarbon); }
     .fabContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
     .fabItem:disabled { opacity: 0.35 !important; pointer-events: none !important; }
@@ -1830,8 +1822,8 @@
     if (shell.querySelector('#fabLupaEl')) { return; }
     var R = 120;
     var lupaItems = [
-      { id: 'lupaZoomIn',    angle: 110, html: '<span style="font-size:20px;font-weight:bold;">+</span>',      label: 'Zoom in' },
-      { id: 'lupaZoomOut',   angle: 135, html: '<span style="font-size:20px;font-weight:bold;">&minus;</span>',label: 'Zoom out' },
+      { id: 'lupaZoomIn',    angle: 110, iconKey: 'iconZoomIn',  label: 'Zoom in' },
+      { id: 'lupaZoomOut',   angle: 135, iconKey: 'iconZoomOut', label: 'Zoom out' },
       { id: 'lupaProvider',  angle: 160, html: null,                                                             label: 'Mapa' },
       { id: 'fabTiles',      angle:  85, iconKey: 'iconCollapse',                                                label: 'Tiles' },
       { id: 'lupaBiblioteca',angle: 185, iconKey: 'iconInfo',                                                    label: 'Biblioteca' }
@@ -1845,7 +1837,7 @@
     lupaBtn.className = 'fabLupaBtn';
     lupaBtn.id = 'fabLupaBtn';
     lupaBtn.setAttribute('aria-label', 'Zoom / Mapa');
-    lupaBtn.innerHTML = '<svg viewBox="0 0 22 22" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="9" r="6.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>';
+    lupaBtn.innerHTML = svgGlifo('iconProviderOsm');
     cont.appendChild(lupaBtn);
 
     lupaItems.forEach(function (item, idx) {
