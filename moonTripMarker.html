@@ -341,18 +341,15 @@
       position: relative;
       width: 48px;
       height: 48px;
-      border-radius: 50%;
-      background: var(--blancoNeutro);
-      border: 2px solid var(--grisOscuro);
+      border: none;
+      background: transparent;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      box-shadow: 0 4px 14px rgba(39,43,46,0.4);
       transition: transform 0.25s ease;
     }
-    .fabRocket img { width: 56px; height: 56px; object-fit: contain; display: block; pointer-events: none; }
+    .fabRocket img { width: 48px; height: 48px; object-fit: contain; display: block; pointer-events: none; }
     .fabContainer.open .fabRocket { transform: rotate(45deg); }
     .fabItem {
       position: absolute;
@@ -385,23 +382,22 @@
       position: relative;
       width: 48px;
       height: 48px;
-      border-radius: 50%;
-      background: var(--blancoNeutro);
-      border: 2px solid var(--grisOscuro);
+      border: none;
+      background: transparent;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 10px rgba(39,43,46,0.4);
       transition: transform 0.25s ease;
       color: var(--grisCarbon);
     }
+    .fabLupaBtn img { width: 48px; height: 48px; object-fit: contain; display: block; }
     .fabLupaContainer.open .fabLupaBtn { transform: rotate(45deg); }
     .fabLupaContainer.open .fabItem { opacity: 1; pointer-events: auto; transform: scale(1); }
     /* ── Hover states · botones trigger ── */
-    .fabRocket:hover { box-shadow: 0 6px 18px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabRocket:hover { transform: scale(1.04); }
     .fabContainer.open .fabRocket:hover { transform: rotate(45deg) scale(1.04); }
-    .fabLupaBtn:hover { box-shadow: 0 5px 16px rgba(39,43,46,0.55); transform: scale(1.04); }
+    .fabLupaBtn:hover { transform: scale(1.04); }
     .fabLupaContainer.open .fabLupaBtn:hover { transform: rotate(45deg) scale(1.04); }
     /* ── OPEN+LABELS: trigger rota 90deg (estado 3) ── */
     .fabContainer.open.labelsVisible .fabRocket { transform: rotate(90deg); }
