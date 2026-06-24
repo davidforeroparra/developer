@@ -53,11 +53,12 @@
       32 colores (~1 KB base64 inline). Asset distinto al de la mascota Moon
       del hero (que sigue siendo iconoRocket en su posicion original).
   ----------------------------------------------------------------------------
-  Deuda residual diferida:
-    1. Link PORTAFOLIO y linkRetorno usan placeholder #TBD-moonTripLanding-portafolio
-       hasta que F-01 confirme el destino moonTripLanding.html#portafolio.
-    2. QR 96x96 es placeholder cuadrado claro con texto "QR".
-       Wave 3 lo sustituye con SVG inline via toolchain Python qrSvgBuilder.py.
+  Wave 3 finalizacion (20260519) — deuda residual resuelta:
+    1. Link PORTAFOLIO y linkRetorno apuntan a /moontrip#portafolio (clean URL
+       Netlify de moonTrip.html, la landing del sub-proyecto Moon Trip).
+    2. QR 96x96 es PNG real escaneable generado por toolchain Python
+       workshop/scripts/qrGenerator/ (qrcode[pil]) con URL pública del developer
+       (https://davidforeroparra-dev.netlify.app/) e inyectado base64 inline.
   ----------------------------------------------------------------------------
   Disclaimer F-01: no aplica - este tester no accede a APIs sensibles del
   dispositivo. Solo lectura/escritura en localStorage del propio origen.
@@ -189,6 +190,10 @@ ul li::before {
   font-family: var(--fontPixelLabel);
   border-bottom: 3px solid var(--vinotinto);
   flex-wrap: wrap;
+  transition: transform 0.3s ease;
+}
+.topbar--oculta {
+  transform: translateY(-100%);
 }
 .topbarBrandRow {
   display: inline-flex;
@@ -263,7 +268,14 @@ ul li::before {
    Estructura: <button> > <span class="btnToggleMenuWrap"> > <img class="btnToggleMenuIcon">
    El wrap absorbe el scale (independiente de layout) y el img la animacion viaje. */
 .btnToggleMenu {
-  background: transparent;
+  position: fixed;
+  top: 14px;
+  left: 24px;
+  z-index: 200;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--grisCarbon);
   border: none;
   padding: 0;
   cursor: pointer;
@@ -274,10 +286,14 @@ ul li::before {
 }
 .btnToggleMenu:hover,
 .btnToggleMenu:focus {
-  background: transparent;
-  border: none;
   outline: 2px dashed var(--amarilloLuna);
   outline-offset: 2px;
+}
+.topbarMenuPlaceholder {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 .btnToggleMenuWrap {
   display: inline-flex;
@@ -335,12 +351,22 @@ body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
   to   { opacity: 1; }
 }
 
+@keyframes vibrarIdle {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-3px, 0); }
+  50%      { transform: translate(3px, 0); }
+  75%      { transform: translate(-2px, 0); }
+}
+.enIdle {
+  animation: vibrarIdle 0.45s ease-in-out;
+}
+
 /* ============================================================================
    Hero - amarilloLuna, grid 2-col desktop
    ============================================================================ */
 .hero {
   background: var(--blancoNeutro);
-  padding: 48px 32px;
+  padding: 12px 32px;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 32px;
@@ -545,7 +571,7 @@ body.menuAbierto .btnToggleMenu:hover .btnToggleMenuIcon {
   position: fixed;
   top: 88px;
   left: 24px;
-  z-index: 90;
+  z-index: 200;
   display: none;
   flex-direction: column;
   gap: 10px;
@@ -584,11 +610,16 @@ body.menuAbierto .menuPanelFijo { display: flex; }
 .btnInfoMenu:hover {
   transform: translate(2px, 2px);
   filter: drop-shadow(0 0 0 var(--vinotinto));
+  width: 180px;
+  border-radius: 22px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnInfoMenu:hover .btnInfoLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
 }
 body.infoExpandido .btnInfoMenu {
-  background: linear-gradient(135deg, var(--naranjaClaro) 0%, var(--vinotinto) 100%);
-  color: var(--amarilloLuna);
-  border-color: var(--amarilloLuna);
   width: 180px;
   border-radius: 22px;
   justify-content: flex-start;
@@ -658,6 +689,13 @@ body.infoExpandido .btnSeccionMenu {
 .btnSeccionMenu:hover {
   transform: translate(2px, 2px);
   filter: drop-shadow(1px 1px 0 var(--vinotinto));
+  width: 180px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+.btnSeccionMenu:hover .btnSecLabel {
+  display: inline;
+  animation: fadeInLabel 180ms ease-out 100ms both;
 }
 .btnSeccionMenu:active {
   transform: translate(3px, 3px);
@@ -685,6 +723,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 /* Gradient repartido entre los 7 botones - cada boton es un color solido
    interpolado linealmente entre --vinotinto (#551E1B) y --naranjaClaro (#E39F43).
    Vistos en conjunto forman el gradient vino->naranja. */
+.btnSecInicio       { background: #3D1418; color: var(--amarilloLuna); }
+.btnSecPortafolio   { background: #471B19; color: var(--amarilloLuna); }
 .btnSecContacto     { background: #551E1B; color: var(--amarilloLuna); }
 .btnSecFormacion    { background: #6D3422; color: var(--amarilloLuna); }
 .btnSecExperiencia  { background: #844928; color: var(--amarilloLuna); }
@@ -776,10 +816,9 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
-    padding: 32px 20px;
+    padding: 8px 20px;
   }
   .heroIlustracion {
-    order: -1;
     max-width: 240px;
     margin: 0 auto;
   }
@@ -795,6 +834,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   .slotDinamicoHero { font-size: 17px; }
   .heroCtas { flex-direction: column; }
   .ctaPixel { text-align: center; }
+  .btnToggleMenu { top: 10px; left: 14px; }
   .topbar {
     padding: 10px 14px;
     gap: var(--spacingS);
@@ -835,11 +875,11 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - open -->
 <header class="topbar" id="topbarSeccion">
   <div class="topbarBrandRow">
-    <button id="btnToggleMenu" class="btnToggleMenu" type="button" aria-expanded="false" aria-controls="menuPanel" aria-label="Abrir menu de secciones del CV"><span class="btnToggleMenuWrap"><img class="btnToggleMenuIcon" id="btnToggleMenuIcon" alt="" width="56" height="56" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADZklEQVR42u2aT0gUcRTHv7+dRV1h9VBuoau0UpkUBWVqXUPyEiIadAk6WETbxaxDtw5FgZlkGFFBQnYSkTx00S4K5qqFofkHo6l0TVfXVUxdl935dVjn14w7mdaszsrvnX7zfm+W/ez3zXu/eSyRJAnb2UzY5sYBOSAH5IAckANyQA4Yu2Y2wpcQzAJdaz8UDJGYA1RClR1wAACO5x5Fd9cHVdzzITH2FdwZCgAA0qkIcWUNANNCXOylqKzcnXsVWFxcwPKCH8GVvbbmlth+BgWzQKtqbiMl6EHvqCdc5UwCAECSQnCcyIf4rlM39bakivoXffi2RFVgkhQCAIykWHUD21QFlWnpnfQwf5ojC0k2G7sedLVj9tBheOkidnz6bDzAvXsyVOU+wZoIqzUJFy+dBQD4prxr3i9+n2Drtz/DxWZhvMMwgFQcc2tunCk6CZMQp1LvbyZ/VoItj2w5oJyC18rPM9/8gh/Pnjawa0lR/uXi4haH4RaHVcoZqorW1j6mbe2tyM7epwIDgNY3HcjNPQYAmJuZ17xfjpVtaOArW5eWFm09YP2rOnR1vVcpN+2dZSlWdvUcpFAAvunZiHvlyinHA8Dg4Ahb9/cNEcMUmQfVLyN8xSUF8E15GYjJJLD16oLS1Niiy7lT9z6YkWFfd6wSVO6BAkmEQBJZjMOepvszSPScbAtmgRaXFET4HRm7mYJK5XpdAxDH3Lqrpjtg981U1v/yKydZiq5lTY0tqHn4CE7nlajB/XeKksBl+D0uumGlFWlp6Bfe+icWuv9HMTLtFgCANesI/KeCoDDDUvg6QkVlMTE0IPU0oafaSQvtFsBuQVLWwbBfEdN5YxfyKyOBrldcgCSFNCuvIVKUepqwjNRIv+K3IitveNGoilFXsKfaSQGwtFwNR2FmgP1dDUiw5RH5KCcfumNm6KSVmvPDH0FouOdZkgWyugLdr6qLSkPXBZAELv95jw0eAEoE+E1WI4x71t8H/R4X7asuZteZdgsIDYESQRX3ZWwpPCG7O060JmibpZwuKaoFl3urmUhzo5rxmw0XlZEFjc8BseXAKPbPgHIqyjYzkYbTL7qJUZTbMGA8xiN8OeW1MCWnk98twnhm1iMljWyE/xGIA3JADsgBOSAH5IAckANyQA7IAbXsF/gLUMd16VquAAAAAElFTkSuQmCC"></span></button>
+    <div class="topbarMenuPlaceholder" aria-hidden="true"></div>
     <div class="topbarBrand" data-i18n="topbarBrand">David Forero - GIS developer</div>
   </div>
   <nav class="topbarNav" aria-label="Navegacion principal">
-    <a href="#TBD-moonTripLanding-portafolio" id="navPortafolioLink" data-i18n="navPortafolio">[ PORTAFOLIO ]</a>
+    <a href="moonTrip.html#portafolio" id="navPortafolioLink" data-i18n="navPortafolio">[ PORTAFOLIO ]</a>
     <button type="button" id="navInicioBtn" data-seccion="perfil" data-i18n="navInicio">[ INICIO ]</button>
     <button type="button" id="navContactoBtn" data-seccion="contacto" data-i18n="navContacto">[ CONTACTO ]</button>
   </nav>
@@ -850,6 +890,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     </div>
   </div>
 </header>
+<button id="btnToggleMenu" class="btnToggleMenu" type="button" aria-expanded="false" aria-controls="menuPanel" aria-label="Abrir menu de secciones del CV"><span class="btnToggleMenuWrap"><img class="btnToggleMenuIcon" id="btnToggleMenuIcon" alt="" width="56" height="56" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADZklEQVR42u2aT0gUcRTHv7+dRV1h9VBuoau0UpkUBWVqXUPyEiIadAk6WETbxaxDtw5FgZlkGFFBQnYSkTx00S4K5qqFofkHo6l0TVfXVUxdl935dVjn14w7mdaszsrvnX7zfm+W/ez3zXu/eSyRJAnb2UzY5sYBOSAH5IAckANyQA4Yu2Y2wpcQzAJdaz8UDJGYA1RClR1wAACO5x5Fd9cHVdzzITH2FdwZCgAA0qkIcWUNANNCXOylqKzcnXsVWFxcwPKCH8GVvbbmlth+BgWzQKtqbiMl6EHvqCdc5UwCAECSQnCcyIf4rlM39bakivoXffi2RFVgkhQCAIykWHUD21QFlWnpnfQwf5ojC0k2G7sedLVj9tBheOkidnz6bDzAvXsyVOU+wZoIqzUJFy+dBQD4prxr3i9+n2Drtz/DxWZhvMMwgFQcc2tunCk6CZMQp1LvbyZ/VoItj2w5oJyC18rPM9/8gh/Pnjawa0lR/uXi4haH4RaHVcoZqorW1j6mbe2tyM7epwIDgNY3HcjNPQYAmJuZ17xfjpVtaOArW5eWFm09YP2rOnR1vVcpN+2dZSlWdvUcpFAAvunZiHvlyinHA8Dg4Ahb9/cNEcMUmQfVLyN8xSUF8E15GYjJJLD16oLS1Niiy7lT9z6YkWFfd6wSVO6BAkmEQBJZjMOepvszSPScbAtmgRaXFET4HRm7mYJK5XpdAxDH3Lqrpjtg981U1v/yKydZiq5lTY0tqHn4CE7nlajB/XeKksBl+D0uumGlFWlp6Bfe+icWuv9HMTLtFgCANesI/KeCoDDDUvg6QkVlMTE0IPU0oafaSQvtFsBuQVLWwbBfEdN5YxfyKyOBrldcgCSFNCuvIVKUepqwjNRIv+K3IitveNGoilFXsKfaSQGwtFwNR2FmgP1dDUiw5RH5KCcfumNm6KSVmvPDH0FouOdZkgWyugLdr6qLSkPXBZAELv95jw0eAEoE+E1WI4x71t8H/R4X7asuZteZdgsIDYESQRX3ZWwpPCG7O060JmibpZwuKaoFl3urmUhzo5rxmw0XlZEFjc8BseXAKPbPgHIqyjYzkYbTL7qJUZTbMGA8xiN8OeW1MCWnk98twnhm1iMljWyE/xGIA3JADsgBOSAH5IAckANyQA7IAbXsF/gLUMd16VquAAAAAElFTkSuQmCC"></span></button>
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - TOPBAR - close -->
 
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - HERO - open -->
@@ -875,6 +916,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 <aside class="menuPanelFijo" id="menuPanel" aria-label="Indice CV">
   <button type="button" class="btnInfoMenu" id="btnInfoMenu" aria-pressed="false" aria-label="Mostrar u ocultar etiquetas" data-i18n-aria="btnInfoMenuAria"><span class="btnInfoGlyph">[i]</span><span class="btnInfoLabel" data-i18n="btnInfoLabel">INFO</span></button>
   <ul class="menuPanelLista">
+    <li><button type="button" class="btnSeccionMenu btnSecInicio" data-seccion="perfil" aria-label="Inicio"><span class="btnGlyph">[ N ]</span><span class="btnSecLabel">INICIO</span></button></li>
+    <li><a href="moonTrip.html#portafolio" class="btnSeccionMenu btnSecPortafolio" aria-label="Portafolio"><span class="btnGlyph">[ P ]</span><span class="btnSecLabel">PORTAFOLIO</span></a></li>
     <li><button type="button" class="btnSeccionMenu btnSecContacto" data-seccion="contacto" aria-label="Contacto"><span class="btnGlyph">[ C ]</span><span class="btnSecLabel" data-i18n="btnSecContacto">CONTACTO</span></button></li>
     <li><button type="button" class="btnSeccionMenu btnSecFormacion" data-seccion="formacion" aria-label="Formacion"><span class="btnGlyph">[ F ]</span><span class="btnSecLabel" data-i18n="btnSecFormacion">FORMACION</span></button></li>
     <li><button type="button" class="btnSeccionMenu btnSecExperiencia" data-seccion="experiencia" aria-label="Experiencia"><span class="btnGlyph">[ E ]</span><span class="btnSecLabel" data-i18n="btnSecExperiencia">EXPERIENCIA</span></button></li>
@@ -896,7 +939,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
 </template>
 
 <template id="tplContacto">
-  <div class="seccionDinamicaContenido seccionContacto">
+  <div class="seccionDinamicaContenido seccionContacto" id="contacto">
     <h2 class="seccionTitulo" data-i18n="contactoTitulo">Contacto inmediato</h2>
     <div class="contactoInmediato">
       <p><span class="etiqueta" data-i18n="contactoEmailLabel">Email:</span> <a href="mailto:davidforeroparra@gmail.com">davidforeroparra@gmail.com</a></p>
@@ -1103,8 +1146,8 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   <div class="footerDivider" aria-hidden="true"></div>
   <p class="footerCredito" data-i18n="footerCredito">&copy; 2026 David Forero Parra &middot; Actualizado 20260515</p>
   <div class="footerNavegacion">
-    <a class="linkRetorno" id="linkRetorno" href="#TBD-moonTripLanding-portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
-    <div class="qrPlaceholder" id="qrRetorno" aria-label="QR placeholder" title="QR placeholder - Wave 3">QR</div>
+    <a class="linkRetorno" id="linkRetorno" href="moonTrip.html#portafolio" data-i18n="linkRetorno">[&larr; VOLVER AL PORTAFOLIO]</a>
+    <div class="qrPlaceholder" id="qrRetorno" aria-label="QR escaneable para volver al portafolio" title="Scan: davidforeroparra-dev.netlify.app"><img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKAQAAAAA0q//cAAABGklEQVR4nK1SMWrDQBCc86kJHEgPSBMwuL2gNIEzp9a/8RcCeUAekH+kCpyQwI1AglQBg18QkNBBMJzYFAmG3bSe6hiGmdnbVYQ/1CtccI2nytqHYlIVZ/24G6ImoZ0qff5C9s9sPZyEbwbgdT9pmZaHJTRIQlsXFliU51pKeDc9Bc5W8aZ4bmvmAAo0ppAsBca6ZnY+ecHCOE/UM3aFtNHYTpb9g6IB9xYw+omnoUvkG+FLqZ/HVHru22bx9oiXwPs68p21VmgP07I/5icxmzN6do0Xfb+j3X1sp4priRySz5k2g9LntthEyB3rfG0eRZotZ2NhRBrwGYb+rZI7jra7K6gWOzbDRmvRDFr3XShFs9+z7q5zyhf8AAPJgHl1z7Y7AAAAAElFTkSuQmCC" width="80" height="80"></div>
   </div>
 </footer>
 <!-- OWNERSHIP ZONE - Wave 1c HTML semantico ronda 4 - FOOTER - close -->
@@ -1648,6 +1691,21 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
   var timerColapsoInfo = null;
   var timerCierrePanel = null;
 
+  // === Demo inicial + idle vibration ===
+  var DEMO_DELAY_INICIAL  = 2000;
+  var DEMO_DELAY_EXPAND   = 2000;
+  var DEMO_DELAY_INFO     = 2000;
+  var DEMO_DELAY_COLLAPSE = 1000;
+  var IDLE_INTERVAL_MS    = 20000;
+  var IDLE_ANIM_MS        = 450;
+  var demoTimers          = [];
+  var demoActivo          = false;
+
+  var esTouchDevice = false;
+  document.addEventListener('touchstart', function marcaTouchDevice() {
+    esTouchDevice = true;
+  }, { once: true, passive: true });
+
   function aplicaTimersHover() {
     // No aplica en mobile (touch sin hover real)
     if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
@@ -1705,7 +1763,45 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }, TIEMPO_CIERRE_PANEL_MS);
   }
 
+  function esMobile() {
+    return esTouchDevice;
+  }
+
+  function iniciarTimerTouchCierrePanel() {
+    if (!esMobile()) return;
+    if (!document.body.classList.contains('menuAbierto')) return;
+    if (document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerCierrePanel = setTimeout(function onCierrePanelTouch() {
+      timerCierrePanel = null;
+      if (!document.body.classList.contains('menuAbierto')) return;
+      cerrarMenu();
+    }, TIEMPO_CIERRE_PANEL_MS);
+  }
+
+  function iniciarTimerTouchColapsoInfo() {
+    if (!esMobile()) return;
+    if (!document.body.classList.contains('infoExpandido')) return;
+    cancelarTimersCierre();
+    timerColapsoInfo = setTimeout(function onColapsoInfoTouch() {
+      timerColapsoInfo = null;
+      if (!document.body.classList.contains('infoExpandido')) return;
+      document.body.classList.remove('infoExpandido');
+      var btnInfo = document.getElementById('btnInfoMenu');
+      if (btnInfo) btnInfo.setAttribute('aria-pressed', 'false');
+      iniciarTimerTouchCierrePanel();
+    }, TIEMPO_COLAPSO_INFO_MS);
+  }
+
   function evaluarTimerSegunEstado() {
+    if (esMobile()) {
+      if (document.body.classList.contains('infoExpandido')) {
+        iniciarTimerTouchColapsoInfo();
+      } else if (document.body.classList.contains('menuAbierto')) {
+        iniciarTimerTouchCierrePanel();
+      }
+      return;
+    }
     if (!aplicaTimersHover()) return;
     if (hoverEnSubsistema()) {
       cancelarTimersCierre();
@@ -1725,6 +1821,7 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     // El hover esta presumiblemente activo al abrir (acaba de click); no arranca timer.
     // Si el usuario mueve el cursor fuera, el mouseleave lo iniciara.
     cancelarTimersCierre();
+    iniciarTimerTouchCierrePanel();
   }
 
   function cerrarMenu() {
@@ -1753,10 +1850,80 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }
     // Cambio de estado -> re-evaluar timers (cancela el viejo, inicia el nuevo si toca)
     cancelarTimersCierre();
+    if (esMobile()) {
+      if (document.body.classList.contains('infoExpandido')) {
+        iniciarTimerTouchColapsoInfo();
+      } else {
+        iniciarTimerTouchCierrePanel();
+      }
+      return;
+    }
     // Si tras el toggle el cursor no esta hover, arrancar timer del nuevo estado
     if (!hoverEnSubsistema()) {
       evaluarTimerSegunEstado();
     }
+  }
+
+  // ==========================================================================
+  // Demo inicial + idle vibration
+  // ==========================================================================
+  function iniciarDemoInicial() {
+    demoActivo = true;
+    var demoInterrumpido = false;
+
+    function cancelarDemo() {
+      if (demoInterrumpido) return;
+      demoInterrumpido = true;
+      demoActivo = false;
+      for (var k = 0; k < demoTimers.length; k++) { clearTimeout(demoTimers[k]); }
+      demoTimers = [];
+      document.removeEventListener('click', cancelarDemo);
+      document.removeEventListener('touchstart', cancelarDemo);
+      document.removeEventListener('keydown', cancelarDemo);
+    }
+
+    function finalizarDemo() {
+      demoActivo = false;
+      document.removeEventListener('click', cancelarDemo);
+      document.removeEventListener('touchstart', cancelarDemo);
+      document.removeEventListener('keydown', cancelarDemo);
+    }
+
+    document.addEventListener('click', cancelarDemo);
+    document.addEventListener('touchstart', cancelarDemo, { passive: true });
+    document.addEventListener('keydown', cancelarDemo);
+
+    demoTimers.push(setTimeout(function demoExpandir() {
+      if (!demoActivo) return;
+      abrirMenu();
+      demoTimers.push(setTimeout(function demoInfo() {
+        if (!demoActivo) return;
+        if (!document.body.classList.contains('infoExpandido')) toggleInfo();
+        demoTimers.push(setTimeout(function demoColapsarInfo() {
+          if (!demoActivo) return;
+          if (document.body.classList.contains('infoExpandido')) toggleInfo();
+          demoTimers.push(setTimeout(function demoCerrar() {
+            if (!demoActivo) return;
+            cerrarMenu();
+            finalizarDemo();
+          }, DEMO_DELAY_COLLAPSE));
+        }, DEMO_DELAY_INFO));
+      }, DEMO_DELAY_EXPAND));
+    }, DEMO_DELAY_INICIAL));
+  }
+
+  function iniciarIdleVibration() {
+    setInterval(function tickIdle() {
+      if (demoActivo) return;
+      if (!document.body.classList.contains('menuAbierto')) return;
+      if (document.body.classList.contains('infoExpandido')) return;
+      var btnInfo = document.getElementById('btnInfoMenu');
+      if (!btnInfo) return;
+      btnInfo.classList.add('enIdle');
+      setTimeout(function quitarIdle() {
+        if (btnInfo) btnInfo.classList.remove('enIdle');
+      }, IDLE_ANIM_MS);
+    }, IDLE_INTERVAL_MS);
   }
 
   // ==========================================================================
@@ -1881,17 +2048,41 @@ body.infoExpandido .btnSeccionMenu .btnSecLabel {
     }
   }
 
+  function bindScrollTopbar() {
+    var topbar = document.querySelector('.topbar');
+    if (!topbar) return;
+    var ultimoScroll = 0;
+    window.addEventListener('scroll', function onScrollTopbar() {
+      var scrollActual = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollActual <= 0) {
+        topbar.classList.remove('topbar--oculta');
+        ultimoScroll = 0;
+        return;
+      }
+      if (scrollActual > ultimoScroll) {
+        topbar.classList.add('topbar--oculta');
+      } else {
+        topbar.classList.remove('topbar--oculta');
+      }
+      ultimoScroll = scrollActual;
+    }, { passive: true });
+  }
+
   function bootstrap() {
     var langInicial = detectarIdiomaInicial();
     applyI18n(langInicial);
     persistLang(langInicial);
     bindToggleLang();
     bindMenu();
+    bindScrollTopbar();
     bindBotonesSeccionMenu();
     bindAtajosTopbar();
     bindCtasHero();
-    // Carga inicial: Perfil profesional en el slot
-    cargarSeccion('perfil');
+    // Carga inicial: perfil por defecto, o la seccion indicada por hash (deep-link)
+    var hashInicial = window.location.hash ? window.location.hash.slice(1) : '';
+    cargarSeccion(TPL_POR_SECCION[hashInicial] ? hashInicial : 'perfil');
+    iniciarDemoInicial();
+    iniciarIdleVibration();
   }
 
   if (document.readyState === 'loading') {
